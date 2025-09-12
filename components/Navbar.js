@@ -10,8 +10,9 @@ export default function Navbar() {
       {/* Enlaces a páginas */}
       <div className="space-x-6 font-medium">
         <Link href="/">Inicio</Link>
-        <Link href="/experiencias">Experiencias</Link>
-        <Link href="/experiencias/crear">Crear Experiencia</Link>
+        <Link href="/productos">Productos</Link>
+        <Link href="/transportes">Transportes</Link>
+        <Link href="/pedidos">Pedidos</Link>
         <Link href="/como-funciona">Cómo Funciona</Link>
         <Link href="/sobre-nosotros">Sobre Nosotros</Link>
       </div>

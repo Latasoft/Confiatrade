@@ -15,14 +15,20 @@ export default function NavbarCliente() {
         <Link href="/" className="hover:text-yellow-300">
           Inicio
         </Link>
-        <Link href="/experiencias" className="hover:text-yellow-300">
-          Explorar Servicios
+        <Link href="/cliente/productos" className="hover:text-yellow-300">
+          Productos
+        </Link>
+        <Link href="/cliente/transportes" className="hover:text-yellow-300">
+          Transportes
+        </Link>
+        <Link href="/cliente/mis-pedidos" className="hover:text-yellow-300">
+          Mis Pedidos
         </Link>
         <Link href="/cliente/reservas" className="hover:text-yellow-300">
           Mis Reservas
         </Link>
-        <Link href="/seguridad" className="hover:text-yellow-300">
-          Seguridad
+        <Link href="/como-funciona" className="hover:text-yellow-300">
+          Cómo Funciona
         </Link>
       </div>
 
