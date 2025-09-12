@@ -1,34 +1,76 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useSupabase } from '@/lib/supabaseClient';
 
 export default function UsuariosAdminPage() {
+  const supabase = useSupabase();
   const [usuarios, setUsuarios] = useState([])
   const [cargando, setCargando] = useState(true)
+  const [filtro, setFiltro] = useState('todos') // nuevo: para filtrar por estado
 
-  // 🔹 Estados para modal de crear/editar
+  //Estados para modal de crear/editar
   const [modalAbierto, setModalAbierto] = useState(false)
   const [usuarioEditando, setUsuarioEditando] = useState(null)
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
     rol: 'cliente',
+    estado: 'pendiente', // nuevo: estado de validación
   })
 
-  // 📌 Obtener usuarios
+  //Obtener usuarios
   const fetchUsuarios = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false })
+    
+    // Filtrar por estado si no es 'todos'
+    if (filtro !== 'todos') {
+      query = query.eq('estado', filtro)
+    }
+
+    const { data, error } = await query
 
     if (error) {
-      console.error('❌ Error al cargar usuarios:', error)
+      console.error('Error al cargar usuarios:', error)
     } else {
       setUsuarios(data)
     }
     setCargando(false)
+  }
+
+  // Aprobar usuario
+  const aprobarUsuario = async (id) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ estado: 'aprobado' })
+      .eq('id', id)
+
+    if (error) {
+      console.error('❌ Error al aprobar usuario:', error)
+      alert('No se pudo aprobar el usuario')
+    } else {
+      alert('✅ Usuario aprobado correctamente')
+      fetchUsuarios()
+    }
+  }
+
+  // 📌 Rechazar usuario
+  const rechazarUsuario = async (id) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ estado: 'rechazado' })
+      .eq('id', id)
+
+    if (error) {
+      console.error('❌ Error al rechazar usuario:', error)
+      alert('No se pudo rechazar el usuario')
+    } else {
+      alert('✅ Usuario rechazado')
+      fetchUsuarios()
+    }
   }
 
   useEffect(() => {
@@ -69,6 +111,7 @@ export default function UsuariosAdminPage() {
           nombre: formData.nombre,
           email: formData.email,
           rol: formData.rol,
+          estado: formData.estado,
         })
         .eq('id', usuarioEditando.id)
       error = updateError
@@ -79,6 +122,7 @@ export default function UsuariosAdminPage() {
           nombre: formData.nombre,
           email: formData.email,
           rol: formData.rol,
+          estado: 'pendiente', // Nuevo usuario siempre pendiente
         },
       ])
       error = insertError
@@ -120,6 +164,34 @@ export default function UsuariosAdminPage() {
           ➕ Crear usuario
         </button>
       </div>
+      
+      {/* Filtros de estado */}
+      <div className="mb-6 flex gap-2">
+        <button
+          onClick={() => setFiltro('todos')}
+          className={`px-3 py-1 rounded ${filtro === 'todos' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+        >
+          Todos
+        </button>
+        <button
+          onClick={() => setFiltro('pendiente')}
+          className={`px-3 py-1 rounded ${filtro === 'pendiente' ? 'bg-yellow-500 text-white' : 'bg-gray-200'}`}
+        >
+          Pendientes
+        </button>
+        <button
+          onClick={() => setFiltro('aprobado')}
+          className={`px-3 py-1 rounded ${filtro === 'aprobado' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
+        >
+          Aprobados
+        </button>
+        <button
+          onClick={() => setFiltro('rechazado')}
+          className={`px-3 py-1 rounded ${filtro === 'rechazado' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}
+        >
+          Rechazados
+        </button>
+      </div>
 
       {cargando ? (
         <p className="text-center">Cargando usuarios...</p>
@@ -133,6 +205,7 @@ export default function UsuariosAdminPage() {
               <th className="p-2">Nombre</th>
               <th className="p-2">Email</th>
               <th className="p-2">Rol</th>
+              <th className="p-2">Estado</th>
               <th className="p-2">Fecha</th>
               <th className="p-2">Acciones</th>
             </tr>
@@ -145,9 +218,36 @@ export default function UsuariosAdminPage() {
                 <td className="p-2">{u.email}</td>
                 <td className="p-2 capitalize">{u.rol}</td>
                 <td className="p-2">
+                  <span className={
+                    `px-2 py-1 rounded text-white ${
+                      u.estado === 'aprobado' ? 'bg-green-500' : 
+                      u.estado === 'rechazado' ? 'bg-red-500' : 
+                      'bg-yellow-500'
+                    }`
+                  }>
+                    {u.estado || 'pendiente'}
+                  </span>
+                </td>
+                <td className="p-2">
                   {new Date(u.created_at).toLocaleDateString()}
                 </td>
                 <td className="p-2 flex gap-2 justify-center">
+                  {u.estado === 'pendiente' && (
+                    <>
+                      <button
+                        onClick={() => aprobarUsuario(u.id)}
+                        className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                      >
+                        ✓ Aprobar
+                      </button>
+                      <button
+                        onClick={() => rechazarUsuario(u.id)}
+                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        ✗ Rechazar
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => abrirEditar(u)}
                     className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -201,6 +301,18 @@ export default function UsuariosAdminPage() {
             >
               <option value="cliente">Cliente</option>
               <option value="admin">Admin</option>
+            </select>
+
+            <select
+              value={formData.estado}
+              onChange={(e) =>
+                setFormData({ ...formData, estado: e.target.value })
+              }
+              className="w-full mb-3 border p-2 rounded"
+            >
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobado">Aprobado</option>
+              <option value="rechazado">Rechazado</option>
             </select>
 
             <div className="flex justify-end gap-3">

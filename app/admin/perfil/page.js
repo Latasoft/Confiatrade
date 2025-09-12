@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useSupabase } from '@/lib/supabaseClient'
 import { useUser } from '@clerk/nextjs'
 
 export default function PerfilAdminPage() {
@@ -18,12 +18,14 @@ export default function PerfilAdminPage() {
     rol: '',
   })
 
+  const supabase = useSupabase()
+
   // 📌 Cargar perfil desde Supabase
   const fetchPerfil = async () => {
     if (!user) return
 
     const { data, error } = await supabase
-      .from('profiles')
+      .from('perfiles')
       .select('*')
       .eq('id', user.id)
       .single()
@@ -38,7 +40,7 @@ export default function PerfilAdminPage() {
 
   useEffect(() => {
     fetchPerfil()
-  }, [user])
+  }, [user, supabase])
 
   // 📌 Abrir modal
   const abrirEditar = () => {
@@ -54,7 +56,7 @@ export default function PerfilAdminPage() {
   // 📌 Guardar cambios
   const guardarPerfil = async () => {
     const { error } = await supabase
-      .from('profiles')
+      .from('perfiles')
       .update({
         nombre: formData.nombre,
         email: formData.email,
