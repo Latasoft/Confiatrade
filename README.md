@@ -1,9 +1,9 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 
-## Paso 1
+## Paso 1. Una vez esté clonado el github https://github.com/Latasoft/Confiatrade.git , ejecutar el siguiente comando en la terminal: 
 npm install
-## Paso 2
+## Paso 2. Ejecutar el siguiente comando en la terminal:
 New-Item .env.local -ItemType File
 ## Paso 3: Copiar en .env.local
 NEXT_PUBLIC_SUPABASE_URL=https://mbbernznprzbrwjkbybs.supabase.co
