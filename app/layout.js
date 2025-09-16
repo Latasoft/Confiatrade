@@ -2,8 +2,6 @@
 
 import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/ui/Footer'
 import { usePathname } from 'next/navigation'
 
 export default function RootLayout({ children }) {
@@ -32,9 +30,7 @@ function LayoutWrapper({ children }) {
   // Páginas que SÍ deben tener Navbar/Footer automático
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Temporalmente removido para debug */}
       <main className="flex-1">{children}</main>
-      <Footer />
     </div>
   )
 }
