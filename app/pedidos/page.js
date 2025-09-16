@@ -51,83 +51,17 @@ export default function PedidosPage() {
       fecha_entrega_estimada: '2025-09-15',
       proveedor: 'ChileGranos Ltd.',
       direccion_entrega: 'Concepción, Chile',
-      tracking: 'TRK123456789',
+      notas: 'Carga especial para exportación',
       cliente: 'Carlos López'
-    },
-    {
-      id: 4,
-      numero_pedido: 'PED-2025-004',
-      producto_nombre: 'Aceite de Oliva Extra Virgen',
-      cantidad: 100,
-      unidad: 'litros',
-      precio_total: 200000,
-      estado: 'entregado',
-      fecha_pedido: '2025-08-28',
-      fecha_entrega: '2025-09-05',
-      proveedor: 'Olivos del Valle',
-      direccion_entrega: 'La Serena, Chile',
-      cliente: 'Ana Martínez'
-    },
-    {
-      id: 5,
-      numero_pedido: 'PED-2025-005',
-      producto_nombre: 'Transporte de Quinoa',
-      cantidad: 1.5,
-      unidad: 'toneladas',
-      precio_total: 180000,
-      estado: 'confirmado',
-      fecha_pedido: '2025-09-12',
-      fecha_entrega_estimada: '2025-09-25',
-      proveedor: 'Andean Cargo',
-      direccion_entrega: 'Bogotá, Colombia',
-      notas: 'Transporte especializado',
-      cliente: 'Roberto Silva'
-    },
-    {
-      id: 6,
-      numero_pedido: 'PED-2025-006',
-      producto_nombre: 'Envío Marítimo',
-      cantidad: 1,
-      unidad: 'contenedor',
-      precio_total: 500000,
-      estado: 'pendiente',
-      fecha_pedido: '2025-09-11',
-      fecha_entrega_estimada: '2025-10-15',
-      proveedor: 'Pacific Shipping Lines',
-      direccion_entrega: 'Shanghai, China',
-      notas: 'Documentación aduanera incluida',
-      cliente: 'Empresa Exports Ltd.'
     }
   ]
 
-  const cancelarPedido = (pedidoId) => {
-    alert(`Pedido #${pedidoId} ha sido cancelado`)
-  }
-
+  // Filtrar pedidos según el estado seleccionado
   const pedidosFiltrados = pedidos.filter(pedido => {
     return filtroEstado === 'todos' || pedido.estado === filtroEstado
   })
 
-  const getEstadoColor = (estado) => {
-    const colores = {
-      'pendiente': 'bg-yellow-100 text-yellow-800',
-      'confirmado': 'bg-blue-100 text-blue-800',
-      'enviado': 'bg-purple-100 text-purple-800',
-      'entregado': 'bg-green-100 text-green-800',
-      'cancelado': 'bg-red-100 text-red-800'
-    }
-    return colores[estado] || 'bg-gray-100 text-gray-800'
-  }
-
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
-  // Estadísticas
+  // Calcular estadísticas
   const estadisticas = {
     total: pedidos.length,
     pendientes: pedidos.filter(p => p.estado === 'pendiente').length,
@@ -137,11 +71,38 @@ export default function PedidosPage() {
     valor_total: pedidos.reduce((sum, p) => sum + p.precio_total, 0)
   }
 
+  // Función para obtener el color del estado
+  const getEstadoColor = (estado) => {
+    const colores = {
+      pendiente: 'bg-yellow-100 text-yellow-800',
+      confirmado: 'bg-blue-100 text-blue-800',
+      enviado: 'bg-purple-100 text-purple-800',
+      entregado: 'bg-green-100 text-green-800'
+    }
+    return colores[estado] || 'bg-gray-100 text-gray-800'
+  }
+
+  // Función para formatear fecha
+  const formatearFecha = (fecha) => {
+    return new Date(fecha).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
+  // Función para formatear precio
+  const formatearPrecio = (precio) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP'
+    }).format(precio)
+  }
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50 min-h-screen">
       <Navbar />
-      <main className="flex-1">
-        <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-800 mb-4">
@@ -176,153 +137,82 @@ export default function PedidosPage() {
             </div>
             <div className="bg-green-50 p-4 rounded-lg text-center">
               <div className="text-2xl font-bold text-green-600">
-                ${(estadisticas.valor_total / 1000000).toFixed(1)}M
+                {formatearPrecio(estadisticas.valor_total)}
               </div>
               <div className="text-sm text-green-800">Valor Total</div>
             </div>
           </div>
 
           {/* Filtros */}
-          <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <div className="flex items-center gap-4">
-              <label className="font-medium text-gray-700">Filtrar por estado:</label>
-              <select
-                value={filtroEstado}
-                onChange={(e) => setFiltroEstado(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="todos">Todos</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="confirmado">Confirmado</option>
-                <option value="enviado">Enviado</option>
-                <option value="entregado">Entregado</option>
-                <option value="cancelado">Cancelado</option>
-              </select>
-            </div>
-
-            <div className="text-sm text-gray-500">
-              Mostrando {pedidosFiltrados.length} de {pedidos.length} pedidos
-            </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Filtrar por Estado:
+            </label>
+            <select
+              value={filtroEstado}
+              onChange={(e) => setFiltroEstado(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="todos">Todos los Estados</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="confirmado">Confirmados</option>
+              <option value="enviado">Enviados</option>
+              <option value="entregado">Entregados</option>
+            </select>
           </div>
 
-          {/* Lista de pedidos */}
-          <div className="space-y-6">
+          {/* Lista de Pedidos */}
+          <div className="space-y-4 mb-8">
             {pedidosFiltrados.map((pedido) => (
-              <div
-                key={pedido.id}
-                className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
-              >
-                {/* Header del pedido */}
-                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        Pedido #{pedido.numero_pedido}
+              <div key={pedido.id} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-2">
+                      <h3 className="text-lg font-semibold text-gray-800 mr-3">
+                        {pedido.numero_pedido}
                       </h3>
-                      <p className="text-sm text-gray-500">
-                        Cliente: {pedido.cliente} • Realizado el {formatearFecha(pedido.fecha_pedido)}
-                      </p>
-                    </div>
-                    <div className="mt-2 sm:mt-0">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEstadoColor(pedido.estado)}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getEstadoColor(pedido.estado)}`}>
                         {pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1)}
                       </span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Contenido del pedido */}
-                <div className="px-6 py-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Información del producto */}
-                    <div>
-                      <h4 className="font-semibold text-gray-800 mb-3">Información del Producto</h4>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Producto:</span>
-                          <span className="font-medium">{pedido.producto_nombre}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Cantidad:</span>
-                          <span className="font-medium">{pedido.cantidad} {pedido.unidad}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Proveedor:</span>
-                          <span className="font-medium">{pedido.proveedor}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Total:</span>
-                          <span className="font-bold text-green-600">${pedido.precio_total.toLocaleString()}</span>
-                        </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-600">
+                      <div>
+                        <span className="font-medium">Producto:</span> {pedido.producto_nombre}
+                      </div>
+                      <div>
+                        <span className="font-medium">Cantidad:</span> {pedido.cantidad} {pedido.unidad}
+                      </div>
+                      <div>
+                        <span className="font-medium">Proveedor:</span> {pedido.proveedor}
+                      </div>
+                      <div>
+                        <span className="font-medium">Cliente:</span> {pedido.cliente}
+                      </div>
+                      <div>
+                        <span className="font-medium">Entrega:</span> {pedido.direccion_entrega}
+                      </div>
+                      <div>
+                        <span className="font-medium">Fecha Pedido:</span> {formatearFecha(pedido.fecha_pedido)}
                       </div>
                     </div>
-
-                    {/* Información de entrega */}
-                    <div>
-                      <h4 className="font-semibold text-gray-800 mb-3">Información de Entrega</h4>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Dirección:</span>
-                          <span className="font-medium">{pedido.direccion_entrega}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Fecha estimada:</span>
-                          <span className="font-medium">
-                            {pedido.fecha_entrega_estimada ? formatearFecha(pedido.fecha_entrega_estimada) : 'Por definir'}
-                          </span>
-                        </div>
-                        {pedido.fecha_entrega && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Fecha de entrega:</span>
-                            <span className="font-medium text-green-600">{formatearFecha(pedido.fecha_entrega)}</span>
-                          </div>
-                        )}
-                        {pedido.tracking && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Tracking:</span>
-                            <span className="font-medium font-mono">{pedido.tracking}</span>
-                          </div>
-                        )}
+                    
+                    {pedido.notas && (
+                      <div className="mt-2 text-sm text-gray-500">
+                        <span className="font-medium">Notas:</span> {pedido.notas}
                       </div>
-                    </div>
+                    )}
                   </div>
-
-                  {/* Notas */}
-                  {pedido.notas && (
-                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                      <h5 className="font-medium text-blue-800 mb-1">Notas:</h5>
-                      <p className="text-blue-700 text-sm">{pedido.notas}</p>
+                  
+                  <div className="mt-4 lg:mt-0 lg:ml-6 text-right">
+                    <div className="text-2xl font-bold text-green-600">
+                      {formatearPrecio(pedido.precio_total)}
                     </div>
-                  )}
-
-                  {/* Acciones */}
-                  <div className="mt-4 flex gap-3">
-                    {pedido.estado === 'pendiente' && (
-                      <>
-                        <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
-                          Confirmar Pedido
-                        </button>
-                        <button
-                          onClick={() => cancelarPedido(pedido.id)}
-                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                        >
-                          Cancelar Pedido
-                        </button>
-                      </>
-                    )}
-                    {pedido.estado === 'confirmado' && (
-                      <button className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
-                        Marcar como Enviado
-                      </button>
-                    )}
-                    {pedido.tracking && (
-                      <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                        Rastrear Envío
-                      </button>
-                    )}
-                    <button className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                      Ver Detalles
-                    </button>
+                    <div className="text-sm text-gray-500">
+                      {pedido.fecha_entrega_estimada && 
+                        `Entrega: ${formatearFecha(pedido.fecha_entrega_estimada)}`
+                      }
+                    </div>
                   </div>
                 </div>
               </div>
@@ -332,23 +222,20 @@ export default function PedidosPage() {
           {/* Mensaje si no hay pedidos */}
           {pedidosFiltrados.length === 0 && (
             <div className="text-center py-12">
-              <div className="text-gray-400 text-6xl mb-4">📋</div>
+              <div className="text-gray-400 text-6xl mb-4">📦</div>
               <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                No hay pedidos
+                No se encontraron pedidos
               </h3>
-              <p className="text-gray-500 mb-6">
-                {filtroEstado === 'todos' 
-                  ? 'Aún no hay pedidos registrados en el sistema'
-                  : `No hay pedidos con estado "${filtroEstado}"`
-                }
+              <p className="text-gray-500">
+                No hay pedidos que coincidan con el filtro seleccionado
               </p>
             </div>
           )}
 
           {/* Información adicional */}
-          <div className="mt-12 bg-green-50 rounded-lg p-6">
+          <div className="bg-green-50 rounded-lg p-8 text-center">
             <h2 className="text-2xl font-bold text-green-800 mb-4">
-              Sistema de Gestión de Pedidos
+              Gestión Completa de Pedidos
             </h2>
             <p className="text-green-700 mb-4">
               Aquí puedes visualizar todos los pedidos realizados en la plataforma, desde productos agrícolas 
@@ -369,8 +256,7 @@ export default function PedidosPage() {
               </div>
             </div>
           </div>
-        </div>
-      </main>
+      </div>
       <Footer />
     </div>
   )

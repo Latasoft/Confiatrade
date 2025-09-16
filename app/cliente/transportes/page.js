@@ -130,7 +130,8 @@ export default function TransportesPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50 min-h-screen">
+      <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-4">
@@ -289,6 +290,7 @@ export default function TransportesPage() {
         <button className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
           Solicitar Cotización Personalizada
         </button>
+      </div>
       </div>
     </div>
   )

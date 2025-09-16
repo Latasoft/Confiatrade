@@ -30,6 +30,9 @@ export default function NavbarCliente() {
         <Link href="/como-funciona" className="hover:text-yellow-300">
           Cómo Funciona
         </Link>
+        <Link href="/sobre-nosotros" className="hover:text-yellow-300">
+          Sobre Nosotros
+        </Link>
       </div>
 
       {/* Login / Usuario */}

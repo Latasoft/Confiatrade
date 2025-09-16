@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { SignInButton, SignedOut, SignedIn, UserButton, useUser } from '@clerk/nextjs'
 import { useState } from 'react'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/ui/Footer'
 
 const transportes = [
   {
@@ -82,57 +84,7 @@ export default function ClienteHome() {
 
   return (
     <main className="flex flex-col min-h-screen">
-      {/* Header */}
-<header className="bg-green-500 text-white py-4 px-6 flex justify-between items-center">
-  {/* Logo */}
-  <div className="flex items-center">
-    <img src="/globe.svg" alt="Logo ConfiaTrade" className="w-10 h-10" />
-    <h1 className="text-3xl font-semibold ml-2">ConfiaTrade</h1>
-  </div>
-
-  {/* Menú de navegación */}
-  <nav className="flex gap-6 items-center">
-    {/* Módulos principales */}
-    <Link href="/transportes" className="text-white text-lg hover:text-yellow-300">
-      Transportes
-    </Link>
-    <Link href="/productos" className="text-white text-lg hover:text-yellow-300">
-      Productos
-    </Link>
-    <Link href="/pedidos" className="text-white text-lg hover:text-yellow-300">
-      Mis Pedidos
-    </Link>
-    <Link href="/perfil" className="text-white text-lg hover:text-yellow-300">
-      Perfil
-    </Link>
-
-    {/* Sección de ayuda/info */}
-    <Link href="/como-funciona" className="text-white text-lg hover:text-yellow-300">
-      Cómo Funciona
-    </Link>
-    <Link href="/sobre-nosotros" className="text-white text-lg hover:text-yellow-300">
-      Sobre Nosotros
-    </Link>
-  </nav>
-
-  {/* Botones de usuario */}
-  <div className="text-lg flex items-center gap-4">
-    <SignedOut>
-      <SignInButton>
-        <button className="text-white bg-blue-600 py-1 px-3 rounded-lg hover:bg-blue-700">
-          Iniciar Sesión
-        </button>
-      </SignInButton>
-    </SignedOut>
-    <SignedIn>
-      <span>
-        Hola, {user?.username || user?.fullName || user?.primaryEmailAddress?.emailAddress}
-      </span>
-      <UserButton />
-    </SignedIn>
-  </div>
-</header>
-
+      <Navbar />
 
       {/* Sección de bienvenida */}
       <section className="flex flex-col justify-center items-center p-6">
@@ -242,20 +194,7 @@ export default function ClienteHome() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-green-500 text-white py-4 px-6 mt-auto">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="text-sm">
-            <h3 className="font-semibold text-lg">Sobre ConfiaTrade</h3>
-            <p className="text-xs">
-              Plataforma colaborativa para el intercambio de productos a través del corredor bioceánico.
-            </p>
-          </div>
-        </div>
-        <div className="text-center text-xs mt-4">
-          © 2025 ConfiaTrade. Todos los derechos reservados.
-        </div>
-      </footer>
+      <Footer />
     </main>
   )
 }
