@@ -6,7 +6,7 @@ export default function NavbarCliente() {
     <nav className="bg-green-600 text-white px-6 py-4 flex justify-between items-center">
       {/* Logo */}
       <div className="flex items-center">
-        <img src="/logo.png" alt="Logo ConfiaTrade" className="w-10 h-10 mr-2" />
+        <img src="/globe.svg" alt="Logo ConfiaTrade" className="w-10 h-10 mr-2" />
         <span className="text-2xl font-bold">ConfiaTrade</span>
       </div>
 
