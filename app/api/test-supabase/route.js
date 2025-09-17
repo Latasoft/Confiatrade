@@ -4,13 +4,30 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+// Validar que las variables de entorno estén configuradas
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.warn('⚠️ Variables de entorno de Supabase no configuradas')
+}
+
+// Solo crear el cliente si tenemos las credenciales
+const supabaseAdmin = supabaseUrl && supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null
 
 export async function GET() {
   try {
     console.log('🔍 Probando conexión a Supabase...')
     console.log('URL:', supabaseUrl)
     console.log('Service Key configurada:', supabaseServiceKey ? 'Sí' : 'No')
+    
+    // Verificar si las credenciales están configuradas
+    if (!supabaseAdmin) {
+      return new Response(JSON.stringify({ 
+        error: 'Variables de entorno no configuradas',
+        message: 'NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY son requeridas',
+        hint: 'Configura las variables de entorno en .env.local'
+      }), { status: 500 })
+    }
     
     // Probar conexión básica
     const { data, error } = await supabaseAdmin
