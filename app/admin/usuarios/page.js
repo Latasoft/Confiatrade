@@ -1,10 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSupabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function UsuariosAdminPage() {
-  const supabase = useSupabase();
   const [usuarios, setUsuarios] = useState([])
   const [cargando, setCargando] = useState(true)
   const [filtro, setFiltro] = useState('todos') // nuevo: para filtrar por estado
@@ -16,15 +15,15 @@ export default function UsuariosAdminPage() {
     nombre: '',
     email: '',
     rol: 'cliente',
-    estado: 'pendiente', // nuevo: estado de validación
+    estado: 'activo', // nuevo: estado de validación
   })
 
   //Obtener usuarios
   const fetchUsuarios = async () => {
     let query = supabase
-      .from('profiles')
+      .from('users')
       .select('*')
-      .order('created_at', { ascending: false })
+      .order('fecha_registro', { ascending: false })
     
     // Filtrar por estado si no es 'todos'
     if (filtro !== 'todos') {
@@ -44,8 +43,8 @@ export default function UsuariosAdminPage() {
   // Aprobar usuario
   const aprobarUsuario = async (id) => {
     const { error } = await supabase
-      .from('profiles')
-      .update({ estado: 'aprobado' })
+      .from('users')
+      .update({ estado: 'activo' })
       .eq('id', id)
 
     if (error) {
@@ -60,8 +59,8 @@ export default function UsuariosAdminPage() {
   // 📌 Rechazar usuario
   const rechazarUsuario = async (id) => {
     const { error } = await supabase
-      .from('profiles')
-      .update({ estado: 'rechazado' })
+      .from('users')
+      .update({ estado: 'inactivo' })
       .eq('id', id)
 
     if (error) {
@@ -106,7 +105,7 @@ export default function UsuariosAdminPage() {
     if (usuarioEditando) {
       // Editar
       const { error: updateError } = await supabase
-        .from('profiles')
+        .from('users')
         .update({
           nombre: formData.nombre,
           email: formData.email,
@@ -117,12 +116,13 @@ export default function UsuariosAdminPage() {
       error = updateError
     } else {
       // Crear
-      const { error: insertError } = await supabase.from('profiles').insert([
+      const { error: insertError } = await supabase.from('users').insert([
         {
           nombre: formData.nombre,
           email: formData.email,
           rol: formData.rol,
-          estado: 'pendiente', // Nuevo usuario siempre pendiente
+          estado: 'activo', // Nuevo usuario activo por defecto
+          clerk_id: `manual_${Date.now()}`, // ID temporal para usuarios creados manualmente
         },
       ])
       error = insertError
@@ -142,7 +142,7 @@ export default function UsuariosAdminPage() {
   const eliminarUsuario = async (id) => {
     if (!confirm('¿Seguro que deseas eliminar este usuario?')) return
 
-    const { error } = await supabase.from('profiles').delete().eq('id', id)
+    const { error } = await supabase.from('users').delete().eq('id', id)
 
     if (error) {
       console.error('❌ Error al eliminar usuario:', error)

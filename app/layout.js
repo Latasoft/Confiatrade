@@ -1,6 +1,7 @@
 'use client'
 
 import { ClerkProvider } from '@clerk/nextjs'
+import { Toaster } from 'react-hot-toast'
 import './globals.css'
 import { usePathname } from 'next/navigation'
 
@@ -10,6 +11,7 @@ export default function RootLayout({ children }) {
       <html lang="es">
         <body>
           <LayoutWrapper>{children}</LayoutWrapper>
+          <Toaster position="top-right" />
         </body>
       </html>
     </ClerkProvider>

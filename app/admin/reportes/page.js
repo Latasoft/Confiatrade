@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSupabase } from '@/lib/supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 import {
   PieChart,
   Pie,
@@ -23,6 +23,7 @@ export default function ReportesAdminPage() {
     totalUsuarios: 0,
     totalClientes: 0,
     totalAdmins: 0,
+    totalProductos: 0,
     totalEnvios: 0,
     enviosEnProceso: 0,
     totalPagos: 0,
@@ -66,63 +67,63 @@ export default function ReportesAdminPage() {
     return fechaInicio
   }
 
-  // 📌 Cargar estadísticas desde Supabase
-  const supabase = useSupabase()
-
   const fetchStats = async () => {
     try {
       const fechaInicio = obtenerFechaInicioPeriodo()
       
       // Usuarios
-      const { data: usuarios } = await supabase.from('perfiles').select('*')
+      const { data: usuarios } = await supabase.from('users').select('*')
       const totalUsuarios = usuarios?.length || 0
       const totalClientes = usuarios?.filter((u) => u.rol === 'cliente').length || 0
       const totalAdmins = usuarios?.filter((u) => u.rol === 'admin').length || 0
 
-      // Envíos
-      const { data: envios } = await supabase.from('envios').select('*')
-      const totalEnvios = envios?.length || 0
-      const enviosEnProceso = envios?.filter(e => ['en_transito', 'preparando', 'consolidando'].includes(e.estado)).length || 0
+      // Productos
+      const { data: productos } = await supabase.from('productos').select('*')
+      const totalProductos = productos?.length || 0
+
+      // Pedidos (como representación de envíos)
+      const { data: pedidos } = await supabase.from('pedidos').select('*')
+      const totalEnvios = pedidos?.length || 0
+      const enviosEnProceso = pedidos?.filter(e => ['pendiente', 'confirmado', 'enviado'].includes(e.estado)).length || 0
 
       // Pagos
       const { data: pagos } = await supabase.from('pagos').select('*')
       const totalPagos = pagos?.length || 0
       const montoTotalPagos = pagos?.reduce((total, pago) => total + parseFloat(pago.monto || 0), 0) || 0
 
-      // Conflictos
-      const { data: conflictos } = await supabase.from('conflictos').select('*')
-      const conflictosActivos = conflictos?.filter(c => c.estado === 'activo').length || 0
-      const conflictosResueltos = conflictos?.filter(c => c.estado === 'resuelto').length || 0
+      // Reservas (como representación de conflictos)
+      const { data: reservas } = await supabase.from('reservas').select('*')
+      const conflictosActivos = reservas?.filter(c => c.estado === 'pendiente').length || 0
+      const conflictosResueltos = reservas?.filter(c => c.estado === 'confirmada').length || 0
 
-      // Agrupamos envíos por estado
-      const estados = ['pendiente', 'aprobado', 'en_transito', 'entregado', 'rechazado']
+      // Agrupamos pedidos por estado
+      const estados = ['pendiente', 'confirmado', 'enviado', 'entregado', 'cancelado']
       const enviosPorEstado = estados.map(estado => ({
         name: estado.charAt(0).toUpperCase() + estado.slice(1).replace('_', ' '),
-        value: envios?.filter(e => e.estado === estado).length || 0,
+        value: pedidos?.filter(e => e.estado === estado).length || 0,
         color: colores[estado] || '#CBD5E1'
       }))
 
       // Agrupamos pagos por estado
-      const estadosPago = ['pendiente', 'aprobado', 'rechazado']
+      const estadosPago = ['pendiente', 'pagado', 'fallido']
       const pagosPorEstado = estadosPago.map(estado => ({
         name: estado.charAt(0).toUpperCase() + estado.slice(1),
         value: pagos?.filter(p => p.estado === estado).length || 0,
         color: colores[estado] || '#CBD5E1'
       }))
 
-      // Agrupamos conflictos por tipo
-      const tiposConflicto = ['producto_danado', 'retraso_envio', 'error_facturacion', 'servicio_incompleto']
-      const conflictosPorTipo = tiposConflicto.map(tipo => {
+      // Agrupamos reservas por tipo de servicio
+      const tiposServicio = ['transporte', 'producto', 'mixto']
+      const conflictosPorTipo = tiposServicio.map(tipo => {
         let nombre = tipo
         switch (tipo) {
-          case 'producto_danado': nombre = 'Producto dañado'; break
-          case 'retraso_envio': nombre = 'Retraso en envío'; break
-          case 'error_facturacion': nombre = 'Error de facturación'; break
-          case 'servicio_incompleto': nombre = 'Servicio incompleto'; break
+          case 'transporte': nombre = 'Transporte'; break
+          case 'producto': nombre = 'Productos'; break
+          case 'mixto': nombre = 'Servicios mixtos'; break
         }
         return {
           name: nombre,
-          value: conflictos?.filter(c => c.tipo === tipo).length || 0,
+          value: reservas?.filter(c => c.tipo_servicio === tipo).length || 0,
           color: '#' + Math.floor(Math.random()*16777215).toString(16) // Color aleatorio
         }
       })
@@ -131,6 +132,7 @@ export default function ReportesAdminPage() {
         totalUsuarios,
         totalClientes,
         totalAdmins,
+        totalProductos,
         totalEnvios,
         enviosEnProceso,
         totalPagos,
@@ -210,10 +212,10 @@ export default function ReportesAdminPage() {
             </div>
 
             <div className="bg-white shadow-md rounded-lg p-6 text-center">
-              <h2 className="text-xl font-semibold">Conflictos</h2>
-              <p className="text-2xl font-bold">{stats.conflictosActivos}</p>
+              <h2 className="text-xl font-semibold">Productos</h2>
+              <p className="text-2xl font-bold">{stats.totalProductos}</p>
               <p className="text-sm text-gray-500">
-                {stats.conflictosResueltos} resueltos
+                {stats.conflictosActivos} reservas activas
               </p>
             </div>
           </div>
@@ -257,7 +259,7 @@ export default function ReportesAdminPage() {
           </div>
           
           <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Conflictos por Tipo</h2>
+            <h2 className="text-xl font-semibold mb-4">Reservas por Tipo de Servicio</h2>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie

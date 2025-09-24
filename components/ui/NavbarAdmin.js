@@ -11,6 +11,7 @@ export default function NavbarAdmin() {
 
   const links = [
     { href: '/admin', label: 'Panel' }, // experiencias creadas
+    { href: '/admin/productos', label: 'Productos' }, // 👉 nuevo
     { href: '/admin/reservas', label: 'Reservas' }, // 👉 nuevo
     { href: '/admin/usuarios', label: 'Usuarios' },
     { href: '/admin/reportes', label: 'Reportes' },

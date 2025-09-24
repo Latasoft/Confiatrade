@@ -1,32 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSupabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from 'react-hot-toast';
 
 export default function EnviosPage() {
   const [envios, setEnvios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [envioSeleccionado, setEnvioSeleccionado] = useState(null);
+  const [filtro, setFiltro] = useState('todos'); // todos, pendiente, en_transito, entregado
   const [mostrarMapa, setMostrarMapa] = useState(false);
-  const [filtro, setFiltro] = useState('todos'); // todos, en_transito, entregado, etc.
-
-  const supabase = useSupabase();
 
   useEffect(() => {
     fetchEnvios();
-  }, [filtro, supabase]);
+  }, [filtro]);
 
   async function fetchEnvios() {
     try {
       setLoading(true);
+      // Usar la tabla de envíos directamente
       let query = supabase
         .from('envios')
-        .select(`
-          *,
-          solicitudes_carga(*),
-          cargas_consolidadas(*)
-        `);
+        .select('*');
       
       // Aplicar filtro si no es 'todos'
       if (filtro !== 'todos') {
@@ -55,11 +50,12 @@ export default function EnviosPage() {
 
   function getEstadoColor(estado) {
     switch (estado) {
-      case 'en_preparacion': return 'bg-yellow-500';
+      case 'pendiente': return 'bg-yellow-500';
+      case 'en_preparacion': return 'bg-orange-500';
       case 'en_transito': return 'bg-blue-500';
       case 'entregado': return 'bg-green-500';
-      case 'retrasado': return 'bg-orange-500';
-      case 'incidencia': return 'bg-red-500';
+      case 'retrasado': return 'bg-red-500';
+      case 'incidencia': return 'bg-red-700';
       default: return 'bg-gray-500';
     }
   }
@@ -93,6 +89,18 @@ export default function EnviosPage() {
     }
   }
 
+  function formatearFecha(fechaStr) {
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleDateString('es-CO');
+  }
+
+  function formatearPrecio(precio) {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP'
+    }).format(precio);
+  }
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Seguimiento de Envíos</h1>
@@ -106,34 +114,28 @@ export default function EnviosPage() {
           Todos
         </button>
         <button 
+          onClick={() => setFiltro('pendiente')} 
+          className={`px-4 py-2 rounded ${filtro === 'pendiente' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
+        >
+          Pendientes
+        </button>
+        <button 
           onClick={() => setFiltro('en_preparacion')} 
           className={`px-4 py-2 rounded ${filtro === 'en_preparacion' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
         >
-          En preparación
+          En Preparación
         </button>
         <button 
           onClick={() => setFiltro('en_transito')} 
           className={`px-4 py-2 rounded ${filtro === 'en_transito' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
         >
-          En tránsito
+          En Tránsito
         </button>
         <button 
           onClick={() => setFiltro('entregado')} 
           className={`px-4 py-2 rounded ${filtro === 'entregado' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
         >
           Entregados
-        </button>
-        <button 
-          onClick={() => setFiltro('retrasado')} 
-          className={`px-4 py-2 rounded ${filtro === 'retrasado' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
-        >
-          Retrasados
-        </button>
-        <button 
-          onClick={() => setFiltro('incidencia')} 
-          className={`px-4 py-2 rounded ${filtro === 'incidencia' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
-        >
-          Con incidencias
         </button>
       </div>
 
@@ -172,7 +174,7 @@ export default function EnviosPage() {
                       onClick={() => verDetalles(envio)}
                     >
                       <td className="p-2">{envio.id}</td>
-                      <td className="p-2">{envio.carga_consolidada_id ? 'Consolidado' : 'Individual'}</td>
+                      <td className="p-2">{envio.tipo_servicio || 'Individual'}</td>
                       <td className="p-2">{envio.origen}</td>
                       <td className="p-2">{envio.destino}</td>
                       <td className="p-2">
