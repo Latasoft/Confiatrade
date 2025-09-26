@@ -4,13 +4,16 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from 'react-hot-toast'
 import './globals.css'
 import { usePathname } from 'next/navigation'
+import RoleBasedRedirect from '@/components/RoleBasedRedirect'
 
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="es">
         <body>
-          <LayoutWrapper>{children}</LayoutWrapper>
+          <RoleBasedRedirect>
+            <LayoutWrapper>{children}</LayoutWrapper>
+          </RoleBasedRedirect>
           <Toaster position="top-right" />
         </body>
       </html>
@@ -24,8 +27,9 @@ function LayoutWrapper({ children }) {
   // Páginas que NO deben tener Navbar/Footer automático (ya tienen su propio layout)
   const isClientePage = pathname?.startsWith('/cliente')
   const isAdminPage = pathname?.startsWith('/admin')
+  const isTestPage = pathname?.startsWith('/test') || pathname?.startsWith('/diagnostic') || pathname?.startsWith('/admin-test')
   
-  if (isClientePage || isAdminPage) {
+  if (isClientePage || isAdminPage || isTestPage) {
     return <>{children}</>
   }
   
