@@ -1,13 +1,67 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { productosService } from '@/lib/webpayServices'
+import { toast } from 'react-hot-toast'
 
 export default function ProductosPage() {
   const [filtroCategoria, setFiltroCategoria] = useState('todos')
   const [searchTerm, setSearchTerm] = useState('')
+  const [productos, setProductos] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  // Productos estáticos
-  const productos = [
+  // Cargar productos desde Supabase
+  useEffect(() => {
+    cargarProductos()
+  }, [])
+
+  const cargarProductos = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      console.log('🚀 Iniciando carga de productos...')
+      const data = await productosService.getProductos()
+      console.log('📦 Datos recibidos:', data)
+      
+      setProductos(data)
+      
+      if (data && data.length === 0) {
+        toast.info('No hay productos disponibles')
+      } else if (data && data.length > 0) {
+        toast.success(`✅ ${data.length} productos cargados desde Supabase`)
+        console.log('✅ Productos establecidos en estado:', data)
+      }
+    } catch (error) {
+      console.error('❌ Error cargando productos:', error)
+      setError(error.message)
+      toast.error('❌ Error: ' + error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Formatear datos de Supabase
+  const formatearProducto = (producto) => {
+    return {
+      id: producto.id,
+      nombre: producto.nombre || 'Producto',
+      descripcion: producto.descripcion || 'Sin descripción',
+      precio: producto.precio || 0,
+      ubicacion: producto.ubicacion || 'Ubicación no especificada',
+      categoria: producto.categoria || 'sin-categoria',
+      disponible: producto.activo || false,
+      imagen: producto.imagen_url || 'https://via.placeholder.com/300x200?text=Producto',
+      proveedor: producto.proveedor || 'Proveedor',
+      stock: producto.stock || 0
+    }
+  }
+
+  const productosFormateados = productos.map(formatearProducto)
+
+  // Categorías disponibles
+  const categorias = ['todos', ...new Set(productosFormateados.map(p => p.categoria))]
     {
       id: 1,
       nombre: 'Aceite de Girasol',
