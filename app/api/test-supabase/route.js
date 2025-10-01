@@ -1,62 +1,138 @@
-// Test de conexión a Supabase
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-// Validar que las variables de entorno estén configuradas
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.warn('⚠️ Variables de entorno de Supabase no configuradas')
-}
-
-// Solo crear el cliente si tenemos las credenciales
-const supabaseAdmin = supabaseUrl && supabaseServiceKey 
-  ? createClient(supabaseUrl, supabaseServiceKey)
-  : null
+import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabaseClient';
 
 export async function GET() {
   try {
-    console.log('🔍 Probando conexión a Supabase...')
-    console.log('URL:', supabaseUrl)
-    console.log('Service Key configurada:', supabaseServiceKey ? 'Sí' : 'No')
+    console.log('🔍 Iniciando prueba de conexión con Supabase...');
     
-    // Verificar si las credenciales están configuradas
-    if (!supabaseAdmin) {
-      return new Response(JSON.stringify({ 
-        error: 'Variables de entorno no configuradas',
-        message: 'NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY son requeridas',
-        hint: 'Configura las variables de entorno en .env.local'
-      }), { status: 500 })
+    // Test 1: Verificar configuración
+    const config = {
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Configurada' : 'No configurada'
+    };
+    
+    console.log('📋 Configuración:', config);
+
+    // Test 2: Conectividad básica
+    const { data: connectionTest, error: connectionError } = await supabase
+      .from('productos')
+      .select('count', { count: 'exact', head: true });
+
+    if (connectionError) {
+      console.error('❌ Error de conexión:', connectionError);
+      return NextResponse.json({
+        success: false,
+        error: 'Error de conexión a Supabase',
+        details: connectionError,
+        config
+      }, { status: 500 });
     }
-    
-    // Probar conexión básica
-    const { data, error } = await supabaseAdmin
-      .from('users')
-      .select('count', { count: 'exact', head: true })
-    
-    if (error) {
-      console.error('❌ Error al conectar con Supabase:', error)
-      return new Response(JSON.stringify({ 
-        error: error.message,
-        code: error.code,
-        hint: error.hint,
-        details: error.details 
-      }), { status: 500 })
+
+    console.log('✅ Conexión exitosa');
+
+    // Test 3: Verificar tablas
+    const tests = [];
+
+    // Test productos
+    try {
+      const { data: productos, error: errorProductos } = await supabase
+        .from('productos')
+        .select('*')
+        .limit(1);
+      
+      tests.push({
+        tabla: 'productos',
+        success: !errorProductos,
+        error: errorProductos?.message,
+        datos: productos?.length || 0
+      });
+    } catch (error) {
+      tests.push({
+        tabla: 'productos',
+        success: false,
+        error: error.message
+      });
     }
-    
-    console.log('✅ Conexión exitosa a Supabase')
-    return new Response(JSON.stringify({ 
-      success: true, 
-      message: 'Conexión exitosa a Supabase',
-      count: data 
-    }), { status: 200 })
-    
-  } catch (err) {
-    console.error('❌ Error inesperado:', err)
-    return new Response(JSON.stringify({ 
-      error: 'Error de conexión', 
-      message: err.message,
-      stack: err.stack 
-    }), { status: 500 })
+
+    // Test ordenes
+    try {
+      const { data: ordenes, error: errorOrdenes } = await supabase
+        .from('ordenes')
+        .select('*')
+        .limit(1);
+      
+      tests.push({
+        tabla: 'ordenes',
+        success: !errorOrdenes,
+        error: errorOrdenes?.message,
+        datos: ordenes?.length || 0
+      });
+    } catch (error) {
+      tests.push({
+        tabla: 'ordenes',
+        success: false,
+        error: error.message
+      });
+    }
+
+    // Test orden_items
+    try {
+      const { data: items, error: errorItems } = await supabase
+        .from('orden_items')
+        .select('*')
+        .limit(1);
+      
+      tests.push({
+        tabla: 'orden_items',
+        success: !errorItems,
+        error: errorItems?.message,
+        datos: items?.length || 0
+      });
+    } catch (error) {
+      tests.push({
+        tabla: 'orden_items',
+        success: false,
+        error: error.message
+      });
+    }
+
+    // Test transacciones_pago
+    try {
+      const { data: transacciones, error: errorTransacciones } = await supabase
+        .from('transacciones_pago')
+        .select('*')
+        .limit(1);
+      
+      tests.push({
+        tabla: 'transacciones_pago',
+        success: !errorTransacciones,
+        error: errorTransacciones?.message,
+        datos: transacciones?.length || 0
+      });
+    } catch (error) {
+      tests.push({
+        tabla: 'transacciones_pago',
+        success: false,
+        error: error.message
+      });
+    }
+
+    console.log('📊 Resultados de pruebas:', tests);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Pruebas completadas',
+      config,
+      tests,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('💥 Error general:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Error general en las pruebas',
+      details: error.message
+    }, { status: 500 });
   }
 }

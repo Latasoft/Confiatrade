@@ -1,101 +1,99 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/ui/Footer'
+import CartWidget from '@/components/CartWidget'
+import { useCart } from '@/lib/CartContext'
+import { utilidadesService } from '@/lib/webpayServices'
 
 export default function ProductosPage() {
   const [filtroCategoria, setFiltroCategoria] = useState('todos')
   const [searchTerm, setSearchTerm] = useState('')
+  const [productos, setProductos] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  
+  const { addItem, getItemQuantity } = useCart()
 
-  // Productos estáticos
-  const productos = [
-    {
-      id: 1,
-      nombre: 'Aceite de Girasol',
-      descripcion: '200 litros de aceite de girasol de alta calidad.',
-      precio: 120000,
-      ubicacion: 'Mendoza, Argentina',
-      categoria: 'aceites',
-      disponible: true,
-      imagen: 'https://via.placeholder.com/300x200?text=Aceite+de+Girasol',
-      proveedor: 'AgroMendoza S.A.',
-      stock: 50
-    },
-    {
-      id: 2,
-      nombre: 'Trigo Premium',
-      descripcion: '3 toneladas de trigo de primera calidad.',
-      precio: 150000,
-      ubicacion: 'Buenos Aires, Argentina',
-      categoria: 'cereales',
-      disponible: true,
-      imagen: 'https://via.placeholder.com/300x200?text=Trigo+Premium',
-      proveedor: 'Cereales del Sur',
-      stock: 25
-    },
-    {
-      id: 3,
-      nombre: 'Cereales Mixtos',
-      descripcion: '500kg de cereales variados para exportación.',
-      precio: 80000,
-      ubicacion: 'Concepción, Chile',
-      categoria: 'cereales',
-      disponible: true,
-      imagen: 'https://via.placeholder.com/300x200?text=Cereales+Mixtos',
-      proveedor: 'ChileGranos Ltd.',
-      stock: 75
-    },
-    {
-      id: 4,
-      nombre: 'Aceite de Oliva Extra Virgen',
-      descripcion: '100 litros de aceite de oliva premium.',
-      precio: 200000,
-      ubicacion: 'Santiago, Chile',
-      categoria: 'aceites',
-      disponible: true,
-      imagen: 'https://via.placeholder.com/300x200?text=Aceite+Oliva',
-      proveedor: 'Olivos del Valle',
-      stock: 30
-    },
-    {
-      id: 5,
-      nombre: 'Quinoa Orgánica',
-      descripcion: '1 tonelada de quinoa orgánica certificada.',
-      precio: 250000,
-      ubicacion: 'Altiplano, Bolivia',
-      categoria: 'cereales',
-      disponible: true,
-      imagen: 'https://via.placeholder.com/300x200?text=Quinoa+Organica',
-      proveedor: 'Altiplano Foods',
-      stock: 15
-    },
-    {
-      id: 6,
-      nombre: 'Miel de Abeja Pura',
-      descripcion: '50kg de miel de abeja 100% natural.',
-      precio: 75000,
-      ubicacion: 'Valdivia, Chile',
-      categoria: 'otros',
-      disponible: true,
-      imagen: 'https://via.placeholder.com/300x200?text=Miel+Pura',
-      proveedor: 'Apícola del Sur',
-      stock: 40
+  // Cargar productos desde la API
+  useEffect(() => {
+    fetchProductos()
+  }, [])
+
+  const fetchProductos = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/productos?activo=true')
+      if (!response.ok) {
+        throw new Error('Error al cargar productos')
+      }
+      const data = await response.json()
+      setProductos(data.productos || [])
+    } catch (err) {
+      console.error('Error al cargar productos:', err)
+      setError(err.message)
+      // Fallback a productos estáticos si hay error
+      setProductos([
+        {
+          id: 1,
+          nombre: 'Aceite de Girasol',
+          descripcion: '200 litros de aceite de girasol de alta calidad.',
+          precio: 120000,
+          categoria: 'aceites',
+          activo: true
+        },
+        {
+          id: 2,
+          nombre: 'Trigo Premium',
+          descripcion: '3 toneladas de trigo de primera calidad.',
+          precio: 150000,
+          categoria: 'cereales',
+          activo: true
+        },
+        {
+          id: 3,
+          nombre: 'Cereales Mixtos',
+          descripcion: '500kg de cereales variados para exportación.',
+          precio: 80000,
+          categoria: 'cereales',
+          activo: true
+        }
+      ])
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
 
-  const handleSolicitar = (producto) => {
-    alert(`Solicitud enviada para ${producto.nombre}`)
+  const handleAgregarCarrito = (producto) => {
+    addItem(producto)
+    // Opcional: mostrar notificación
+    alert(`${producto.nombre} agregado al carrito`)
   }
 
   const productosFiltrados = productos.filter(producto => {
     const matchCategoria = filtroCategoria === 'todos' || producto.categoria === filtroCategoria
     const matchSearch = producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
                        producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchCategoria && matchSearch
+    return matchCategoria && matchSearch && producto.activo
   })
 
   const categorias = ['todos', 'aceites', 'cereales', 'otros']
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando productos...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -110,6 +108,11 @@ export default function ProductosPage() {
             <p className="text-gray-600 text-lg">
               Descubre nuestra amplia gama de productos agrícolas disponibles para comercio internacional
             </p>
+            {error && (
+              <div className="mt-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+                Mostrando productos de ejemplo debido a: {error}
+              </div>
+            )}
           </div>
 
           {/* Filtros */}
@@ -151,7 +154,7 @@ export default function ProductosPage() {
                 {/* Imagen */}
                 <div className="h-48 bg-gray-200 overflow-hidden">
                   <img
-                    src={producto.imagen}
+                    src={producto.imagen_url || `https://via.placeholder.com/300x200?text=${encodeURIComponent(producto.nombre)}`}
                     alt={producto.nombre}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
@@ -164,11 +167,11 @@ export default function ProductosPage() {
                       {producto.nombre}
                     </h3>
                     <span className={`px-2 py-1 rounded-full text-xs ${
-                      producto.disponible 
+                      producto.activo 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {producto.disponible ? 'Disponible' : 'Agotado'}
+                      {producto.activo ? 'Disponible' : 'Agotado'}
                     </span>
                   </div>
 
@@ -177,10 +180,12 @@ export default function ProductosPage() {
                   </p>
 
                   <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-500">
-                      <span className="font-medium">Ubicación:</span>
-                      <span className="ml-1">{producto.ubicacion}</span>
-                    </div>
+                    {producto.ubicacion && (
+                      <div className="flex items-center text-sm text-gray-500">
+                        <span className="font-medium">Ubicación:</span>
+                        <span className="ml-1">{producto.ubicacion}</span>
+                      </div>
+                    )}
                     {producto.proveedor && (
                       <div className="flex items-center text-sm text-gray-500">
                         <span className="font-medium">Proveedor:</span>
@@ -190,26 +195,33 @@ export default function ProductosPage() {
                     {producto.stock && (
                       <div className="flex items-center text-sm text-gray-500">
                         <span className="font-medium">Stock:</span>
-                        <span className="ml-1">{producto.stock} unidades</span>
+                        <span className="ml-1">{producto.stock} {producto.unidad || 'unidades'}</span>
                       </div>
                     )}
                   </div>
 
                   <div className="flex justify-between items-center">
                     <div className="text-2xl font-bold text-green-600">
-                      ${producto.precio.toLocaleString()}
+                      {utilidadesService.formatearPrecio(producto.precio)}
                     </div>
-                    <button
-                      onClick={() => handleSolicitar(producto)}
-                      disabled={!producto.disponible}
-                      className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                        producto.disponible
-                          ? 'bg-green-600 text-white hover:bg-green-700'
-                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      }`}
-                    >
-                      {producto.disponible ? 'Solicitar' : 'No Disponible'}
-                    </button>
+                    <div className="flex space-x-2">
+                      {getItemQuantity(producto.id) > 0 && (
+                        <span className="px-3 py-2 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium">
+                          En carrito: {getItemQuantity(producto.id)}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => handleAgregarCarrito(producto)}
+                        disabled={!producto.activo}
+                        className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                          producto.activo
+                            ? 'bg-green-600 text-white hover:bg-green-700'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                      >
+                        {producto.activo ? 'Agregar al Carrito' : 'No Disponible'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -245,6 +257,7 @@ export default function ProductosPage() {
         </div>
       </main>
       <Footer />
+      <CartWidget />
     </div>
   )
 }

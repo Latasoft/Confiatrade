@@ -17,7 +17,7 @@ export default function RoleBasedRedirect({ children }) {
         if (isAdmin) {
           router.replace('/admin')
         } else if (isClient) {
-          router.replace('/cliente')
+          router.replace('/productos') // Redirigir clientes a productos en lugar de /cliente
         }
       }
       
@@ -28,7 +28,7 @@ export default function RoleBasedRedirect({ children }) {
       
       // Si es cliente intentando acceder a rutas de admin
       if (isClient && currentPath.startsWith('/admin')) {
-        router.replace('/cliente')
+        router.replace('/productos') // Redirigir clientes a productos en lugar de /cliente
       }
     }
   }, [profile, loading, isAdmin, isClient, router])
