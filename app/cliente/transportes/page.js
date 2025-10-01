@@ -10,7 +10,7 @@ export default function TransportesPage() {
   const transportes = [
     {
       id: 1,
-      nombre: 'Transporte de Aceite de Girasol',
+      nombre: 'Estático',
       descripcion: 'Envío de 200 litros de aceite de girasol desde Mendoza a Santiago.',
       precio: 120000,
       origen: 'Mendoza, Argentina',
