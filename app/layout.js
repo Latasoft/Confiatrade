@@ -5,16 +5,19 @@ import { Toaster } from 'react-hot-toast'
 import './globals.css'
 import { usePathname } from 'next/navigation'
 import RoleBasedRedirect from '@/components/RoleBasedRedirect'
+import { CartProvider } from '@/lib/CartContext'
 
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="es">
         <body>
-          <RoleBasedRedirect>
-            <LayoutWrapper>{children}</LayoutWrapper>
-          </RoleBasedRedirect>
-          <Toaster position="top-right" />
+          <CartProvider>
+            <RoleBasedRedirect>
+              <LayoutWrapper>{children}</LayoutWrapper>
+            </RoleBasedRedirect>
+            <Toaster position="top-right" />
+          </CartProvider>
         </body>
       </html>
     </ClerkProvider>

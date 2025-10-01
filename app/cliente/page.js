@@ -2,6 +2,7 @@
 
 import { useProfile } from '@/lib/useProfile';
 import Link from 'next/link';
+import NavbarCliente from '@/components/ui/NavbarCliente';
 
 export default function ClienteDashboard() {
   const { profile, loading } = useProfile();
@@ -15,7 +16,9 @@ export default function ClienteDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">      
+    <div className="min-h-screen bg-gray-50">
+      <NavbarCliente />
+      
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="px-4 py-6 sm:px-0">

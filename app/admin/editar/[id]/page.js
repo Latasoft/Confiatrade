@@ -5,8 +5,11 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 
 export default function EditarExperiencia() {
-  const { id } = useParams()
+  const params = useParams()
   const router = useRouter()
+  
+  // Obtener ID de manera segura
+  const id = params?.id ? String(params.id) : null
 
   const [titulo, setTitulo] = useState('')
   const [descripcion, setDescripcion] = useState('')
@@ -19,6 +22,12 @@ export default function EditarExperiencia() {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Validar que tenemos un ID válido antes de hacer la consulta
+      if (!id) {
+        setMensaje('❌ ID de experiencia inválido')
+        return
+      }
+
       const { data, error } = await supabase
         .from('experiencias')
         .select('*')
@@ -32,10 +41,13 @@ export default function EditarExperiencia() {
         setPrecio(data.precio)
         setEstado(data.estado || 'publicado')
         setImagen(data.imagen || '')
+      } else if (error) {
+        console.error('Error al cargar experiencia:', error)
+        setMensaje('❌ Error al cargar la experiencia')
       }
     }
 
-    if (id) fetchData()
+    fetchData()
   }, [id])
 
   const manejarSubidaImagen = async (e) => {
