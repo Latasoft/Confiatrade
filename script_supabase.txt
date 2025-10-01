@@ -1,0 +1,393 @@
+-- SCRIPT CONFIATRADE COMPLETO - POLÍTICAS PÚBLICAS
+-- Ejecutar este script completo en Supabase SQL Editor
+
+-- 1. Tabla de usuarios (gestionados por Clerk)
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  clerk_id VARCHAR(255) UNIQUE NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  nombre VARCHAR(100),
+  apellido VARCHAR(100),
+  empresa VARCHAR(100),
+  rol VARCHAR(20) NOT NULL DEFAULT 'cliente', -- 'cliente' o 'admin'
+  pais VARCHAR(100),
+  ciudad VARCHAR(100),
+  direccion VARCHAR(255),
+  telefono VARCHAR(50),
+  fecha_registro TIMESTAMP DEFAULT NOW(),
+  estado VARCHAR(20) DEFAULT 'activo'
+);
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- 2. Productos
+CREATE TABLE IF NOT EXISTS productos (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  nombre VARCHAR(255) NOT NULL,
+  descripcion TEXT,
+  imagen_url TEXT,
+  ubicacion VARCHAR(255),
+  proveedor VARCHAR(255),
+  stock INTEGER,
+  unidad VARCHAR(50),
+  precio NUMERIC(12,2),
+  estado VARCHAR(20) DEFAULT 'disponible',
+  fecha_creacion TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE productos ENABLE ROW LEVEL SECURITY;
+
+-- 3. Transportes
+CREATE TABLE IF NOT EXISTS transportes (
+  id SERIAL PRIMARY KEY,
+  nombre VARCHAR(255) NOT NULL,
+  descripcion TEXT,
+  imagen_url TEXT,
+  origen VARCHAR(255),
+  destino VARCHAR(255),
+  capacidad_total NUMERIC(12,2),
+  capacidad_disponible NUMERIC(12,2),
+  unidad_capacidad VARCHAR(50),
+  peso_maximo NUMERIC(12,2),
+  transportista VARCHAR(255),
+  vehiculo VARCHAR(255),
+  tiempo_estimado VARCHAR(100),
+  fecha_salida DATE,
+  precio NUMERIC(12,2),
+  estado VARCHAR(20) DEFAULT 'disponible',
+  fecha_creacion TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE transportes ENABLE ROW LEVEL SECURITY;
+
+-- 4. Pedidos
+CREATE TABLE IF NOT EXISTS pedidos (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  producto_id INTEGER REFERENCES productos(id) ON DELETE SET NULL,
+  cantidad NUMERIC(12,2),
+  total NUMERIC(12,2),
+  estado VARCHAR(20) DEFAULT 'pendiente',
+  direccion_entrega VARCHAR(255),
+  fecha_estimada DATE,
+  notas TEXT,
+  fecha_creacion TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE pedidos ENABLE ROW LEVEL SECURITY;
+
+-- 5. Reservas de transporte
+CREATE TABLE IF NOT EXISTS reservas (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  transporte_id INTEGER REFERENCES transportes(id) ON DELETE SET NULL,
+  cantidad_reservada NUMERIC(12,2),
+  estado VARCHAR(20) DEFAULT 'pendiente',
+  fecha_reserva TIMESTAMP DEFAULT NOW(),
+  notas TEXT
+);
+
+ALTER TABLE reservas ENABLE ROW LEVEL SECURITY;
+
+-- 6. Reportes
+CREATE TABLE IF NOT EXISTS reportes (
+  id SERIAL PRIMARY KEY,
+  tipo VARCHAR(20),
+  fecha_generado TIMESTAMP DEFAULT NOW(),
+  datos JSONB,
+  generado_por INTEGER REFERENCES users(id) ON DELETE SET NULL
+);
+
+ALTER TABLE reportes ENABLE ROW LEVEL SECURITY;
+
+-- 7. Pagos
+CREATE TABLE IF NOT EXISTS pagos (
+  id SERIAL PRIMARY KEY,
+  pedido_id INTEGER REFERENCES pedidos(id) ON DELETE SET NULL,
+  usuario_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  monto NUMERIC(12,2),
+  moneda VARCHAR(10),
+  metodo_pago VARCHAR(50),
+  estado VARCHAR(20) DEFAULT 'pendiente',
+  fecha_pago TIMESTAMP DEFAULT NOW(),
+  referencia_externa VARCHAR(255)
+);
+
+ALTER TABLE pagos ENABLE ROW LEVEL SECURITY;
+
+-- 8. Ventas
+CREATE TABLE IF NOT EXISTS ventas (
+  id SERIAL PRIMARY KEY,
+  producto_id INTEGER REFERENCES productos(id) ON DELETE SET NULL,
+  vendedor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  comprador_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  pedido_id INTEGER REFERENCES pedidos(id) ON DELETE SET NULL,
+  cantidad NUMERIC(12,2),
+  total NUMERIC(12,2),
+  fecha_venta TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE ventas ENABLE ROW LEVEL SECURITY;
+
+-- 9. Métodos de pago
+CREATE TABLE IF NOT EXISTS metodos_pago (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  tipo VARCHAR(50),
+  datos JSONB,
+  activo BOOLEAN DEFAULT TRUE
+);
+
+ALTER TABLE metodos_pago ENABLE ROW LEVEL SECURITY;
+
+-- 10. Transacciones
+CREATE TABLE IF NOT EXISTS transacciones (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  tipo VARCHAR(50),
+  monto NUMERIC(12,2),
+  moneda VARCHAR(10),
+  descripcion TEXT,
+  referencia_externa VARCHAR(255),
+  fecha_transaccion TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE transacciones ENABLE ROW LEVEL SECURITY;
+
+-- 11. Mensajes (chat)
+CREATE TABLE IF NOT EXISTS mensajes (
+  id SERIAL PRIMARY KEY,
+  pedido_id INTEGER REFERENCES pedidos(id) ON DELETE SET NULL,
+  emisor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  receptor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  mensaje TEXT,
+  fecha_envio TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE mensajes ENABLE ROW LEVEL SECURITY;
+
+-- 12. Reviews
+CREATE TABLE IF NOT EXISTS reviews (
+  id SERIAL PRIMARY KEY,
+  producto_id INTEGER REFERENCES productos(id) ON DELETE SET NULL,
+  usuario_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  calificacion INTEGER CHECK (calificacion >= 1 AND calificacion <= 5),
+  comentario TEXT,
+  fecha_review TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+
+-- 13. Logs (auditoría)
+CREATE TABLE IF NOT EXISTS logs (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  accion VARCHAR(100),
+  entidad VARCHAR(100),
+  entidad_id INTEGER,
+  descripcion TEXT,
+  fecha_log TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE logs ENABLE ROW LEVEL SECURITY;
+
+-- ===========================================
+-- ÍNDICES PARA OPTIMIZACIÓN
+-- ===========================================
+CREATE INDEX IF NOT EXISTS idx_users_clerk_id ON users(clerk_id);
+CREATE INDEX IF NOT EXISTS idx_productos_usuario ON productos(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_productos_estado ON productos(estado);
+CREATE INDEX IF NOT EXISTS idx_pedidos_usuario ON pedidos(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_pedidos_producto ON pedidos(producto_id);
+CREATE INDEX IF NOT EXISTS idx_pedidos_estado ON pedidos(estado);
+CREATE INDEX IF NOT EXISTS idx_reservas_usuario ON reservas(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_reservas_transporte ON reservas(transporte_id);
+CREATE INDEX IF NOT EXISTS idx_ventas_vendedor ON ventas(vendedor_id);
+CREATE INDEX IF NOT EXISTS idx_ventas_comprador ON ventas(comprador_id);
+CREATE INDEX IF NOT EXISTS idx_transportes_origen_destino ON transportes(origen, destino);
+CREATE INDEX IF NOT EXISTS idx_transportes_fecha_salida ON transportes(fecha_salida);
+
+-- ===========================================
+-- ELIMINAR POLÍTICAS EXISTENTES
+-- ===========================================
+DROP POLICY IF EXISTS "Política pública users select" ON users;
+DROP POLICY IF EXISTS "Política pública users insert" ON users;
+DROP POLICY IF EXISTS "Política pública users update" ON users;
+DROP POLICY IF EXISTS "Política pública users delete" ON users;
+
+DROP POLICY IF EXISTS "Política pública productos select" ON productos;
+DROP POLICY IF EXISTS "Política pública productos insert" ON productos;
+DROP POLICY IF EXISTS "Política pública productos update" ON productos;
+DROP POLICY IF EXISTS "Política pública productos delete" ON productos;
+
+DROP POLICY IF EXISTS "Política pública transportes select" ON transportes;
+DROP POLICY IF EXISTS "Política pública transportes insert" ON transportes;
+DROP POLICY IF EXISTS "Política pública transportes update" ON transportes;
+DROP POLICY IF EXISTS "Política pública transportes delete" ON transportes;
+
+DROP POLICY IF EXISTS "Política pública pedidos select" ON pedidos;
+DROP POLICY IF EXISTS "Política pública pedidos insert" ON pedidos;
+DROP POLICY IF EXISTS "Política pública pedidos update" ON pedidos;
+DROP POLICY IF EXISTS "Política pública pedidos delete" ON pedidos;
+
+DROP POLICY IF EXISTS "Política pública reservas select" ON reservas;
+DROP POLICY IF EXISTS "Política pública reservas insert" ON reservas;
+DROP POLICY IF EXISTS "Política pública reservas update" ON reservas;
+DROP POLICY IF EXISTS "Política pública reservas delete" ON reservas;
+
+DROP POLICY IF EXISTS "Política pública reportes select" ON reportes;
+DROP POLICY IF EXISTS "Política pública reportes insert" ON reportes;
+DROP POLICY IF EXISTS "Política pública reportes update" ON reportes;
+DROP POLICY IF EXISTS "Política pública reportes delete" ON reportes;
+
+DROP POLICY IF EXISTS "Política pública pagos select" ON pagos;
+DROP POLICY IF EXISTS "Política pública pagos insert" ON pagos;
+DROP POLICY IF EXISTS "Política pública pagos update" ON pagos;
+DROP POLICY IF EXISTS "Política pública pagos delete" ON pagos;
+
+DROP POLICY IF EXISTS "Política pública ventas select" ON ventas;
+DROP POLICY IF EXISTS "Política pública ventas insert" ON ventas;
+DROP POLICY IF EXISTS "Política pública ventas update" ON ventas;
+DROP POLICY IF EXISTS "Política pública ventas delete" ON ventas;
+
+DROP POLICY IF EXISTS "Política pública metodos_pago select" ON metodos_pago;
+DROP POLICY IF EXISTS "Política pública metodos_pago insert" ON metodos_pago;
+DROP POLICY IF EXISTS "Política pública metodos_pago update" ON metodos_pago;
+DROP POLICY IF EXISTS "Política pública metodos_pago delete" ON metodos_pago;
+
+DROP POLICY IF EXISTS "Política pública transacciones select" ON transacciones;
+DROP POLICY IF EXISTS "Política pública transacciones insert" ON transacciones;
+DROP POLICY IF EXISTS "Política pública transacciones update" ON transacciones;
+DROP POLICY IF EXISTS "Política pública transacciones delete" ON transacciones;
+
+DROP POLICY IF EXISTS "Política pública mensajes select" ON mensajes;
+DROP POLICY IF EXISTS "Política pública mensajes insert" ON mensajes;
+DROP POLICY IF EXISTS "Política pública mensajes update" ON mensajes;
+DROP POLICY IF EXISTS "Política pública mensajes delete" ON mensajes;
+
+DROP POLICY IF EXISTS "Política pública reviews select" ON reviews;
+DROP POLICY IF EXISTS "Política pública reviews insert" ON reviews;
+DROP POLICY IF EXISTS "Política pública reviews update" ON reviews;
+DROP POLICY IF EXISTS "Política pública reviews delete" ON reviews;
+
+DROP POLICY IF EXISTS "Política pública logs select" ON logs;
+DROP POLICY IF EXISTS "Política pública logs insert" ON logs;
+DROP POLICY IF EXISTS "Política pública logs update" ON logs;
+DROP POLICY IF EXISTS "Política pública logs delete" ON logs;
+
+-- ===========================================
+-- POLÍTICAS PÚBLICAS COMPLETAS (CRUD TOTAL)
+-- ===========================================
+
+-- USERS - Acceso público total
+CREATE POLICY "Política pública users select" ON users FOR SELECT USING (true);
+CREATE POLICY "Política pública users insert" ON users FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública users update" ON users FOR UPDATE USING (true);
+CREATE POLICY "Política pública users delete" ON users FOR DELETE USING (true);
+
+-- PRODUCTOS - Acceso público total
+CREATE POLICY "Política pública productos select" ON productos FOR SELECT USING (true);
+CREATE POLICY "Política pública productos insert" ON productos FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública productos update" ON productos FOR UPDATE USING (true);
+CREATE POLICY "Política pública productos delete" ON productos FOR DELETE USING (true);
+
+-- TRANSPORTES - Acceso público total
+CREATE POLICY "Política pública transportes select" ON transportes FOR SELECT USING (true);
+CREATE POLICY "Política pública transportes insert" ON transportes FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública transportes update" ON transportes FOR UPDATE USING (true);
+CREATE POLICY "Política pública transportes delete" ON transportes FOR DELETE USING (true);
+
+-- PEDIDOS - Acceso público total
+CREATE POLICY "Política pública pedidos select" ON pedidos FOR SELECT USING (true);
+CREATE POLICY "Política pública pedidos insert" ON pedidos FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública pedidos update" ON pedidos FOR UPDATE USING (true);
+CREATE POLICY "Política pública pedidos delete" ON pedidos FOR DELETE USING (true);
+
+-- RESERVAS - Acceso público total
+CREATE POLICY "Política pública reservas select" ON reservas FOR SELECT USING (true);
+CREATE POLICY "Política pública reservas insert" ON reservas FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública reservas update" ON reservas FOR UPDATE USING (true);
+CREATE POLICY "Política pública reservas delete" ON reservas FOR DELETE USING (true);
+
+-- REPORTES - Acceso público total
+CREATE POLICY "Política pública reportes select" ON reportes FOR SELECT USING (true);
+CREATE POLICY "Política pública reportes insert" ON reportes FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública reportes update" ON reportes FOR UPDATE USING (true);
+CREATE POLICY "Política pública reportes delete" ON reportes FOR DELETE USING (true);
+
+-- PAGOS - Acceso público total
+CREATE POLICY "Política pública pagos select" ON pagos FOR SELECT USING (true);
+CREATE POLICY "Política pública pagos insert" ON pagos FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública pagos update" ON pagos FOR UPDATE USING (true);
+CREATE POLICY "Política pública pagos delete" ON pagos FOR DELETE USING (true);
+
+-- VENTAS - Acceso público total
+CREATE POLICY "Política pública ventas select" ON ventas FOR SELECT USING (true);
+CREATE POLICY "Política pública ventas insert" ON ventas FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública ventas update" ON ventas FOR UPDATE USING (true);
+CREATE POLICY "Política pública ventas delete" ON ventas FOR DELETE USING (true);
+
+-- MÉTODOS DE PAGO - Acceso público total
+CREATE POLICY "Política pública metodos_pago select" ON metodos_pago FOR SELECT USING (true);
+CREATE POLICY "Política pública metodos_pago insert" ON metodos_pago FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública metodos_pago update" ON metodos_pago FOR UPDATE USING (true);
+CREATE POLICY "Política pública metodos_pago delete" ON metodos_pago FOR DELETE USING (true);
+
+-- TRANSACCIONES - Acceso público total
+CREATE POLICY "Política pública transacciones select" ON transacciones FOR SELECT USING (true);
+CREATE POLICY "Política pública transacciones insert" ON transacciones FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública transacciones update" ON transacciones FOR UPDATE USING (true);
+CREATE POLICY "Política pública transacciones delete" ON transacciones FOR DELETE USING (true);
+
+-- MENSAJES - Acceso público total
+CREATE POLICY "Política pública mensajes select" ON mensajes FOR SELECT USING (true);
+CREATE POLICY "Política pública mensajes insert" ON mensajes FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública mensajes update" ON mensajes FOR UPDATE USING (true);
+CREATE POLICY "Política pública mensajes delete" ON mensajes FOR DELETE USING (true);
+
+-- REVIEWS - Acceso público total
+CREATE POLICY "Política pública reviews select" ON reviews FOR SELECT USING (true);
+CREATE POLICY "Política pública reviews insert" ON reviews FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública reviews update" ON reviews FOR UPDATE USING (true);
+CREATE POLICY "Política pública reviews delete" ON reviews FOR DELETE USING (true);
+
+-- LOGS - Acceso público total
+CREATE POLICY "Política pública logs select" ON logs FOR SELECT USING (true);
+CREATE POLICY "Política pública logs insert" ON logs FOR INSERT WITH CHECK (true);
+CREATE POLICY "Política pública logs update" ON logs FOR UPDATE USING (true);
+CREATE POLICY "Política pública logs delete" ON logs FOR DELETE USING (true);
+
+-- ===========================================
+-- DATOS DE EJEMPLO PARA CONFIATRADE
+-- ===========================================
+INSERT INTO users (clerk_id, email, nombre, apellido, rol, pais, ciudad, direccion, telefono)
+VALUES
+  ('clerk_admin_1', 'admin@confiatrade.com', 'Admin', 'ConfiaTrade', 'admin', 'Chile', 'Santiago', 'Av. Principal 123', '+56912345678'),
+  ('clerk_user_2', 'juan.perez@email.com', 'Juan', 'Pérez', 'cliente', 'Argentina', 'Buenos Aires', 'Av. Corrientes 456', '+541123456789'),
+  ('clerk_user_3', 'maria.gonzalez@email.com', 'María', 'González', 'cliente', 'Chile', 'Valparaíso', 'Av. Brasil 789', '+56987654321')
+ON CONFLICT (clerk_id) DO NOTHING;
+
+INSERT INTO productos (usuario_id, nombre, descripcion, imagen_url, ubicacion, proveedor, stock, unidad, precio)
+VALUES
+  (2, 'Aceite de Girasol Premium', 'Aceite de girasol de alta calidad para uso industrial y comercial', '/images/aceite-girasol.jpg', 'Mendoza, Argentina', 'Aceites Maravilla SA', 5000, 'litros', 2.50),
+  (2, 'Trigo Candeal', 'Trigo de alta calidad para panificación y molienda', '/images/trigo.jpg', 'Córdoba, Argentina', 'Granos del Sur', 50000, 'kg', 0.45),
+  (3, 'Cerezas Frescas', 'Cerezas chilenas de exportación, temporada alta', '/images/cerezas.jpg', 'Región del Maule, Chile', 'Frutícola del Sur', 10000, 'kg', 8.50),
+  (2, 'Aceite de Oliva Extra Virgen', 'Aceite de oliva premium de Argentina', '/images/aceite-oliva.jpg', 'San Juan, Argentina', 'Olivares Andinos', 2000, 'litros', 12.00)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO transportes (nombre, descripcion, imagen_url, origen, destino, capacidad_total, capacidad_disponible, unidad_capacidad, transportista, vehiculo, tiempo_estimado, fecha_salida, precio)
+VALUES
+  ('Transporte Buenos Aires - Santiago', 'Servicio de carga por corredor bioceánico BA-SCL', '/images/camion-ba-scl.jpg', 'Buenos Aires, Argentina', 'Santiago, Chile', 20000, 15000, 'kg', 'Transportes ConfiaTrade', 'Camión de carga pesada', '3-4 días', '2025-09-20', 0.15),
+  ('Tren de Carga Mendoza - Valparaíso', 'Transporte ferroviario especializado MDZ-VAL', '/images/tren-mdz-val.jpg', 'Mendoza, Argentina', 'Valparaíso, Chile', 100000, 80000, 'kg', 'Ferrocarriles del Pacífico', 'Tren de carga', '2-3 días', '2025-09-25', 0.08),
+  ('Ruta Santiago - Asunción', 'Transporte terrestre corredor bioceánico', '/images/camion-scl-asu.jpg', 'Santiago, Chile', 'Asunción, Paraguay', 25000, 20000, 'kg', 'Logística Continental', 'Camión articulado', '5-6 días', '2025-09-22', 0.12),
+  ('Corredor Valparaíso - São Paulo', 'Transporte marítimo-terrestre combinado', '/images/barco-val-sp.jpg', 'Valparaíso, Chile', 'São Paulo, Brasil', 80000, 65000, 'kg', 'ConfiaTrade Logistics', 'Contenedores marítimos', '7-10 días', '2025-09-18', 0.10)
+ON CONFLICT DO NOTHING;
+
+-- Notificación de éxito
+DO $$
+BEGIN
+  RAISE NOTICE '✅ Script ConfiaTrade ejecutado exitosamente.';
+  RAISE NOTICE '📋 Todas las tablas creadas con políticas públicas completas (CRUD).';
+  RAISE NOTICE '🚀 Base de datos lista para desarrollo de ConfiaTrade.';
+END $$;
