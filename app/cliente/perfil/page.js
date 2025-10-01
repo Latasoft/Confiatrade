@@ -61,6 +61,7 @@ export default function PerfilPage() {
       alert('Error al actualizar el perfil')
     }
   }
+  
 
   if (!isLoaded || loading) {
     return (
