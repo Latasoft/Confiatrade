@@ -12,12 +12,12 @@ export default function RoleBasedRedirect({ children }) {
     if (!loading && profile) {
       const currentPath = window.location.pathname
       
-      // Si está en la página principal o de login, redirigir según el rol
-      if (currentPath === '/' || currentPath === '/sign-in' || currentPath === '/sign-up') {
+      // Si está en login o sign-up, redirigir según el rol
+      if (currentPath === '/sign-in' || currentPath === '/sign-up') {
         if (isAdmin) {
           router.replace('/admin')
         } else if (isClient) {
-          router.replace('/productos') // Redirigir clientes a productos en lugar de /cliente
+          router.replace('/') // Redirigir clientes al dashboard principal
         }
       }
       
@@ -28,7 +28,7 @@ export default function RoleBasedRedirect({ children }) {
       
       // Si es cliente intentando acceder a rutas de admin
       if (isClient && currentPath.startsWith('/admin')) {
-        router.replace('/productos') // Redirigir clientes a productos en lugar de /cliente
+        router.replace('/') // Redirigir clientes al dashboard principal
       }
     }
   }, [profile, loading, isAdmin, isClient, router])

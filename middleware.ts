@@ -50,22 +50,21 @@ export default clerkMiddleware(async (auth, req) => {
       console.log(`🎭 Rol del usuario: ${userRole}`);
       
       // Redireccionamiento automático después del login (solo desde rutas específicas)
-      if (req.nextUrl.pathname === '/' || 
-          req.nextUrl.pathname === '/sign-in' || 
+      if (req.nextUrl.pathname === '/sign-in' || 
           req.nextUrl.pathname === '/sign-up') {
         if (userRole === 'admin') {
           console.log(`🚀 Redirigiendo admin a /admin`);
           return NextResponse.redirect(new URL('/admin', req.url))
         } else {
-          console.log(`🚀 Redirigiendo cliente a /cliente`);
-          return NextResponse.redirect(new URL('/cliente', req.url))
+          console.log(`🚀 Redirigiendo cliente a /`);
+          return NextResponse.redirect(new URL('/', req.url))
         }
       }
 
       // Proteger rutas de admin solo para admins
       if (isAdminRoute(req) && userRole !== 'admin') {
         console.log(`🚫 Acceso denegado a admin, redirigiendo a cliente`);
-        return NextResponse.redirect(new URL('/cliente', req.url))
+        return NextResponse.redirect(new URL('/', req.url))
       }
 
       // Proteger rutas de cliente - admin puede acceder

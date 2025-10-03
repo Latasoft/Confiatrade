@@ -23,8 +23,10 @@ export default function MisProductosPage() {
     categoria: '',
     proveedor: '',
     stock: '',
-    imagen_url: ''
+    imagen_url: null
   })
+  const [imagenPreview, setImagenPreview] = useState(null)
+  const [archivoImagen, setArchivoImagen] = useState(null)
 
   const categorias = [
     'cereales',
@@ -127,16 +129,62 @@ export default function MisProductosPage() {
     }))
   }
 
+  // Manejar selección de imagen
+  const handleImagenChange = (e) => {
+    const archivo = e.target.files[0]
+    
+    if (!archivo) return
+    
+    // Validar que sea una imagen
+    if (!archivo.type.startsWith('image/')) {
+      toast.error('Por favor selecciona solo archivos de imagen')
+      return
+    }
+    
+    // Validar tamaño (máximo 5MB)
+    if (archivo.size > 5 * 1024 * 1024) {
+      toast.error('La imagen debe ser menor a 5MB')
+      return
+    }
+    
+    setArchivoImagen(archivo)
+    
+    // Crear preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setImagenPreview(e.target.result)
+    }
+    reader.readAsDataURL(archivo)
+  }
+
+  // Convertir imagen a base64 para guardar en DB
+  const convertirImagenABase64 = (archivo) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(archivo)
+    })
+  }
+
   // Crear nuevo producto
   const crearProducto = async (e) => {
     e.preventDefault()
     
     try {
+      let imagen_url = formData.imagen_url
+      
+      // Convertir imagen a base64 si se seleccionó una
+      if (archivoImagen) {
+        imagen_url = await convertirImagenABase64(archivoImagen)
+      }
+      
       const productoData = {
         ...formData,
         precio: parseFloat(formData.precio) || 0,
         stock: parseInt(formData.stock) || 0,
-        usuario_id: usuarioDbId
+        usuario_id: usuarioDbId,
+        imagen_url: imagen_url
       }
 
       const { data, error } = await supabase
@@ -161,10 +209,18 @@ export default function MisProductosPage() {
     e.preventDefault()
     
     try {
+      let imagen_url = formData.imagen_url
+      
+      // Si se seleccionó una nueva imagen, convertirla a base64
+      if (archivoImagen) {
+        imagen_url = await convertirImagenABase64(archivoImagen)
+      }
+      
       const productoData = {
         ...formData,
         precio: parseFloat(formData.precio) || 0,
-        stock: parseInt(formData.stock) || 0
+        stock: parseInt(formData.stock) || 0,
+        imagen_url: imagen_url
       }
 
       const { error } = await supabase
@@ -218,8 +274,11 @@ export default function MisProductosPage() {
       categoria: producto.categoria || '',
       proveedor: producto.proveedor || '',
       stock: producto.stock?.toString() || '',
-      imagen_url: producto.imagen_url || ''
+      imagen_url: producto.imagen_url || null
     })
+    // Si existe imagen_url, mostrarla como preview
+    setImagenPreview(producto.imagen_url || null)
+    setArchivoImagen(null)
     setShowModal(true)
   }
 
@@ -240,8 +299,10 @@ export default function MisProductosPage() {
       categoria: '',
       proveedor: '',
       stock: '',
-      imagen_url: ''
+      imagen_url: null
     })
+    setImagenPreview(null)
+    setArchivoImagen(null)
   }
 
   // Loading
@@ -299,65 +360,86 @@ export default function MisProductosPage() {
 
         {/* Grid de productos */}
         {productos.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {productos.map((producto) => (
               <div
                 key={producto.id}
-                className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 flex flex-col h-full"
               >
-                {/* Imagen */}
-                <div className="h-48 bg-gray-200 overflow-hidden">
+                {/* Imagen - Proporción fija como YouTube */}
+                <div className="relative w-full h-48 bg-gradient-to-r from-gray-100 to-gray-200 rounded-t-xl overflow-hidden">
                   <img
-                    src={producto.imagen_url || 'https://via.placeholder.com/300x200?text=Producto'}
+                    src={producto.imagen_url || 'https://via.placeholder.com/320x180?text=Sin+Imagen'}
                     alt={producto.nombre}
                     className="w-full h-full object-cover"
+                    style={{ aspectRatio: '16/9' }}
                   />
+                  {/* Overlay con acciones */}
+                  <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => abrirEdicion(producto)}
+                      className="bg-black/70 hover:bg-blue-600 text-white p-1.5 rounded-full text-xs transition-colors"
+                      title="Editar"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => eliminarProducto(producto.id)}
+                      className="bg-black/70 hover:bg-red-600 text-white p-1.5 rounded-full text-xs transition-colors"
+                      title="Eliminar"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
 
                 {/* Contenido */}
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-semibold text-gray-800 line-clamp-2">
+                <div className="p-4 flex flex-col flex-grow">
+                  {/* Título y precio */}
+                  <div className="mb-3">
+                    <h3 className="font-semibold text-gray-900 text-lg mb-1 line-clamp-2 min-h-[3.5rem]">
                       {producto.nombre}
                     </h3>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => abrirEdicion(producto)}
-                        className="text-blue-600 hover:text-blue-800 text-sm"
-                      >
-                        ✏️ Editar
-                      </button>
-                      <button
-                        onClick={() => eliminarProducto(producto.id)}
-                        className="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        🗑️ Eliminar
-                      </button>
+                    <div className="text-2xl font-bold text-green-600">
+                      ${producto.precio ? Number(producto.precio).toLocaleString() : '0'}
                     </div>
                   </div>
 
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {producto.descripcion}
+                  {/* Descripción */}
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2 min-h-[2.5rem]">
+                    {producto.descripcion || 'Sin descripción'}
                   </p>
 
-                  {/* Detalles */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Ubicación:</span>
-                      <span className="font-medium">{producto.ubicacion}</span>
+                  {/* Detalles en chips */}
+                  <div className="space-y-2 mt-auto">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        📍 {producto.ubicacion || 'Sin ubicación'}
+                      </span>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 capitalize">
+                        🏷️ {producto.categoria || 'Sin categoría'}
+                      </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Categoría:</span>
-                      <span className="font-medium capitalize">{producto.categoria}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Stock:</span>
-                      <span className="font-medium">{producto.stock} unidades</span>
+                    <div className="flex justify-between items-center text-sm text-gray-500">
+                      <span>📦 Stock: {producto.stock || 0}</span>
+                      <span>🏢 {producto.proveedor || 'N/A'}</span>
                     </div>
                   </div>
 
-                  <div className="text-2xl font-bold text-green-600">
-                    ${producto.precio?.toLocaleString() || 'Consultar'}
+                  {/* Botones de acción principales */}
+                  <div className="flex space-x-2 mt-4 pt-3 border-t border-gray-100">
+                    <button
+                      onClick={() => abrirEdicion(producto)}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => eliminarProducto(producto.id)}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Eliminar
+                    </button>
                   </div>
                 </div>
               </div>
@@ -517,19 +599,36 @@ export default function MisProductosPage() {
                     />
                   </div>
 
-                  {/* URL de imagen */}
+                  {/* Subir imagen */}
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      URL de Imagen
+                      Imagen del Producto
                     </label>
                     <input
-                      type="url"
-                      name="imagen_url"
-                      value={formData.imagen_url}
-                      onChange={handleInputChange}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImagenChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="https://ejemplo.com/imagen.jpg"
                     />
+                    <p className="text-sm text-gray-500 mt-1">
+                      Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 5MB
+                    </p>
+                    
+                    {/* Preview de la imagen */}
+                    {imagenPreview && (
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Vista Previa:
+                        </label>
+                        <div className="w-48 h-32 border border-gray-300 rounded-md overflow-hidden bg-gray-50 flex items-center justify-center">
+                          <img
+                            src={imagenPreview}
+                            alt="Vista previa"
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Botones */}
