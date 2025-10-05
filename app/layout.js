@@ -13,9 +13,7 @@ export default function RootLayout({ children }) {
       <html lang="es">
         <body>
           <CartProvider>
-            <RoleBasedRedirect>
               <LayoutWrapper>{children}</LayoutWrapper>
-            </RoleBasedRedirect>
             <Toaster position="top-right" />
           </CartProvider>
         </body>
@@ -28,11 +26,10 @@ function LayoutWrapper({ children }) {
   const pathname = usePathname()
   
   // Páginas que NO deben tener Navbar/Footer automático (ya tienen su propio layout)
-  const isClientePage = pathname?.startsWith('/cliente')
   const isAdminPage = pathname?.startsWith('/admin')
   const isTestPage = pathname?.startsWith('/test') || pathname?.startsWith('/diagnostic') || pathname?.startsWith('/admin-test')
   
-  if (isClientePage || isAdminPage || isTestPage) {
+  if (isAdminPage || isTestPage) {
     return <>{children}</>
   }
   
