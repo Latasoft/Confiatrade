@@ -34,7 +34,7 @@ export default function ProductosPage() {
       if (data && data.length === 0) {
         toast.info('No hay productos disponibles')
       } else if (data && data.length > 0) {
-        toast.success(`✅ ${data.length} productos cargados desde Supabase`)
+        toast.success(`✅ ${data.length} productos cargados Correctamente`)
         console.log('✅ Productos establecidos en estado:', data)
       }
     } catch (error) {
@@ -134,12 +134,6 @@ export default function ProductosPage() {
             </div>
           )}
           
-          {!error && productos.length > 0 && (
-            <div className="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
-              <p className="font-medium">✅ Conectado a Supabase</p>
-              <p className="text-sm">Mostrando {productos.length} productos desde la base de datos</p>
-            </div>
-          )}
         </div>
 
         {/* Filtros */}

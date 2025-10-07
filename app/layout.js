@@ -4,8 +4,8 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from 'react-hot-toast'
 import './globals.css'
 import { usePathname } from 'next/navigation'
-import RoleBasedRedirect from '@/components/RoleBasedRedirect'
 import { CartProvider } from '@/lib/CartContext'
+import RoleBasedRedirect from '@/components/RoleBasedRedirect'
 
 export default function RootLayout({ children }) {
   return (
@@ -27,19 +27,16 @@ export default function RootLayout({ children }) {
 function LayoutWrapper({ children }) {
   const pathname = usePathname()
   
-  // Páginas que NO deben tener Navbar/Footer automático (ya tienen su propio layout)
+  // Páginas que NO deben tener layout automático
   const isClientePage = pathname?.startsWith('/cliente')
   const isAdminPage = pathname?.startsWith('/admin')
-  const isTestPage = pathname?.startsWith('/test') || pathname?.startsWith('/diagnostic') || pathname?.startsWith('/admin-test')
+  const isAuthPage = pathname?.startsWith('/sign-')
+  const isTestPage = pathname?.startsWith('/test') || pathname?.startsWith('/setup')
   
-  if (isClientePage || isAdminPage || isTestPage) {
+  if (isClientePage || isAdminPage || isAuthPage || isTestPage) {
     return <>{children}</>
   }
   
-  // Páginas que SÍ deben tener Navbar/Footer automático
-  return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-1">{children}</main>
-    </div>
-  )
+  // Para la página de inicio y otras páginas públicas
+  return <>{children}</>
 }

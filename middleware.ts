@@ -1,5 +1,11 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 const isPublicRoute = createRouteMatcher([
   '/',
@@ -32,7 +38,7 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   try {
-    const { userId, sessionClaims } = await auth()
+    const { userId } = await auth()
     console.log(`👤 Usuario ID: ${userId}`);
     
     // Si no está autenticado y trata de acceder a ruta protegida
@@ -41,46 +47,65 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(new URL('/sign-in', req.url))
     }
 
-    // Si está autenticado, obtener el rol del usuario
-    if (userId && sessionClaims) {
-      const userRole = (sessionClaims as any)?.metadata?.role || 
-                      (sessionClaims as any)?.publicMetadata?.role || 
-                      'cliente'
-      
-      console.log(`🎭 Rol del usuario: ${userRole}`);
-      
-      // Redireccionamiento automático después del login (solo desde rutas específicas)
-      if (req.nextUrl.pathname === '/' || 
-          req.nextUrl.pathname === '/sign-in' || 
-          req.nextUrl.pathname === '/sign-up') {
-        if (userRole === 'admin') {
-          console.log(`🚀 Redirigiendo admin a /admin`);
-          return NextResponse.redirect(new URL('/admin', req.url))
-        } else {
-          console.log(`🚀 Redirigiendo cliente a /cliente`);
-          return NextResponse.redirect(new URL('/cliente', req.url))
-        }
-      }
+    // Obtener el rol desde Supabase usando el clerk_id
+    let userRole = 'cliente'
+    
+    try {
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('rol, role, is_admin, estado')
+        .eq('clerk_id', userId)
+        .single()
 
-      // Proteger rutas de admin solo para admins
-      if (isAdminRoute(req) && userRole !== 'admin') {
-        console.log(`🚫 Acceso denegado a admin, redirigiendo a cliente`);
+      if (!error && userData) {
+        // Verificar si es admin
+        const isAdmin = 
+          userData.rol === 'admin' || 
+          userData.rol === 'Administrador' ||
+          userData.role === 'admin' || 
+          userData.is_admin === 'true' ||
+          userData.is_admin === true
+
+        userRole = isAdmin ? 'admin' : 'cliente'
+        console.log(`🎭 Rol del usuario desde Supabase: ${userRole}`)
+        console.log(`📊 Datos de usuario:`, userData)
+      } else {
+        console.log(`⚠️ Usuario no encontrado en Supabase, usando rol por defecto: cliente`)
+      }
+    } catch (supabaseError) {
+      console.error('❌ Error consultando Supabase:', supabaseError)
+      // En caso de error, continuar con rol cliente
+    }
+    
+    // Redireccionamiento automático después del login (solo desde rutas específicas)
+    if (req.nextUrl.pathname === '/' || 
+        req.nextUrl.pathname === '/sign-in' || 
+        req.nextUrl.pathname === '/sign-up') {
+      if (userRole === 'admin') {
+        console.log(`🚀 Redirigiendo admin a /admin`);
+        return NextResponse.redirect(new URL('/admin', req.url))
+      } else {
+        console.log(`🚀 Redirigiendo cliente a /cliente`);
         return NextResponse.redirect(new URL('/cliente', req.url))
       }
+    }
 
-      // Proteger rutas de cliente - admin puede acceder
-      if (isClientRoute(req) && userRole === 'admin') {
-        console.log(`⚠️ Admin accediendo a ruta de cliente - permitido`);
-        // Los admins pueden ver las rutas de cliente también
-        return NextResponse.next()
-      }
+    // Proteger rutas de admin solo para admins
+    if (isAdminRoute(req) && userRole !== 'admin') {
+      console.log(`🚫 Acceso denegado a admin, redirigiendo a cliente`);
+      return NextResponse.redirect(new URL('/cliente', req.url))
+    }
+
+    // Proteger rutas de cliente - admin puede acceder
+    if (isClientRoute(req) && userRole === 'admin') {
+      console.log(`⚠️ Admin accediendo a ruta de cliente - permitido`);
+      return NextResponse.next()
     }
 
     console.log(`✅ Acceso permitido a: ${req.nextUrl.pathname}`);
     return NextResponse.next()
   } catch (error) {
     console.error('❌ Error en middleware:', error)
-    // En caso de error, redirigir a home en lugar de bloquear
     return NextResponse.redirect(new URL('/', req.url))
   }
 })
