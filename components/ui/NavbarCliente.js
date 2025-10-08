@@ -18,17 +18,8 @@ export default function NavbarCliente() {
         <Link href="/productos" className="hover:text-yellow-300">
           Productos
         </Link>
-        <Link href="/transportes" className="hover:text-yellow-300">
-          Transportes
-        </Link>
         <Link href="/mis-productos" className="hover:text-yellow-300">
           Mis Productos
-        </Link>
-        <Link href="/cliente/mis-pedidos" className="hover:text-yellow-300">
-          Mis Pedidos
-        </Link>
-        <Link href="/cliente/reservas" className="hover:text-yellow-300">
-          Mis Reservas
         </Link>
         <Link href="/como-funciona" className="hover:text-yellow-300">
           Cómo Funciona
