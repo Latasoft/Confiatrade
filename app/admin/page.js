@@ -258,53 +258,75 @@ export default function ProductosAdminPage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Gestión de Productos</h1>
-        <button
-          onClick={abrirCrear}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Nuevo Producto
-        </button>
+    <div className="container mx-auto p-6">
+      {/* Header con glass effect */}
+      <div className="glass rounded-2xl p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 dark:from-blue-400 dark:via-purple-400 dark:to-blue-600 bg-clip-text text-transparent">
+              Gestión de Productos
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">Administra el catálogo de productos</p>
+          </div>
+          <button
+            onClick={abrirCrear}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+          >
+            Nuevo Producto
+          </button>
+        </div>
       </div>
 
-      {/* Filtros */}
-      <div className="mb-6 flex gap-2">
-        <button 
-          onClick={() => setFiltro('todos')} 
-          className={`px-4 py-2 rounded ${filtro === 'todos' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
-        >
-          Todos
-        </button>
-        <button 
-          onClick={() => setFiltro('disponible')} 
-          className={`px-4 py-2 rounded ${filtro === 'disponible' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
-        >
-          Disponibles
-        </button>
-        <button 
-          onClick={() => setFiltro('agotado')} 
-          className={`px-4 py-2 rounded ${filtro === 'agotado' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
-        >
-          Agotados
-        </button>
+      {/* Filtros con glass effect */}
+      <div className="glass rounded-xl p-4 mb-6">
+        <div className="flex gap-3 flex-wrap">
+          <button 
+            onClick={() => setFiltro('todos')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'todos' 
+                ? 'bg-blue-600 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Todos
+          </button>
+          <button 
+            onClick={() => setFiltro('disponible')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'disponible' 
+                ? 'bg-green-600 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Disponibles
+          </button>
+          <button 
+            onClick={() => setFiltro('agotado')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'agotado' 
+                ? 'bg-red-600 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Agotados
+          </button>
+        </div>
       </div>
 
       {/* Lista de productos */}
       {loading ? (
-        <div className="text-center py-10">
-          <div className="spinner"></div>
-          <p>Cargando productos...</p>
+        <div className="glass rounded-xl p-10 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Cargando productos...</p>
         </div>
       ) : productos.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">No hay productos {filtro !== 'todos' ? `en estado "${filtro}"` : ''}</p>
+        <div className="glass rounded-xl p-10 text-center">
+          <p className="text-gray-600 dark:text-gray-300">No hay productos {filtro !== 'todos' ? `en estado "${filtro}"` : ''}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {productos.map((producto) => (
-            <div key={producto.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div key={producto.id} className="glass rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
               {producto.imagen_url && (
                 <img 
                   src={producto.imagen_url} 
