@@ -13,9 +13,7 @@ export default function RootLayout({ children }) {
       <html lang="es">
         <body>
           <CartProvider>
-            <RoleBasedRedirect>
               <LayoutWrapper>{children}</LayoutWrapper>
-            </RoleBasedRedirect>
             <Toaster position="top-right" />
           </CartProvider>
         </body>

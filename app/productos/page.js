@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from 'react-hot-toast'
+import NavbarCliente from '@/components/ui/NavbarCliente'
+import Footer from '@/components/ui/Footer'
 
 export default function ProductosPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -91,21 +93,27 @@ export default function ProductosPage() {
   // Loading
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50 min-h-screen">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center items-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500 mx-auto"></div>
-              <p className="mt-4 text-lg text-gray-600">Cargando productos desde Supabase...</p>
+      <div className="flex flex-col min-h-screen">
+        <NavbarCliente />
+        <div className="flex-1 bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex justify-center items-center min-h-[400px]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500 mx-auto"></div>
+                <p className="mt-4 text-lg text-gray-600">Cargando productos...</p>
+              </div>
             </div>
           </div>
         </div>
+        <Footer />
       </div>
     )
   }
 
   return (
-    <div className="bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50 min-h-screen">
+    <div className="flex flex-col min-h-screen">
+      <NavbarCliente />
+      <div className="flex-1 bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -249,7 +257,9 @@ export default function ProductosPage() {
             )}
           </div>
         )}
+        </div>
       </div>
+      <Footer />
     </div>
   )
 }

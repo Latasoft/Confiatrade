@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { transportesService } from '@/lib/transportesService'
 import { toast } from 'react-hot-toast'
+import NavbarCliente from '@/components/ui/NavbarCliente'
+import Footer from '@/components/ui/Footer'
 
 export default function TransportesPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -29,7 +31,7 @@ export default function TransportesPage() {
       if (data && data.length === 0) {
         toast.info('No hay transportes disponibles')
       } else if (data && data.length > 0) {
-        toast.success(`✅ ${data.length} transportes cargados desde Supabase`)
+        toast.success(`✅ ${data.length} transportes cargados`)
         console.log('✅ Transportes establecidos en estado:', data)
       }
     } catch (error) {
@@ -89,22 +91,28 @@ export default function TransportesPage() {
   // Loading
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50 min-h-screen">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center items-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500 mx-auto"></div>
-              <p className="mt-4 text-lg text-gray-600">Cargando transportes desde Supabase...</p>
+      <div className="flex flex-col min-h-screen">
+        <NavbarCliente />
+        <div className="flex-1 bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex justify-center items-center min-h-[400px]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500 mx-auto"></div>
+                <p className="mt-4 text-lg text-gray-600">Cargando transportes...</p>
+              </div>
             </div>
           </div>
         </div>
+        <Footer />
       </div>
     )
   }
 
   return (
-    <div className="bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50 min-h-screen">
-      <div className="container mx-auto px-4 py-8">
+    <div className="flex flex-col min-h-screen">
+      <NavbarCliente />
+      <div className="flex-1 bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50">
+        <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center">
@@ -129,13 +137,6 @@ export default function TransportesPage() {
             <div className="mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
               <p className="font-medium">❌ Error de conexión</p>
               <p className="text-sm">No se pudo conectar con la base de datos: {error}</p>
-            </div>
-          )}
-          
-          {!error && transportes.length > 0 && (
-            <div className="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
-              <p className="font-medium">✅ Conectado a Supabase</p>
-              <p className="text-sm">Mostrando {transportes.length} transportes desde la base de datos</p>
             </div>
           )}
         </div>
@@ -265,7 +266,9 @@ export default function TransportesPage() {
             )}
           </div>
         )}
+        </div>
       </div>
+      <Footer />
     </div>
   )
 }
