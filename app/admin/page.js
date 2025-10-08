@@ -20,7 +20,13 @@ export default function ProductosAdminPage() {
     estado: 'disponible',
     imagen_url: ''
   });
+  const [imagenArchivo, setImagenArchivo] = useState(null);
+  const [vistaPrevia, setVistaPrevia] = useState(null);
   const [filtro, setFiltro] = useState('todos'); // todos, disponible, agotado
+  const [confirmarEliminacion, setConfirmarEliminacion] = useState({
+    mostrar: false,
+    productoId: null
+  });
 
   useEffect(() => {
     fetchProductos();
@@ -66,6 +72,8 @@ export default function ProductosAdminPage() {
       estado: 'disponible',
       imagen_url: ''
     });
+    setImagenArchivo(null);
+    setVistaPrevia(null);
     setModalAbierto(true);
   }
 
@@ -82,8 +90,47 @@ export default function ProductosAdminPage() {
       estado: producto.estado || 'disponible',
       imagen_url: producto.imagen_url || ''
     });
+    setImagenArchivo(null);
+    setVistaPrevia(producto.imagen_url || null);
     setModalAbierto(true);
   }
+
+  function handleImagenChange(e) {
+    const archivo = e.target.files[0];
+    if (archivo) {
+      // Validar que sea una imagen
+      if (!archivo.type.startsWith('image/')) {
+        toast.error('Por favor selecciona un archivo de imagen válido');
+        return;
+      }
+      
+      // Validar tamaño (máximo 5MB)
+      if (archivo.size > 5 * 1024 * 1024) {
+        toast.error('La imagen no puede ser mayor a 5MB');
+        return;
+      }
+      
+      setImagenArchivo(archivo);
+      
+      // Crear vista previa
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setVistaPrevia(e.target.result);
+      };
+      reader.readAsDataURL(archivo);
+    }
+  }
+
+  function convertirImagenABase64(archivo) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(archivo);
+    });
+  }
+
+
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -94,6 +141,18 @@ export default function ProductosAdminPage() {
     }
 
     try {
+      let imagenUrl = formData.imagen_url;
+      
+      // Si hay una nueva imagen seleccionada, convertirla a base64
+      if (imagenArchivo) {
+        try {
+          imagenUrl = await convertirImagenABase64(imagenArchivo);
+        } catch (error) {
+          toast.error('Error al procesar la imagen');
+          return;
+        }
+      }
+
       const productData = {
         nombre: formData.nombre,
         descripcion: formData.descripcion,
@@ -103,7 +162,7 @@ export default function ProductosAdminPage() {
         stock: parseInt(formData.stock) || 0,
         unidad: formData.unidad,
         estado: formData.estado,
-        imagen_url: formData.imagen_url
+        imagen_url: imagenUrl
       };
 
       if (productoEditando) {
@@ -126,6 +185,8 @@ export default function ProductosAdminPage() {
       }
 
       setModalAbierto(false);
+      setImagenArchivo(null);
+      setVistaPrevia(null);
       fetchProductos();
     } catch (error) {
       console.error('Error al guardar producto:', error);
@@ -133,14 +194,19 @@ export default function ProductosAdminPage() {
     }
   }
 
-  async function eliminarProducto(id) {
-    if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) return;
+  function eliminarProducto(id) {
+    setConfirmarEliminacion({
+      mostrar: true,
+      productoId: id
+    });
+  }
 
+  async function confirmarEliminar() {
     try {
       const { error } = await supabase
         .from('productos')
         .delete()
-        .eq('id', id);
+        .eq('id', confirmarEliminacion.productoId);
 
       if (error) throw error;
       
@@ -150,6 +216,12 @@ export default function ProductosAdminPage() {
       console.error('Error al eliminar producto:', error);
       toast.error('Error al eliminar el producto');
     }
+    
+    setConfirmarEliminacion({ mostrar: false, productoId: null });
+  }
+
+  function cancelarEliminar() {
+    setConfirmarEliminacion({ mostrar: false, productoId: null });
   }
 
   async function cambiarEstado(id, nuevoEstado) {
@@ -402,14 +474,39 @@ export default function ProductosAdminPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">URL de Imagen</label>
+                <label className="block text-sm font-medium mb-1">Imagen del Producto</label>
                 <input
-                  type="url"
-                  value={formData.imagen_url}
-                  onChange={(e) => setFormData({ ...formData, imagen_url: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
-                  placeholder="https://ejemplo.com/imagen.jpg"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImagenChange}
+                  className="w-full border rounded px-3 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
+                <p className="text-xs text-gray-500 mt-1">Formatos admitidos: JPG, PNG, GIF (máx. 5MB)</p>
+                
+                {/* Vista previa de la imagen */}
+                {vistaPrevia && (
+                  <div className="mt-3">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Vista previa:</p>
+                    <div className="relative w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden">
+                      <img
+                        src={vistaPrevia}
+                        alt="Vista previa"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setVistaPrevia(null);
+                          setImagenArchivo(null);
+                          setFormData({ ...formData, imagen_url: '' });
+                        }}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className="flex gap-4 pt-4">
@@ -421,13 +518,60 @@ export default function ProductosAdminPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setModalAbierto(false)}
+                  onClick={() => {
+                    setModalAbierto(false);
+                    setImagenArchivo(null);
+                    setVistaPrevia(null);
+                  }}
                   className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
                 >
                   Cancelar
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación Moderno */}
+      {confirmarEliminacion.mostrar && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full transform transition-all">
+            <div className="p-6">
+              {/* Ícono y título */}
+              <div className="flex items-center justify-center mb-4">
+                <div className="bg-red-100 rounded-full p-3">
+                  <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </div>
+              </div>
+              
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Eliminar Producto
+                </h3>
+                <p className="text-gray-600">
+                  ¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.
+                </p>
+              </div>
+              
+              {/* Botones */}
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelarEliminar}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmarEliminar}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
