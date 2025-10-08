@@ -100,7 +100,7 @@ export default function ProductosPage() {
             <div className="flex justify-center items-center min-h-[400px]">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500 mx-auto"></div>
-                <p className="mt-4 text-lg text-gray-600">Cargando productos desde Supabase...</p>
+                <p className="mt-4 text-lg text-gray-600">Cargando productos...</p>
               </div>
             </div>
           </div>

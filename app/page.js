@@ -178,22 +178,6 @@ export default function ClienteDashboard() {
 
           </div>
         </div>
-
-        {/* Recent Activity */}
-        <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Actividad Reciente
-              </h3>
-              <div className="mt-4">
-                <p className="text-sm text-gray-500">
-                  No hay actividad reciente para mostrar.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   );
