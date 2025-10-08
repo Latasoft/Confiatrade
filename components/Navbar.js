@@ -18,13 +18,7 @@ export default function Navbar() {
         </Link>
         <Link href="/productos" className="hover:text-yellow-300">
           Productos
-        </Link>
-        <Link href="/transportes" className="hover:text-yellow-300">
-          Transportes
-        </Link>
-        <Link href="/pedidos" className="hover:text-yellow-300">
-          Pedidos
-        </Link>
+        </Link>      
         <Link href="/como-funciona" className="hover:text-yellow-300">
           Cómo Funciona
         </Link>
