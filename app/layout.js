@@ -6,16 +6,31 @@ import './globals.css'
 import { usePathname } from 'next/navigation'
 import { CartProvider } from '@/lib/CartContext'
 import RoleBasedRedirect from '@/components/RoleBasedRedirect'
+import { ThemeProvider } from '@/components/theme-provider'
+import { BackgroundWrapper } from '@/components/ui/BackgroundWrapper'
 
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
-      <html lang="es">
+      <html lang="es" suppressHydrationWarning>
         <body>
-          <CartProvider>
+          <ThemeProvider>
+            <CartProvider>
               <LayoutWrapper>{children}</LayoutWrapper>
-            <Toaster position="top-right" />
-          </CartProvider>
+              <Toaster 
+                position="top-right"
+                toastOptions={{
+                  className: 'glass',
+                  style: {
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: 'hsl(var(--foreground))',
+                  },
+                }}
+              />
+            </CartProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
@@ -25,16 +40,20 @@ export default function RootLayout({ children }) {
 function LayoutWrapper({ children }) {
   const pathname = usePathname()
   
-  // Páginas que NO deben tener layout automático
+  // Páginas que tienen su propio BackgroundWrapper en su layout
   const isClientePage = pathname?.startsWith('/cliente')
   const isAdminPage = pathname?.startsWith('/admin')
   const isAuthPage = pathname?.startsWith('/sign-')
-  const isTestPage = pathname?.startsWith('/test') || pathname?.startsWith('/setup')
   
-  if (isClientePage || isAdminPage || isAuthPage || isTestPage) {
+  if (isClientePage || isAdminPage || isAuthPage) {
+    // Estas páginas manejan su propio fondo en sus layouts específicos
     return <>{children}</>
   }
   
-  // Para la página de inicio y otras páginas públicas
-  return <>{children}</>
+  // Para la página de inicio y otras páginas públicas aplicamos BackgroundWrapper
+  return (
+    <BackgroundWrapper>
+      {children}
+    </BackgroundWrapper>
+  )
 }
