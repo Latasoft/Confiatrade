@@ -1,31 +1,33 @@
+# ConfiaTrade
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Instalación
 
-## Paso 1. Una vez esté clonado el github https://github.com/Latasoft/Confiatrade.git , ejecutar el siguiente comando en la terminal: 
+### Paso 1: Clonar el repositorio
+```bash
+git clone https://github.com/Latasoft/Confiatrade.git
+cd Confiatrade-1
+```
+
+### Paso 2: Instalar dependencias
+```bash
 npm install
-## Paso 2. Ejecutar el siguiente comando en la terminal:
+```
+
+### Paso 3: Crear archivo de variables de entorno
+```bash
+# Windows
 New-Item .env.local -ItemType File
-## Paso 3: Copiar en .env.local
-NEXT_PUBLIC_SUPABASE_URL=https://mbbernznprzbrwjkbybs.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iYmVybnpucHJ6YnJ3amtieWJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0Nzg1NTIsImV4cCI6MjA3MjA1NDU1Mn0.Bzn4lZMk6zcf9Hcm1mvtyuyNH_5G1nCK7Z21vuibtVI
 
+# Linux/Mac
+touch .env.local
+```
 
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_c3RlcmxpbmctYm9iY2F0LTE5LmNsZXJrLmFjY291bnRzLmRldiQ
-CLERK_SECRET_KEY=sk_test_dezT5hXuuBDNhEYlxGLBZB9LrZavI5VWEFnmwumfFN
+### Paso 4: Configurar variables de entorno
+Contacta al administrador del proyecto para obtener las claves necesarias para el archivo `.env.local`.
 
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iYmVybnpucHJ6YnJ3amtieWJzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjQ3ODU1MiwiZXhwIjoyMDcyMDU0NTUyfQ.nBifp5cb0rFGCJpNMpsVxUS62RM3MfBvr5TU7h0cVBs
-
-
-
-
-
-# Clerk
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=TU_CLERK_PUBLIC_KEY
-CLERK_SECRET_KEY=TU_CLERK_SECRET_KEY
-
-## Getting Started
-
-First, run the development server:
+## Desarrollo
 
 ```bash
 npm run dev
@@ -33,15 +35,29 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tecnologías utilizadas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Next.js 14
+- Supabase (Base de datos)
+- Clerk (Autenticación)
+- Tailwind CSS
+- React
+
+## Estructura del proyecto
+
+```
+├── app/
+│   ├── admin/          # Panel administrativo
+│   ├── cliente/        # Panel cliente
+│   ├── productos/      # Catálogo de productos
+│   └── api/           # API routes
+├── lib/               # Utilidades y configuración
+└── components/        # Componentes reutilizables
+```
 
 ## Learn More
 
@@ -49,8 +65,6 @@ To learn more about Next.js, take a look at the following resources:
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
 ## Deploy on Vercel
 
