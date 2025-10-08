@@ -1,7 +1,4 @@
 'use client'
-// components/ui/NavbarAdmin.js
-// 📌 Navbar para el rol Admin en ConfiaTrade con indicador activo.
-
 import Link from 'next/link'
 import { SignedOut, SignedIn, UserButton, SignInButton } from '@clerk/nextjs'
 import { usePathname } from 'next/navigation'
@@ -10,12 +7,9 @@ export default function NavbarAdmin() {
   const pathname = usePathname()
 
   const links = [
-    { href: '/admin', label: 'Panel' }, // experiencias creadas
-    { href: '/admin/productos', label: 'Productos' }, // 👉 nuevo
-    { href: '/admin/reservas', label: 'Reservas' }, // 👉 nuevo
+    { href: '/admin/solicitudes', label: 'Solicitudes' },
+    { href: '/admin/', label: 'Productos' },
     { href: '/admin/usuarios', label: 'Usuarios' },
-    { href: '/admin/reportes', label: 'Reportes' },
-    { href: '/admin/perfil', label: 'Mi Perfil' }, // 👉 en vez de seguridad
   ]
 
   return (
@@ -34,11 +28,10 @@ export default function NavbarAdmin() {
             <Link
               key={link.href}
               href={link.href}
-              className={`transition-colors ${
-                isActive
+              className={`transition-colors ${isActive
                   ? 'text-yellow-300 font-bold border-b-2 border-yellow-300 pb-1'
                   : 'hover:text-yellow-300'
-              }`}
+                }`}
             >
               {link.label}
             </Link>
