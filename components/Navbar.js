@@ -21,13 +21,12 @@ export default function Navbar() {
         </Link>
         <Link href="/productos" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
           Productos
-        </Link>      
-        <Link href="/como-funciona" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
-          Cómo Funciona
-        </Link>
-        <Link href="/sobre-nosotros" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
-          Sobre Nosotros
-        </Link>
+        </Link>     
+        <SignedIn>
+          <Link href="/solicitudes" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
+            Mis Solicitudes
+          </Link>  
+        </SignedIn>
       </div>
 
       {/* Login / Usuario y Theme Toggle */}
