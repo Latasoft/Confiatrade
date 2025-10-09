@@ -21,15 +21,6 @@ export default function NavbarCliente() {
         <Link href="/productos" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
           Productos
         </Link>
-        <Link href="/mis-productos" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
-          Mis Productos
-        </Link>
-        <Link href="/como-funciona" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
-          Cómo Funciona
-        </Link>
-        <Link href="/sobre-nosotros" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
-          Sobre Nosotros
-        </Link>
       </div>
 
       {/* Login / Usuario y Theme Toggle */}
