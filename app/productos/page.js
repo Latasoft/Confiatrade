@@ -164,28 +164,31 @@ export default function ProductosPage() {
           </div>
 
           {/* Grid de productos */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {productosFiltrados.map((producto) => (
               <div
                 key={producto.id}
-                className="glass rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                className="glass rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full h-full flex flex-col"
               >
                 {/* Imagen */}
-                <div className="h-48 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                <div className="relative w-full aspect-square overflow-hidden">
                   <img
                     src={producto.imagen}
                     alt={producto.nombre}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/200x200/ffffff/cccccc?text=Producto';
+                    }}
                   />
                 </div>
 
                 {/* Contenido */}
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 line-clamp-2">
+                <div className="p-3 flex-1 flex flex-col">
+                  <div className="mb-2">
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 mb-1">
                       {producto.nombre}
                     </h3>
-                    <span className={`px-2 py-1 rounded-full text-xs ${producto.disponible
+                    <span className={`px-1 py-0.5 rounded text-xs ${producto.disponible
                         ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300'
                         : 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300'
                       }`}>
@@ -193,32 +196,28 @@ export default function ProductosPage() {
                     </span>
                   </div>
 
-                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+                  <p className="text-gray-600 dark:text-gray-300 text-xs mb-2 line-clamp-1">
                     {producto.descripcion}
                   </p>
 
                   {/* Detalles */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Ubicación:</span>
-                      <span className="font-medium text-gray-800 dark:text-gray-200">{producto.ubicacion}</span>
+                  <div className="space-y-1 mb-2 flex-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs">Ubicación:</span>
+                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs font-medium truncate ml-1">{producto.ubicacion}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Categoría:</span>
-                      <span className="font-medium capitalize text-gray-800 dark:text-gray-200">{producto.categoria.replace('-', ' ')}</span>
+                    <div className="flex justify-between text-xs">
+                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs">Categoría:</span>
+                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs font-medium capitalize truncate ml-1">{producto.categoria.replace('-', ' ')}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Proveedor:</span>
-                      <span className="font-medium text-gray-800 dark:text-gray-200">{producto.proveedor}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Stock:</span>
-                      <span className="font-medium text-gray-800 dark:text-gray-200">{producto.stock} unidades</span>
+                    <div className="flex justify-between text-xs">
+                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs">Stock:</span>
+                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs font-medium ml-1">{producto.stock}</span>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center">
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  <div className="mt-auto">
+                    <div className="text-sm font-bold text-green-600 dark:text-green-400 mb-2 text-center">
                       ${producto.precio?.toLocaleString() || 'Consultar'}
                     </div>
                     
@@ -227,14 +226,14 @@ export default function ProductosPage() {
                       // Producto no disponible
                       <button
                         disabled
-                        className="bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed px-6 py-2 rounded-xl font-medium transition-all duration-200"
+                        className="w-full bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed px-2 py-1 rounded text-xs font-medium"
                       >
                         No Disponible
                       </button>
                     ) : !isSignedIn ? (
                       // Usuario no logueado - Mostrar botón para iniciar sesión
                       <SignInButton>
-                        <button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-2 py-1 rounded text-xs font-medium transition-all duration-200">
                           Iniciar Sesión
                         </button>
                       </SignInButton>
@@ -242,7 +241,7 @@ export default function ProductosPage() {
                       // Usuario logueado y producto disponible
                       <button
                         onClick={() => handleSolicitar(producto)}
-                        className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-2 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                        className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-all duration-200"
                       >
                         Solicitar
                       </button>
