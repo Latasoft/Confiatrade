@@ -216,20 +216,20 @@ export default function ProductosPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <NavbarCliente />
-      <div className="flex-1 bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50">
+      <div className="flex-1">
         <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-800 mb-4">
+          {/* Header con glass effect */}
+          <div className="glass rounded-2xl p-6 mb-8">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 dark:from-blue-400 dark:via-purple-400 dark:to-blue-600 bg-clip-text text-transparent mb-4">
               Productos Agrícolas
             </h1>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 dark:text-gray-300 text-lg">
               Descubre los mejores productos agrícolas de nuestra red de proveedores
             </p>
           </div>
 
-          {/* Buscador */}
-          <div className="mb-8 bg-white rounded-lg shadow-md p-6">
+          {/* Buscador con glass effect */}
+          <div className="glass rounded-xl p-6 mb-8">
             <input
               type="text"
               placeholder="Buscar productos..."
@@ -268,17 +268,17 @@ export default function ProductosPage() {
 
       {/* Modal de solicitud */}
       {modalSolicitud && productoSeleccionado && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg rounded-3xl w-full max-w-md shadow-2xl border border-white/20 my-8 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white/20 dark:bg-gray-900/20 backdrop-blur-xl rounded-3xl w-full max-w-md shadow-2xl border border-white/30 dark:border-gray-700/30 my-8 max-h-[90vh] overflow-y-auto">
             {/* Header del modal */}
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-b border-white/20 dark:border-gray-700/30">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
                   Solicitar Producto
                 </h2>
                 <button
                   onClick={() => setModalSolicitud(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl transition-colors duration-200"
                 >
                   ×
                 </button>
@@ -287,7 +287,7 @@ export default function ProductosPage() {
             
             <div className="p-6 space-y-5">
               {/* Producto info compacta */}
-              <div className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+              <div className="flex items-start space-x-4 p-4 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm rounded-xl border border-white/20 dark:border-gray-700/20">
                 <img 
                   src={productoSeleccionado.imagen_url || 'https://via.placeholder.com/80x80/f0f0f0/cccccc?text=Producto'} 
                   alt={productoSeleccionado.nombre}
@@ -297,10 +297,10 @@ export default function ProductosPage() {
                   <h3 className="font-semibold text-gray-900 dark:text-white text-base truncate">
                     {productoSeleccionado.nombre}
                   </h3>
-                  <p className="text-sm font-bold text-green-600 dark:text-green-400">
+                  <p className="text-sm font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
                     ${productoSeleccionado.precio?.toLocaleString()}/{productoSeleccionado.unidad || 'unidad'}
                   </p>
-                  <p className="text-xs text-gray-500">Stock: {productoSeleccionado.stock}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Stock: {productoSeleccionado.stock}</p>
                 </div>
               </div>
 
@@ -318,7 +318,7 @@ export default function ProductosPage() {
                     ...prev,
                     cantidad: e.target.value
                   }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 bg-white/50 dark:bg-gray-800/50 border border-white/30 dark:border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-gray-900 dark:text-white transition-all duration-200"
                   placeholder="Ej: 100"
                 />
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
@@ -333,7 +333,7 @@ export default function ProductosPage() {
 
               {/* Transporte */}
               <div>
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center space-x-3 p-3 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm rounded-lg border border-white/20 dark:border-gray-700/20">
                   <input
                     type="checkbox"
                     id="requiere_transporte"
@@ -353,7 +353,7 @@ export default function ProductosPage() {
 
               {/* Mensaje informativo si requiere transporte */}
               {formSolicitud.requiere_transporte && (
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
+                <div className="p-3 bg-blue-500/20 dark:bg-blue-500/10 backdrop-blur-sm rounded-lg border border-blue-300/30 dark:border-blue-500/20">
                   <p className="text-sm text-blue-700 dark:text-blue-300">
                     ℹ️ Luego de realizar la compra se le comunicará con el vendedor para coordinar transporte
                   </p>
@@ -362,10 +362,10 @@ export default function ProductosPage() {
 
               {/* Resumen compacto */}
               {formSolicitud.cantidad > 0 && (
-                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="p-3 bg-emerald-500/20 dark:bg-emerald-500/10 backdrop-blur-sm rounded-lg border border-emerald-300/30 dark:border-emerald-500/20">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Total estimado:</span>
-                    <span className="font-bold text-lg text-green-600 dark:text-green-400">
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Total estimado:</span>
+                    <span className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
                       ${((productoSeleccionado.precio || 0) * (formSolicitud.cantidad || 0)).toLocaleString()}
                     </span>
                   </div>
@@ -377,17 +377,17 @@ export default function ProductosPage() {
             </div>
 
             {/* Botones */}
-            <div className="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex gap-3 p-6 border-t border-white/20 dark:border-gray-700/30">
               <button
                 onClick={() => setModalSolicitud(false)}
-                className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white/30 dark:bg-gray-800/30 border border-white/40 dark:border-gray-600/40 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 backdrop-blur-sm transition-all duration-200"
               >
                 Cancelar
               </button>
               <button
                 onClick={enviarSolicitud}
                 disabled={!formSolicitud.cantidad || formSolicitud.cantidad < 100}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-emerald-600 text-white rounded-lg hover:from-blue-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg"
               >
                 📤 Enviar Solicitud
               </button>

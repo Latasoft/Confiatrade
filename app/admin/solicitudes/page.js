@@ -181,56 +181,89 @@ export default function SolicitudesPage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Gestión de Solicitudes de Carga</h1>
+    <div className="container mx-auto p-6">
+      {/* Header con glass effect */}
+      <div className="glass rounded-2xl p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 dark:from-blue-400 dark:via-purple-400 dark:to-blue-600 bg-clip-text text-transparent">
+              Gestión de Solicitudes de Carga
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">Administra las solicitudes de compra de los clientes</p>
+          </div>
+        </div>
+      </div>
       
-      {/* Filtros */}
-      <div className="mb-6 flex gap-2">
-        <button 
-          onClick={() => setFiltro('todas')} 
-          className={`px-4 py-2 rounded ${filtro === 'todas' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
-        >
-          Todas
-        </button>
-        <button 
-          onClick={() => setFiltro('pendiente')} 
-          className={`px-4 py-2 rounded ${filtro === 'pendiente' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
-        >
-          Pendientes
-        </button>
-        <button 
-          onClick={() => setFiltro('aprobada')} 
-          className={`px-4 py-2 rounded ${filtro === 'aprobada' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
-        >
-          Aprobadas
-        </button>
-        <button 
-          onClick={() => setFiltro('rechazada')} 
-          className={`px-4 py-2 rounded ${filtro === 'rechazada' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
-        >
-          Rechazadas
-        </button>
-        <button 
-          onClick={() => setFiltro('mas_info')} 
-          className={`px-4 py-2 rounded ${filtro === 'mas_info' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
-        >
-          Requieren más info
-        </button>
+      {/* Filtros con glass effect */}
+      <div className="glass rounded-xl p-4 mb-6">
+        <div className="flex gap-3 flex-wrap">
+          <button 
+            onClick={() => setFiltro('todas')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'todas' 
+                ? 'bg-blue-600 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Todas
+          </button>
+          <button 
+            onClick={() => setFiltro('pendiente')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'pendiente' 
+                ? 'bg-orange-500 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Pendientes
+          </button>
+          <button 
+            onClick={() => setFiltro('aprobada')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'aprobada' 
+                ? 'bg-green-600 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Aprobadas
+          </button>
+          <button 
+            onClick={() => setFiltro('rechazada')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'rechazada' 
+                ? 'bg-red-600 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Rechazadas
+          </button>
+          <button 
+            onClick={() => setFiltro('mas_info')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'mas_info' 
+                ? 'bg-purple-600 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Requieren más info
+          </button>
+        </div>
       </div>
 
       {/* Estado de carga */}
       {loading ? (
-        <div className="text-center py-10">
+        <div className="glass rounded-xl p-10 text-center">
           <div className="spinner"></div>
-          <p>Cargando solicitudes...</p>
+          <p className="text-gray-600 dark:text-gray-300">Cargando solicitudes...</p>
         </div>
       ) : solicitudes.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">No hay solicitudes {filtro !== 'todas' ? `en estado "${filtro}"` : ''}</p>
+        <div className="glass rounded-xl p-10 text-center">
+          <p className="text-gray-500 dark:text-gray-400">No hay solicitudes {filtro !== 'todas' ? `en estado "${filtro}"` : ''}</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse shadow-lg bg-white">
+        <div className="glass rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
             <thead>
               <tr className="bg-blue-700 text-white">
                 <th className="p-2">Cliente</th>
@@ -300,15 +333,16 @@ export default function SolicitudesPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
 
       {/* Modal de detalles de solicitud */}
       {modalSolicitud && solicitudActual && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Detalles de la Solicitud #{solicitudActual.id}</h2>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="glass rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <h2 className="text-xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Detalles de la Solicitud #{solicitudActual.id}</h2>
             
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>

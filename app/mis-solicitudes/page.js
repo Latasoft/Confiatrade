@@ -171,9 +171,9 @@ export default function MisSolicitudesPage() {
         <Navbar />
         <main className="flex-1">
           <div className="container mx-auto px-4 py-8">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">
+            {/* Header con glass effect */}
+            <div className="glass rounded-2xl p-6 mb-8 text-center">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 dark:from-blue-400 dark:via-purple-400 dark:to-blue-600 bg-clip-text text-transparent mb-4">
                 Mis Solicitudes
               </h1>
               <p className="text-gray-600 dark:text-gray-300 text-lg">
@@ -206,7 +206,7 @@ export default function MisSolicitudesPage() {
                 </p>
                 <button 
                   onClick={() => window.location.href = '/productos'}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   Ver Productos
                 </button>
@@ -214,7 +214,7 @@ export default function MisSolicitudesPage() {
             ) : (
               <div className="space-y-6">
                 {solicitudes.map((solicitud) => (
-                  <div key={solicitud.id} className="glass rounded-lg p-6 hover:shadow-lg transition-shadow">
+                  <div key={solicitud.id} className="bg-white/20 dark:bg-gray-900/20 backdrop-blur-xl rounded-xl p-6 border border-white/30 dark:border-gray-700/30 hover:bg-white/30 dark:hover:bg-gray-900/30 hover:shadow-2xl transition-all duration-300">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                       
                       {/* Información principal */}
@@ -318,15 +318,15 @@ export default function MisSolicitudesPage() {
                                 </p>
                               </div>
                             ) : (
-                              <div className="p-3 bg-green-50 rounded-lg">
+                              <div className="p-3 bg-emerald-500/20 dark:bg-emerald-500/10 backdrop-blur-sm rounded-lg border border-emerald-300/30 dark:border-emerald-500/20">
                                 {/* Mostrar el mensaje completo de la base de datos si existe, o mensaje por defecto */}
                                 {solicitud.mensaje && solicitud.mensaje.includes('¡Pago Aprobado!') ? (
-                                  <p className="text-green-800 font-medium whitespace-pre-line">{solicitud.mensaje}</p>
+                                  <p className="text-emerald-800 dark:text-emerald-300 font-medium whitespace-pre-line">{solicitud.mensaje}</p>
                                 ) : (
                                   <>
-                                    <p className="text-green-800 font-medium">¡Pago Aprobado!</p>
+                                    <p className="text-emerald-800 dark:text-emerald-300 font-medium">¡Pago Aprobado!</p>
                                     {solicitud.requiere_transporte && (
-                                      <p className="text-sm text-green-700 mt-1">
+                                      <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-1">
                                         📞 El administrador se pondrá en contacto contigo para coordinar el transporte.
                                       </p>
                                     )}
@@ -341,8 +341,8 @@ export default function MisSolicitudesPage() {
 
                     {/* Mensaje adicional si está rechazada o requiere más info */}
                     {(solicitud.estado === 'rechazada' || solicitud.estado === 'mas_info') && (
-                      <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <div className="mt-4 p-4 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm rounded-lg border border-white/20 dark:border-gray-700/20">
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
                           <span className="font-medium">Estado:</span> 
                           {solicitud.mensaje || (solicitud.estado === 'rechazada' 
                             ? ' Tu solicitud ha sido rechazada. Vuelve a intentarlo.' 
