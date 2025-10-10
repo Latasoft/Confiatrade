@@ -154,51 +154,82 @@ export default function UsuariosAdminPage() {
   }
 
   return (
-    <main className="max-w-6xl mx-auto py-10 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
-        <button
-          onClick={abrirCrear}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-        >
-          ➕ Crear usuario
-        </button>
+    <div className="container mx-auto p-6">
+      {/* Header con glass effect */}
+      <div className="glass rounded-2xl p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 dark:from-blue-400 dark:via-purple-400 dark:to-blue-600 bg-clip-text text-transparent">
+              Gestión de Usuarios
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">Administra los usuarios del sistema</p>
+          </div>
+          <button
+            onClick={abrirCrear}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+          >
+            ➕ Crear usuario
+          </button>
+        </div>
       </div>
-      
-      {/* Filtros de estado */}
-      <div className="mb-6 flex gap-2">
-        <button
-          onClick={() => setFiltro('todos')}
-          className={`px-3 py-1 rounded ${filtro === 'todos' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-        >
-          Todos
-        </button>
-        <button
-          onClick={() => setFiltro('pendiente')}
-          className={`px-3 py-1 rounded ${filtro === 'pendiente' ? 'bg-yellow-500 text-white' : 'bg-gray-200'}`}
-        >
-          Pendientes
-        </button>
-        <button
-          onClick={() => setFiltro('aprobado')}
-          className={`px-3 py-1 rounded ${filtro === 'aprobado' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
-        >
-          Aprobados
-        </button>
-        <button
-          onClick={() => setFiltro('rechazado')}
-          className={`px-3 py-1 rounded ${filtro === 'rechazado' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}
-        >
-          Rechazados
-        </button>
+
+      {/* Filtros con glass effect */}
+      <div className="glass rounded-xl p-4 mb-6">
+        <div className="flex gap-3 flex-wrap">
+          <button 
+            onClick={() => setFiltro('todos')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'todos' 
+                ? 'bg-blue-600 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Todos
+          </button>
+          <button 
+            onClick={() => setFiltro('pendiente')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'pendiente' 
+                ? 'bg-orange-500 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Pendientes
+          </button>
+          <button 
+            onClick={() => setFiltro('aprobado')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'aprobado' 
+                ? 'bg-green-600 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Aprobados
+          </button>
+          <button 
+            onClick={() => setFiltro('rechazado')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'rechazado' 
+                ? 'bg-red-600 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Rechazados
+          </button>
+        </div>
       </div>
 
       {cargando ? (
-        <p className="text-center">Cargando usuarios...</p>
+        <div className="glass rounded-xl p-10 text-center">
+          <p className="text-gray-600 dark:text-gray-300">Cargando usuarios...</p>
+        </div>
       ) : usuarios.length === 0 ? (
-        <p className="text-center text-gray-500">No hay usuarios registrados.</p>
+        <div className="glass rounded-xl p-10 text-center">
+          <p className="text-gray-500 dark:text-gray-400">No hay usuarios registrados.</p>
+        </div>
       ) : (
-        <table className="w-full border-collapse shadow-lg bg-white">
+        <div className="glass rounded-xl overflow-hidden">
+          <table className="w-full border-collapse">
           <thead>
             <tr className="bg-blue-700 text-white">
               <th className="p-2">ID</th>
@@ -212,26 +243,26 @@ export default function UsuariosAdminPage() {
           </thead>
           <tbody>
             {usuarios.map((u) => (
-              <tr key={u.id} className="hover:bg-gray-50 text-center">
-                <td className="p-2">{u.id}</td>
-                <td className="p-2">{u.nombre}</td>
-                <td className="p-2">{u.email}</td>
-                <td className="p-2 capitalize">{u.rol}</td>
-                <td className="p-2">
+              <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 text-center text-gray-900 dark:text-white">
+                <td className="p-2 border-b border-gray-200 dark:border-gray-600">{u.id}</td>
+                <td className="p-2 border-b border-gray-200 dark:border-gray-600">{u.nombre}</td>
+                <td className="p-2 border-b border-gray-200 dark:border-gray-600">{u.email}</td>
+                <td className="p-2 capitalize border-b border-gray-200 dark:border-gray-600">{u.rol}</td>
+                <td className="p-2 border-b border-gray-200 dark:border-gray-600">
                   <span className={
                     `px-2 py-1 rounded text-white ${
                       u.estado === 'aprobado' ? 'bg-green-500' : 
                       u.estado === 'rechazado' ? 'bg-red-500' : 
-                      'bg-yellow-500'
+                      'bg-orange-500'
                     }`
                   }>
                     {u.estado || 'pendiente'}
                   </span>
                 </td>
-                <td className="p-2">
+                <td className="p-2 border-b border-gray-200 dark:border-gray-600">
                   {new Date(u.created_at).toLocaleDateString()}
                 </td>
-                <td className="p-2 flex gap-2 justify-center">
+                <td className="p-2 flex gap-2 justify-center border-b border-gray-200 dark:border-gray-600">
                   {u.estado === 'pendiente' && (
                     <>
                       <button
@@ -264,14 +295,15 @@ export default function UsuariosAdminPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       )}
 
       {/* Modal Crear/Editar */}
       {modalAbierto && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center p-4">
+          <div className="glass p-6 rounded-2xl shadow-2xl w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {usuarioEditando ? 'Editar Usuario' : 'Crear Usuario'}
             </h2>
             <input
@@ -332,6 +364,6 @@ export default function UsuariosAdminPage() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   )
 }
