@@ -1,0 +1,283 @@
+-- =============================================
+-- CONFIATRADE - EXPORTACIÓN BASE DE DATOS SUPABASE
+-- Fecha: 10 de octubre de 2025
+-- =============================================
+
+-- INSTRUCCIONES:
+-- 1. Ve a tu Supabase Dashboard → SQL Editor
+-- 2. Ejecuta los comandos de abajo para obtener el esquema completo
+-- 3. Copia los resultados aquí
+
+-- =============================================
+-- COMANDO PARA OBTENER ESQUEMA COMPLETO
+-- =============================================
+
+SELECT 
+  table_name,
+  column_name,
+  data_type,
+  is_nullable,
+  column_default,
+  character_maximum_length
+FROM information_schema.columns 
+WHERE table_schema = 'public'
+ORDER BY table_name, ordinal_position;
+
+-- =============================================
+-- COMANDO PARA VER TODAS LAS TABLAS
+-- =============================================
+
+SELECT 
+  schemaname,
+  tablename,
+  tableowner,
+  hasindexes,
+  hasrules,
+  hastriggers
+FROM pg_tables 
+WHERE schemaname = 'public';
+
+-- =============================================
+-- COMANDOS PARA EXPORTAR DATOS DE CADA TABLA
+-- =============================================
+
+-- Tabla: productos
+SELECT * FROM productos;
+
+-- Tabla: solicitudes_compra  
+SELECT * FROM solicitudes_compra;
+
+-- Tabla: users
+SELECT * FROM users;
+
+-- Tabla: transportes
+SELECT * FROM transportes;
+
+-- Tabla: ordenes
+SELECT * FROM ordenes;
+
+-- Tabla: orden_items
+SELECT * FROM orden_items;
+
+-- Tabla: transacciones_pago
+SELECT * FROM transacciones_pago;
+
+-- Tabla: transacciones
+SELECT * FROM transacciones;
+
+-- Tabla: pedidos
+SELECT * FROM pedidos;
+
+-- Tabla: pagos
+SELECT * FROM pagos;
+
+-- Tabla: reservas
+SELECT * FROM reservas;
+
+-- Tabla: mensajes
+SELECT * FROM mensajes;
+
+-- Tabla: metodos_pago
+SELECT * FROM metodos_pago;
+
+-- Tabla: reviews
+SELECT * FROM reviews;
+
+-- Tabla: reportes
+SELECT * FROM reportes;
+
+-- Tabla: logs
+SELECT * FROM logs;
+
+-- Tabla: ventas
+SELECT * FROM ventas;
+
+-- =============================================
+-- ESQUEMA REAL DE LA BASE DE DATOS SUPABASE
+-- Extraído el 10 de octubre de 2025
+-- =============================================
+
+-- TABLAS EXISTENTES EN TU SUPABASE:
+-- logs, mensajes, metodos_pago, orden_items, ordenes, pagos, 
+-- pedidos, productos, reportes, reservas, reviews, solicitudes_compra, 
+-- transacciones, transacciones_pago, transportes, users, ventas
+
+-- =============================================
+-- ESTRUCTURA COMPLETA DE TABLAS
+-- =============================================
+
+-- TABLA: logs
+/*
+- id (integer, NOT NULL, PK)
+- usuario_id (integer, NULL)
+- accion (varchar 100, NULL)
+- entidad (varchar 100, NULL) 
+- entidad_id (integer, NULL)
+- descripcion (text, NULL)
+- fecha_log (timestamp, DEFAULT now())
+*/
+
+-- TABLA: mensajes
+/*
+- id (integer, NOT NULL, PK)
+- pedido_id (integer, NULL)
+- emisor_id (integer, NULL)
+- receptor_id (integer, NULL)
+- mensaje (text, NULL)
+- fecha_envio (timestamp, DEFAULT now())
+*/
+
+-- TABLA: metodos_pago
+/*
+- id (integer, NOT NULL, PK)
+- usuario_id (integer, NULL)
+- tipo (varchar 50, NULL)
+- datos (jsonb, NULL)
+- activo (boolean, DEFAULT true)
+*/
+
+-- TABLA: orden_items
+/*
+- id (uuid, NOT NULL, PK, DEFAULT gen_random_uuid())
+- orden_id (uuid, NOT NULL)
+- producto_id (uuid, NOT NULL)
+- cantidad (integer, NOT NULL)
+- precio_unitario (numeric, NOT NULL)
+- subtotal (numeric, NOT NULL)
+- created_at (timestamp with time zone, DEFAULT timezone('utc'::text, now()))
+*/
+
+-- TABLA: ordenes
+/*
+- id (uuid, NOT NULL, PK, DEFAULT gen_random_uuid())
+- usuario_id (varchar 255, NOT NULL)
+- email (varchar 255, NOT NULL)
+- estado (varchar 50, DEFAULT 'pendiente')
+- total (numeric, NOT NULL)
+- metodo_pago (varchar 50, DEFAULT 'webpay')
+- nombre_cliente (varchar 255, NOT NULL)
+- telefono (varchar 20, NULL)
+- direccion (text, NULL)
+- ciudad (varchar 100, NULL)
+- region (varchar 100, NULL)
+- codigo_postal (varchar 10, NULL)
+- webpay_token (varchar 255, NULL)
+- webpay_buy_order (varchar 255, NULL)
+- webpay_session_id (varchar 255, NULL)
+- webpay_amount (integer, NULL)
+- created_at (timestamp with time zone, DEFAULT timezone('utc'::text, now()))
+- updated_at (timestamp with time zone, DEFAULT timezone('utc'::text, now()))
+*/
+
+-- TABLA: pagos
+/*
+- id (integer, NOT NULL, PK)
+- pedido_id (integer, NULL)
+- usuario_id (integer, NULL)
+- monto (numeric, NULL)
+- moneda (varchar 10, NULL)
+- metodo_pago (varchar 50, NULL)
+- estado (varchar 20, DEFAULT 'pendiente')
+- fecha_pago (timestamp, DEFAULT now())
+- referencia_externa (varchar 255, NULL)
+*/
+
+-- TABLA: pedidos
+/*
+- id (integer, NOT NULL, PK)
+- usuario_id (integer, NULL)
+- producto_id (integer, NULL)
+- cantidad (numeric, NULL)
+- total (numeric, NULL)
+- estado (varchar 20, DEFAULT 'pendiente')
+- direccion_entrega (varchar 255, NULL)
+- fecha_estimada (date, NULL)
+- notas (text, NULL)
+- fecha_creacion (timestamp, DEFAULT now())
+*/
+
+-- TABLA: productos ⭐ (TABLA PRINCIPAL)
+/*
+- id (integer, NOT NULL, PK)
+- usuario_id (integer, NULL)
+- nombre (varchar 255, NOT NULL)
+- descripcion (text, NULL)
+- imagen_url (text, NULL)
+- ubicacion (varchar 255, NULL)
+- proveedor (varchar 255, NULL)
+- stock (integer, NULL)
+- unidad (varchar 50, NULL)
+- precio (numeric, NULL)
+- estado (varchar 20, DEFAULT 'disponible')
+- fecha_creacion (timestamp, DEFAULT now())
+- categoria (varchar 100, NULL)
+- disponible (boolean, DEFAULT true)
+- imagen (text, NULL)
+*/
+
+-- TABLA: reportes
+/*
+- id (integer, NOT NULL, PK)
+- tipo (varchar 20, NULL)
+- fecha_generado (timestamp, DEFAULT now())
+- datos (jsonb, NULL)
+- generado_por (integer, NULL)
+*/
+
+-- TABLA: reservas
+/*
+- id (integer, NOT NULL, PK)
+- usuario_id (integer, NULL)
+- transporte_id (integer, NULL)
+- cantidad_reservada (numeric, NULL)
+- estado (varchar 20, DEFAULT 'pendiente')
+- fecha_reserva (timestamp, DEFAULT now())
+- notas (text, NULL)
+*/
+
+-- TABLA: reviews
+/*
+- id (integer, NOT NULL, PK)
+- producto_id (integer, NULL)
+- usuario_id (integer, NULL)
+- calificacion (integer, NULL)
+- comentario (text, NULL)
+- fecha_review (timestamp, DEFAULT now())
+*/
+
+-- TABLA: solicitudes_compra ⭐ (TABLA PRINCIPAL)
+/*
+- id (bigint, NOT NULL, PK)
+- cliente_id (varchar 255, NOT NULL)
+- cliente_email (varchar 255, NOT NULL)
+- cliente_nombre (varchar 255, NOT NULL)
+- producto_id (bigint, NULL)
+- [NOTA: CSV cortado - faltan más campos que se ven en el código]
+*/
+
+-- =============================================
+-- CAMPOS FALTANTES EN solicitudes_compra
+-- (Basándome en el código de la aplicación)
+-- =============================================
+/*
+Campos adicionales que usa el código pero no aparecen en el CSV:
+- producto_nombre (varchar)
+- cantidad (integer)
+- precio_unitario (numeric)
+- precio_total (numeric)
+- mensaje (text)
+- requiere_transporte (boolean)
+- direccion_entrega (text)
+- estado (varchar) - valores: 'pendiente', 'aprobada', 'rechazada', 'mas_info'
+- estado_pago (varchar)
+- estado_envio (varchar)
+- created_at (timestamp)
+*/
+
+-- =============================================
+-- INSTRUCCIONES RÁPIDAS:
+-- =============================================
+-- 1. Copia los comandos SELECT de arriba
+-- 2. Pégalos uno por uno en Supabase SQL Editor
+-- 3. Copia los resultados aquí
+-- 4. ¡Listo para continuar desarrollando!
