@@ -1,41 +1,83 @@
+'use client'
 import Link from 'next/link'
-import { SignedOut, SignedIn, UserButton, SignInButton } from '@clerk/nextjs'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { UserButton } from "@clerk/nextjs"
+import { useState } from 'react'
 
 export default function NavbarCliente() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
   return (
-    <nav className="glass sticky top-0 z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl border-b border-white/10 dark:border-white/5">
-      {/* Logo */}
-      <div className="flex items-center">
-        <img src="/globe.svg" alt="Logo ConfiaTrade" className="w-10 h-10 mr-2 filter brightness-0 invert dark:brightness-100 dark:invert-0" />
-        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
-          ConfiaTrade
-        </span>
-      </div>
+    <nav className="bg-green-700 text-white shadow-lg">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center py-4">
+          {/* Logo */}
+          <Link href="/cliente" className="text-2xl font-bold">
+            ConfiaTrade
+          </Link>
 
-      {/* Links de navegación */}
-      <div className="hidden md:flex gap-6 text-lg">
-        <Link href="/" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
-          Inicio
-        </Link>
-        <Link href="/productos" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
-          Productos
-        </Link>
-      </div>
+          {/* Menu desktop */}
+          <div className="hidden md:flex items-center space-x-6">
+            <Link href="/cliente" className="hover:text-green-200 transition-colors">
+              Dashboard
+            </Link>
+            <Link href="/productos" className="hover:text-green-200 transition-colors">
+              Productos
+            </Link>
+            <Link href="/cliente/mis-solicitudes" className="hover:text-green-200 transition-colors">
+              Mis Solicitudes
+            </Link>
+            <Link href="/transportes" className="hover:text-green-200 transition-colors">
+              Transportes
+            </Link>
+            <Link href="/pedidos" className="hover:text-green-200 transition-colors">
+              Pedidos
+            </Link>
+            <UserButton 
+              appearance={{
+                elements: {
+                  avatarBox: "w-8 h-8"
+                }
+              }}
+            />
+          </div>
 
-      {/* Login / Usuario y Theme Toggle */}
-      <div className="flex items-center gap-4">
-        <ThemeToggle />
-        <SignedOut>
-          <SignInButton>
-            <button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2 rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
-              Iniciar Sesión
-            </button>
-          </SignInButton>
-        </SignedOut>
-        <SignedIn>
-          <UserButton afterSignOutUrl="/" />
-        </SignedIn>
+          {/* Botón hamburguesa para móvil */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden focus:outline-none"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+            </svg>
+          </button>
+        </div>
+
+        {/* Menu móvil */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t border-green-600">
+            <div className="flex flex-col space-y-2">
+              <Link href="/cliente" className="py-2 hover:text-green-200 transition-colors">
+                Dashboard
+              </Link>
+              <Link href="/productos" className="py-2 hover:text-green-200 transition-colors">
+                Productos
+              </Link>
+              <Link href="/cliente/mis-solicitudes" className="py-2 hover:text-green-200 transition-colors">
+                Mis Solicitudes
+              </Link>
+              <Link href="/transportes" className="py-2 hover:text-green-200 transition-colors">
+                Transportes
+              </Link>
+              <Link href="/pedidos" className="py-2 hover:text-green-200 transition-colors">
+                Pedidos
+              </Link>
+              <div className="py-2">
+                <UserButton />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   )
