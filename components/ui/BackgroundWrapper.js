@@ -6,12 +6,41 @@ export function BackgroundWrapper({ children, className = "" }) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
+    let rafId
+
     const updateMousePosition = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
+      // Usar requestAnimationFrame para optimizar el rendimiento
+      if (rafId) {
+        cancelAnimationFrame(rafId)
+      }
+      
+      rafId = requestAnimationFrame(() => {
+        setMousePosition({ x: e.clientX, y: e.clientY })
+      })
     }
 
-    window.addEventListener('mousemove', updateMousePosition)
-    return () => window.removeEventListener('mousemove', updateMousePosition)
+    // Throttle del evento mousemove para evitar demasiadas actualizaciones
+    let throttleTimeout
+    const throttledUpdate = (e) => {
+      if (!throttleTimeout) {
+        throttleTimeout = setTimeout(() => {
+          updateMousePosition(e)
+          throttleTimeout = null
+        }, 16) // ~60fps
+      }
+    }
+
+    window.addEventListener('mousemove', throttledUpdate, { passive: true })
+    
+    return () => {
+      window.removeEventListener('mousemove', throttledUpdate)
+      if (rafId) {
+        cancelAnimationFrame(rafId)
+      }
+      if (throttleTimeout) {
+        clearTimeout(throttleTimeout)
+      }
+    }
   }, [])
 
   return (

@@ -8,10 +8,13 @@ import { CartProvider } from '@/lib/CartContext'
 import RoleBasedRedirect from '@/components/RoleBasedRedirect'
 import { ThemeProvider } from '@/components/theme-provider'
 import { BackgroundWrapper } from '@/components/ui/BackgroundWrapper'
+import '@/lib/devWarnings'
 
 export default function RootLayout({ children }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+    >
       <html lang="es" suppressHydrationWarning>
         <body>
           <ThemeProvider>

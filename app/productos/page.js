@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useUser } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
 import NavbarCliente from '@/components/ui/NavbarCliente'
@@ -8,6 +9,7 @@ import { ProductCard } from '@/components/ui/ProductCard'
 import { ProductGrid } from '@/components/ui/ProductGrid'
 
 export default function ProductosPage() {
+  const { user } = useUser()
   const [searchTerm, setSearchTerm] = useState('')
   const [productos, setProductos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -67,15 +69,25 @@ export default function ProductosPage() {
 
   const enviarSolicitud = async () => {
     if (!user) {
-      toast.error('Debes iniciar sesión para enviar una solicitud')
+      toast.error('🔒 Debes iniciar sesión para enviar una solicitud')
       return
     }
 
     if (!productoSeleccionado) return
 
-    // Validar dirección si requiere transporte
-    if (formSolicitud.requiere_transporte && !formSolicitud.direccion_entrega.trim()) {
-      toast.error('Debes proporcionar una dirección de entrega')
+    // Validaciones de cantidad
+    if (!formSolicitud.cantidad || formSolicitud.cantidad <= 0) {
+      toast.error('⚠️ Debes especificar una cantidad válida')
+      return
+    }
+
+    if (formSolicitud.cantidad < 100) {
+      toast.error('⚠️ La cantidad mínima es de 100 ' + (productoSeleccionado.unidad || 'unidades'))
+      return
+    }
+
+    if (formSolicitud.cantidad > productoSeleccionado.stock) {
+      toast.error('⚠️ No hay suficiente stock disponible')
       return
     }
 
@@ -91,9 +103,9 @@ export default function ProductosPage() {
         cantidad: parseInt(formSolicitud.cantidad),
         precio_unitario: productoSeleccionado.precio,
         precio_total: precioTotal,
-        mensaje: formSolicitud.mensaje.trim() || null,
+        mensaje: (formSolicitud.mensaje || formSolicitud.comentarios || '').trim() || null,
         requiere_transporte: formSolicitud.requiere_transporte,
-        direccion_entrega: formSolicitud.requiere_transporte ? formSolicitud.direccion_entrega.trim() : null,
+        direccion_entrega: formSolicitud.requiere_transporte ? 'Coordinará con vendedor' : null,
         estado: 'pendiente',
         estado_pago: 'pendiente',
         estado_envio: formSolicitud.requiere_transporte ? 'pendiente' : 'no_aplica'
@@ -113,7 +125,19 @@ export default function ProductosPage() {
       }
 
       console.log('✅ Solicitud enviada:', data)
-      toast.success('¡Solicitud enviada exitosamente!')
+      toast.success('🎉 ¡Solicitud enviada exitosamente! Revisa el estado en "Mis Solicitudes"', {
+        duration: 5000
+      })
+      
+      // Limpiar formulario
+      setFormSolicitud({
+        cantidad: '',
+        mensaje: '',
+        comentarios: '',
+        requiere_transporte: false,
+        direccion_entrega: ''
+      })
+      
       setModalSolicitud(false)
       setProductoSeleccionado(null)
 
@@ -148,14 +172,24 @@ export default function ProductosPage() {
     return matchSearch
   })
 
-  const handleSolicitar = async (producto) => {
-    try {
-      console.log('🛒 Solicitando producto:', producto)
-      toast.success(`Solicitud enviada para ${producto.nombre}`)
-    } catch (error) {
-      console.error('Error enviando solicitud:', error)
-      toast.error('Error al enviar la solicitud')
+  const handleSolicitar = (producto) => {
+    if (!user) {
+      toast.error('🔒 Debes iniciar sesión para solicitar productos')
+      return
     }
+    
+    console.log('🛒 Abriendo modal para producto:', producto)
+    setProductoSeleccionado(producto)
+    setModalSolicitud(true)
+    
+    // Resetear formulario
+    setFormSolicitud({
+      cantidad: '',
+      mensaje: '',
+      comentarios: '',
+      requiere_transporte: false,
+      direccion_entrega: ''
+    })
   }
 
   // Loading state
@@ -234,142 +268,128 @@ export default function ProductosPage() {
 
       {/* Modal de solicitud */}
       {modalSolicitud && productoSeleccionado && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Solicitar Producto</h2>
-            
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-medium text-gray-800">{productoSeleccionado.nombre}</h3>
-              <p className="text-sm text-gray-600">{productoSeleccionado.descripcion}</p>
-              <p className="text-lg font-bold text-green-600 mt-2">
-                ${productoSeleccionado.precio?.toLocaleString()}
-              </p>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg rounded-3xl w-full max-w-md shadow-2xl border border-white/20 my-8 max-h-[90vh] overflow-y-auto">
+            {/* Header del modal */}
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Solicitar Producto
+                </h2>
+                <button
+                  onClick={() => setModalSolicitud(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
             </div>
+            
+            <div className="p-6 space-y-5">
+              {/* Producto info compacta */}
+              <div className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <img 
+                  src={productoSeleccionado.imagen_url || 'https://via.placeholder.com/80x80/f0f0f0/cccccc?text=Producto'} 
+                  alt={productoSeleccionado.nombre}
+                  className="w-16 h-16 object-cover rounded-lg"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-base truncate">
+                    {productoSeleccionado.nombre}
+                  </h3>
+                  <p className="text-sm font-bold text-green-600 dark:text-green-400">
+                    ${productoSeleccionado.precio?.toLocaleString()}/{productoSeleccionado.unidad || 'unidad'}
+                  </p>
+                  <p className="text-xs text-gray-500">Stock: {productoSeleccionado.stock}</p>
+                </div>
+              </div>
 
-            <div className="space-y-4">
               {/* Cantidad */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cantidad *
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Cantidad a solicitar *
                 </label>
                 <input
                   type="number"
-                  min="1"
+                  min="100"
                   max={productoSeleccionado.stock}
                   value={formSolicitud.cantidad}
                   onChange={(e) => setFormSolicitud(prev => ({
                     ...prev,
                     cantidad: e.target.value
                   }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Ej: 100"
                 />
-              </div>
-
-              {/* Checkbox para transporte */}
-              <div className="flex items-start space-x-3">
-                <input
-                  type="checkbox"
-                  id="requiere_transporte"
-                  checked={formSolicitud.requiere_transporte}
-                  onChange={(e) => setFormSolicitud(prev => ({
-                    ...prev,
-                    requiere_transporte: e.target.checked,
-                    direccion_entrega: e.target.checked ? prev.direccion_entrega : ''
-                  }))}
-                  className="mt-1"
-                />
-                <label htmlFor="requiere_transporte" className="text-sm">
-                  <span className="font-medium">Necesito servicio de transporte</span>
-                  <p className="text-gray-600 text-xs">
-                    Selecciona esta opción si necesitas que el producto sea enviado a tu dirección
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                  • Cantidad mínima: 100 {productoSeleccionado.unidad || 'unidades'}
+                </p>
+                {formSolicitud.cantidad && formSolicitud.cantidad < 100 && (
+                  <p className="text-xs text-red-500 mt-1">
+                    ⚠️ La cantidad mínima es de 100 {productoSeleccionado.unidad || 'unidades'}
                   </p>
-                </label>
+                )}
               </div>
 
-              {/* Dirección de entrega (condicional) */}
-              {formSolicitud.requiere_transporte && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Dirección de entrega *
-                  </label>
-                  <textarea
-                    value={formSolicitud.direccion_entrega}
+              {/* Transporte */}
+              <div>
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="requiere_transporte"
+                    checked={formSolicitud.requiere_transporte}
                     onChange={(e) => setFormSolicitud(prev => ({
                       ...prev,
-                      direccion_entrega: e.target.value
+                      requiere_transporte: e.target.checked,
+                      direccion_entrega: e.target.checked ? prev.direccion_entrega : ''
                     }))}
-                    rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    placeholder="Ingresa tu dirección completa para la entrega..."
-                    required={formSolicitud.requiere_transporte}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                   />
+                  <label htmlFor="requiere_transporte" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                    🚛 Necesito servicio de transporte
+                  </label>
+                </div>
+              </div>
+
+              {/* Mensaje informativo si requiere transporte */}
+              {formSolicitud.requiere_transporte && (
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    ℹ️ Luego de realizar la compra se le comunicará con el vendedor para coordinar transporte
+                  </p>
                 </div>
               )}
 
-              {/* Mensaje adicional */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mensaje adicional (opcional)
-                </label>
-                <textarea
-                  value={formSolicitud.mensaje}
-                  onChange={(e) => setFormSolicitud(prev => ({
-                    ...prev,
-                    mensaje: e.target.value
-                  }))}
-                  rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Algún detalle adicional sobre tu solicitud..."
-                />
-              </div>
-            </div>
-
-            {/* Resumen */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-medium mb-2">Resumen de solicitud:</h4>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span>Cantidad:</span>
-                  <span>{formSolicitud.cantidad} unidades</span>
+              {/* Resumen compacto */}
+              {formSolicitud.cantidad > 0 && (
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Total estimado:</span>
+                    <span className="font-bold text-lg text-green-600 dark:text-green-400">
+                      ${((productoSeleccionado.precio || 0) * (formSolicitud.cantidad || 0)).toLocaleString()}
+                    </span>
+                  </div>
+                  {formSolicitud.requiere_transporte && (
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">+ Transporte incluido</p>
+                  )}
                 </div>
-                <div className="flex justify-between">
-                  <span>Precio unitario:</span>
-                  <span>${productoSeleccionado.precio?.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Transporte:</span>
-                  <span>{formSolicitud.requiere_transporte ? 'Sí' : 'No'}</span>
-                </div>
-                <div className="flex justify-between font-medium border-t pt-2">
-                  <span>Total:</span>
-                  <span>${((productoSeleccionado.precio || 0) * formSolicitud.cantidad).toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Refresh button - moved outside resumen */}
-            <div className="mt-4">
-              <button
-                onClick={refrescarDatos}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                🔄 Refrescar Datos
-              </button>
+              )}
             </div>
 
             {/* Botones */}
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setModalSolicitud(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={enviarSolicitud}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                disabled={!formSolicitud.cantidad || formSolicitud.cantidad < 100}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               >
-                Enviar Solicitud
+                📤 Enviar Solicitud
               </button>
             </div>
           </div>

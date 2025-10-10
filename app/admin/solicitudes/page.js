@@ -1,17 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSupabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from 'react-hot-toast';
 
 export default function SolicitudesPage() {
-  const supabase = useSupabase();
   const [solicitudes, setSolicitudes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalSolicitud, setModalSolicitud] = useState(false);
   const [solicitudActual, setSolicitudActual] = useState(null);
   const [filtro, setFiltro] = useState('pendiente'); // pendiente, aprobada, rechazada, todas
   const [comentario, setComentario] = useState('');
+  const [contactoTransporte, setContactoTransporte] = useState('');
+  const [descripcionPago, setDescripcionPago] = useState('');
 
   useEffect(() => {
     fetchSolicitudes();
@@ -20,7 +21,7 @@ export default function SolicitudesPage() {
   async function fetchSolicitudes() {
     try {
       setLoading(true);
-      let query = supabase.from('solicitudes_carga').select('*');
+      let query = supabase.from('solicitudes_compra').select('*');
       
       // Aplicar filtro si no es 'todas'
       if (filtro !== 'todas') {
@@ -44,21 +45,27 @@ export default function SolicitudesPage() {
     setModalSolicitud(true);
   }
 
+  function cerrarModal() {
+    setModalSolicitud(false);
+    setSolicitudActual(null);
+    setComentario('');
+    setContactoTransporte('');
+    setDescripcionPago('');
+  }
+
   async function aprobarSolicitud() {
     try {
       const { error } = await supabase
-        .from('solicitudes_carga')
+        .from('solicitudes_compra')
         .update({ 
-          estado: 'aprobada',
-          comentario_admin: comentario,
-          fecha_aprobacion: new Date().toISOString()
+          estado: 'aprobada'
         })
         .eq('id', solicitudActual.id);
 
       if (error) throw error;
       
       toast.success('Solicitud aprobada correctamente');
-      setModalSolicitud(false);
+      cerrarModal();
       fetchSolicitudes();
     } catch (error) {
       console.error('Error al aprobar solicitud:', error);
@@ -69,18 +76,16 @@ export default function SolicitudesPage() {
   async function solicitarMasInfo() {
     try {
       const { error } = await supabase
-        .from('solicitudes_carga')
+        .from('solicitudes_compra')
         .update({ 
-          estado: 'mas_info',
-          comentario_admin: comentario,
-          fecha_actualizacion: new Date().toISOString()
+          estado: 'mas_info'
         })
         .eq('id', solicitudActual.id);
 
       if (error) throw error;
       
       toast.success('Solicitud de más información enviada');
-      setModalSolicitud(false);
+      cerrarModal();
       fetchSolicitudes();
     } catch (error) {
       console.error('Error al solicitar más información:', error);
@@ -91,22 +96,69 @@ export default function SolicitudesPage() {
   async function rechazarSolicitud() {
     try {
       const { error } = await supabase
-        .from('solicitudes_carga')
+        .from('solicitudes_compra')
         .update({ 
-          estado: 'rechazada',
-          comentario_admin: comentario,
-          fecha_actualizacion: new Date().toISOString()
+          estado: 'rechazada'
         })
         .eq('id', solicitudActual.id);
 
       if (error) throw error;
       
       toast.success('Solicitud rechazada');
-      setModalSolicitud(false);
+      cerrarModal();
       fetchSolicitudes();
     } catch (error) {
       console.error('Error al rechazar solicitud:', error);
       toast.error('Error al rechazar la solicitud');
+    }
+  }
+
+  async function aprobarPago() {
+    try {
+      const updateData = { 
+        estado_pago: 'aprobado',
+        descripcion_pago: descripcionPago.trim() || null
+      };
+
+      // Si requiere transporte, incluir contacto
+      if (solicitudActual.requiere_transporte && contactoTransporte.trim()) {
+        updateData.contacto_transporte = contactoTransporte.trim();
+      }
+
+      const { error } = await supabase
+        .from('solicitudes_compra')
+        .update(updateData)
+        .eq('id', solicitudActual.id);
+
+      if (error) throw error;
+      
+      toast.success('Pago aprobado correctamente');
+      cerrarModal();
+      fetchSolicitudes();
+    } catch (error) {
+      console.error('Error al aprobar pago:', error);
+      toast.error('Error al aprobar el pago');
+    }
+  }
+
+  async function rechazarPago() {
+    try {
+      const { error } = await supabase
+        .from('solicitudes_compra')
+        .update({ 
+          estado_pago: 'rechazado',
+          descripcion_pago: descripcionPago.trim() || null
+        })
+        .eq('id', solicitudActual.id);
+
+      if (error) throw error;
+      
+      toast.success('Pago rechazado');
+      cerrarModal();
+      fetchSolicitudes();
+    } catch (error) {
+      console.error('Error al rechazar pago:', error);
+      toast.error('Error al rechazar el pago');
     }
   }
 
@@ -166,9 +218,10 @@ export default function SolicitudesPage() {
                 <th className="p-2">ID</th>
                 <th className="p-2">Cliente</th>
                 <th className="p-2">Producto</th>
-                <th className="p-2">Origen</th>
-                <th className="p-2">Destino</th>
-                <th className="p-2">Estado</th>
+                <th className="p-2">Cantidad</th>
+                <th className="p-2">Total</th>
+                <th className="p-2">Estado Solicitud</th>
+                <th className="p-2">Estado Pago</th>
                 <th className="p-2">Fecha</th>
                 <th className="p-2">Acciones</th>
               </tr>
@@ -179,8 +232,8 @@ export default function SolicitudesPage() {
                   <td className="p-2">{s.id}</td>
                   <td className="p-2">{s.cliente_nombre || s.cliente_id}</td>
                   <td className="p-2">{s.producto_nombre}</td>
-                  <td className="p-2">{s.origen}</td>
-                  <td className="p-2">{s.destino}</td>
+                  <td className="p-2">{s.cantidad} kg</td>
+                  <td className="p-2">${s.precio_total?.toLocaleString()}</td>
                   <td className="p-2">
                     <span className={
                       `px-2 py-1 rounded text-white ${
@@ -194,7 +247,31 @@ export default function SolicitudesPage() {
                     </span>
                   </td>
                   <td className="p-2">
-                    {new Date(s.created_at).toLocaleDateString()}
+                    <span className={
+                      `px-2 py-1 rounded text-white text-xs ${
+                        s.estado_pago === 'aprobado' ? 'bg-green-600' : 
+                        s.estado_pago === 'comprobante_enviado' ? 'bg-blue-500' :
+                        s.estado_pago === 'rechazado' ? 'bg-red-600' :
+                        'bg-gray-500'
+                      }`
+                    }>
+                      {s.estado_pago === 'aprobado' ? 'Aprobado' :
+                       s.estado_pago === 'comprobante_enviado' ? 'Comprobante' :
+                       s.estado_pago === 'rechazado' ? 'Rechazado' :
+                       'Pendiente'}
+                    </span>
+                  </td>
+                  <td className="p-2">
+                    {s.created_at ? 
+                      new Date(s.created_at).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) 
+                      : 'No disponible'
+                    }
                   </td>
                   <td className="p-2 flex gap-2 justify-center">
                     <button
@@ -224,28 +301,101 @@ export default function SolicitudesPage() {
                 <p><strong>ID:</strong> {solicitudActual.cliente_id}</p>
                 <p><strong>Email:</strong> {solicitudActual.cliente_email}</p>
               </div>
-              
-              <div>
-                <h3 className="font-semibold">Información del Envío</h3>
-                <p><strong>Origen:</strong> {solicitudActual.origen}</p>
-                <p><strong>Destino:</strong> {solicitudActual.destino}</p>
-                <p><strong>Fecha estimada:</strong> {solicitudActual.fecha_estimada}</p>
-              </div>
             </div>
             
             <div className="mb-6">
               <h3 className="font-semibold">Detalles del Producto</h3>
               <p><strong>Nombre:</strong> {solicitudActual.producto_nombre}</p>
-              <p><strong>Descripción:</strong> {solicitudActual.producto_descripcion}</p>
-              <p><strong>Peso:</strong> {solicitudActual.peso} kg</p>
-              <p><strong>Dimensiones:</strong> {solicitudActual.dimensiones}</p>
-              <p><strong>Valor declarado:</strong> ${solicitudActual.valor_declarado}</p>
-              <p><strong>Requiere refrigeración:</strong> {solicitudActual.requiere_refrigeracion ? 'Sí' : 'No'}</p>
-              <p><strong>Requiere manejo especial:</strong> {solicitudActual.manejo_especial ? 'Sí' : 'No'}</p>
-              {solicitudActual.notas && (
-                <p><strong>Notas adicionales:</strong> {solicitudActual.notas}</p>
+              <p><strong>Cantidad:</strong> {solicitudActual.cantidad} kg</p>
+              <p><strong>Precio unitario:</strong> ${solicitudActual.precio_unitario?.toLocaleString()}</p>
+              <p><strong>Total:</strong> ${solicitudActual.precio_total?.toLocaleString()}</p>
+              {solicitudActual.requiere_transporte && (
+                <p><strong>Transporte:</strong> Requerido</p>
+              )}
+              {solicitudActual.mensaje && (
+                <p><strong>Mensaje del cliente:</strong> {solicitudActual.mensaje}</p>
               )}
             </div>
+
+            {/* Estados */}
+            <div className="mb-6 grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="font-semibold mb-2">Estado de Solicitud</h3>
+                <span className={
+                  `px-3 py-1 rounded text-white ${
+                    solicitudActual.estado === 'aprobada' ? 'bg-green-500' : 
+                    solicitudActual.estado === 'rechazada' ? 'bg-red-500' : 
+                    solicitudActual.estado === 'mas_info' ? 'bg-orange-500' :
+                    'bg-yellow-500'
+                  }`
+                }>
+                  {solicitudActual.estado}
+                </span>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Estado de Pago</h3>
+                <span className={
+                  `px-3 py-1 rounded text-white ${
+                    solicitudActual.estado_pago === 'aprobado' ? 'bg-green-600' : 
+                    solicitudActual.estado_pago === 'comprobante_enviado' ? 'bg-blue-500' :
+                    solicitudActual.estado_pago === 'rechazado' ? 'bg-red-600' :
+                    'bg-gray-500'
+                  }`
+                }>
+                  {solicitudActual.estado_pago === 'aprobado' ? 'Aprobado' :
+                   solicitudActual.estado_pago === 'comprobante_enviado' ? 'Comprobante Enviado' :
+                   solicitudActual.estado_pago === 'rechazado' ? 'Rechazado' :
+                   'Pendiente'}
+                </span>
+              </div>
+            </div>
+
+            {/* Gestión de Pago - Solo visible si hay comprobante enviado */}
+            {solicitudActual.estado_pago === 'comprobante_enviado' && (
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 className="font-semibold mb-3 text-blue-800">Gestión de Pago</h3>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-2">Descripción del pago (opcional)</label>
+                  <textarea
+                    value={descripcionPago}
+                    onChange={(e) => setDescripcionPago(e.target.value)}
+                    className="w-full border rounded p-2"
+                    rows="2"
+                    placeholder="Agregar comentarios sobre el pago..."
+                  />
+                </div>
+
+                {solicitudActual.requiere_transporte && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2">Contacto para transporte *</label>
+                    <input
+                      type="text"
+                      value={contactoTransporte}
+                      onChange={(e) => setContactoTransporte(e.target.value)}
+                      className="w-full border rounded p-2"
+                      placeholder="Teléfono o email para coordinar transporte"
+                    />
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={rechazarPago}
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Rechazar Pago
+                  </button>
+                  <button
+                    onClick={aprobarPago}
+                    disabled={solicitudActual.requiere_transporte && !contactoTransporte.trim()}
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    Aprobar Pago
+                  </button>
+                </div>
+              </div>
+            )}
             
             {solicitudActual.documentos_url && (
               <div className="mb-6">
@@ -292,7 +442,7 @@ export default function SolicitudesPage() {
             {/* Acciones */}
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => setModalSolicitud(false)}
+                onClick={cerrarModal}
                 className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
               >
                 Cerrar
