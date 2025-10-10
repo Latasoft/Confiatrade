@@ -1,12 +1,17 @@
 export default function Footer() {
   return (
-    <footer className="bg-green-600 text-white py-6 mt-auto">
-      <div className="max-w-6xl mx-auto px-6 text-center">
-        <h3 className="font-semibold text-lg">ConfiaTrade</h3>
-        <p className="text-sm">
-          Plataforma colaborativa para impulsar el comercio transfronterizo en Sudamérica.
-        </p>
-        <div className="text-xs mt-4">
+    <footer className="glass mt-auto border-t border-white/10 dark:border-white/5 backdrop-blur-xl">
+      <div className="max-w-6xl mx-auto px-6 py-8 text-center">
+        <div className="mb-4">
+          <h3 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+            ConfiaTrade
+          </h3>
+          <p className="text-gray-600 dark:text-gray-300 mt-2 max-w-2xl mx-auto">
+            Plataforma colaborativa para impulsar el comercio transfronterizo en Sudamérica.
+          </p>
+        </div>
+        {/* Copyright */}
+        <div className="text-xs text-gray-500 dark:text-gray-400 border-t border-white/10 dark:border-white/5 pt-4">
           © {new Date().getFullYear()} ConfiaTrade. Todos los derechos reservados.
         </div>
       </div>

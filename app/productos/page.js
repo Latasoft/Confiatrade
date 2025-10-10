@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useUser, SignInButton } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabaseClient'
-import { useUser } from '@clerk/nextjs'
 import toast from 'react-hot-toast'
 import NavbarCliente from '@/components/ui/NavbarCliente'
 import Footer from '@/components/ui/Footer'
@@ -11,7 +11,7 @@ export default function ProductosPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [productos, setProductos] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null) // ← AGREGAR ESTA LÍNEA
+  const [error, setError] = useState(null)
   const [modalSolicitud, setModalSolicitud] = useState(false)
   const [productoSeleccionado, setProductoSeleccionado] = useState(null)
   const [formSolicitud, setFormSolicitud] = useState({
@@ -36,12 +36,12 @@ export default function ProductosPage() {
         .from('productos')
         .select('*')
         .order('id', { ascending: true })
-      
+
       if (error) throw error
       console.log('📦 Datos recibidos:', data)
-      
+
       setProductos(data || [])
-      
+
       if (data && data.length === 0) {
         toast.info('No hay productos disponibles')
       }
@@ -141,10 +141,10 @@ export default function ProductosPage() {
   const productosFormateados = productos.map(formatearProducto)
   const productosFiltrados = productosFormateados.filter(producto => {
     const matchSearch = producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       producto.ubicacion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       producto.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       producto.proveedor.toLowerCase().includes(searchTerm.toLowerCase())
+      producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      producto.ubicacion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      producto.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      producto.proveedor.toLowerCase().includes(searchTerm.toLowerCase())
     return matchSearch
   })
 
@@ -184,6 +184,11 @@ export default function ProductosPage() {
         <Footer />
       </div>
     )
+  }
+
+  const refrescarDatos = async () => {
+    await cargarProductos()
+    toast.success('Datos actualizados')
   }
 
   return (
@@ -397,6 +402,16 @@ export default function ProductosPage() {
                   <span>${((productoSeleccionado.precio || 0) * formSolicitud.cantidad).toLocaleString()}</span>
                 </div>
               </div>
+            </div>
+
+            {/* Refresh button - moved outside resumen */}
+            <div className="mt-4">
+              <button
+                onClick={refrescarDatos}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                🔄 Refrescar Datos
+              </button>
             </div>
 
             {/* Botones */}
