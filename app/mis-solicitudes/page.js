@@ -48,7 +48,13 @@ export default function MisSolicitudesPage() {
       setSolicitudes(data || [])
 
       if (data && data.length === 0) {
-        toast.info('No tienes solicitudes aún')
+        toast('No tienes solicitudes aún', {
+          icon: 'ℹ️',
+          style: {
+            background: '#e3f2fd',
+            color: '#1976d2',
+          },
+        })
       }
     } catch (error) {
       console.error('❌ Error cargando solicitudes:', error)
