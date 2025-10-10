@@ -132,7 +132,7 @@ export default function ProductosPage() {
       ubicacion: producto.ubicacion || 'Ubicación no especificada',
       categoria: producto.categoria || 'sin-categoria',
       disponible: true,
-      imagen: producto.imagen || 'https://via.placeholder.com/300x200?text=Producto',
+      imagen_url: producto.imagen_url || producto.imagen || 'https://via.placeholder.com/300x200?text=Producto',
       proveedor: producto.proveedor || 'Proveedor',
       stock: producto.stock || 0
     }
@@ -156,10 +156,6 @@ export default function ProductosPage() {
       console.error('Error enviando solicitud:', error)
       toast.error('Error al enviar la solicitud')
     }
-  }
-
-  const refrescarDatos = () => {
-    cargarProductos()
   }
 
   // Loading state
