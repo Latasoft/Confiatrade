@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useUser, SignInButton } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from 'react-hot-toast'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/ui/Footer'
+import { ProductCard } from '@/components/ui/ProductCard'
+import { ProductGrid } from '@/components/ui/ProductGrid'
 
 export default function ProductosPage() {
-  const { isSignedIn, user } = useUser()
   const [searchTerm, setSearchTerm] = useState('')
   const [productos, setProductos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -76,11 +76,6 @@ export default function ProductosPage() {
   })
 
   const handleSolicitar = async (producto) => {
-    if (!isSignedIn) {
-      toast.error('Debes iniciar sesión para solicitar productos')
-      return
-    }
-
     try {
       console.log('🛒 Solicitando producto:', producto)
       toast.success(`Solicitud enviada para ${producto.nombre}`)
@@ -164,93 +159,16 @@ export default function ProductosPage() {
           </div>
 
           {/* Grid de productos */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <ProductGrid>
             {productosFiltrados.map((producto) => (
-              <div
+              <ProductCard
                 key={producto.id}
-                className="glass rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full h-full flex flex-col"
-              >
-                {/* Imagen */}
-                <div className="relative w-full aspect-square overflow-hidden">
-                  <img
-                    src={producto.imagen}
-                    alt={producto.nombre}
-                    className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/200x200/ffffff/cccccc?text=Producto';
-                    }}
-                  />
-                </div>
-
-                {/* Contenido */}
-                <div className="p-3 flex-1 flex flex-col">
-                  <div className="mb-2">
-                    <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 mb-1">
-                      {producto.nombre}
-                    </h3>
-                    <span className={`px-1 py-0.5 rounded text-xs ${producto.disponible
-                        ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300'
-                        : 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300'
-                      }`}>
-                      {producto.disponible ? 'Disponible' : 'No Disponible'}
-                    </span>
-                  </div>
-
-                  <p className="text-gray-600 dark:text-gray-300 text-xs mb-2 line-clamp-1">
-                    {producto.descripcion}
-                  </p>
-
-                  {/* Detalles */}
-                  <div className="space-y-1 mb-2 flex-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs">Ubicación:</span>
-                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs font-medium truncate ml-1">{producto.ubicacion}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs">Categoría:</span>
-                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs font-medium capitalize truncate ml-1">{producto.categoria.replace('-', ' ')}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs">Stock:</span>
-                      <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs font-medium ml-1">{producto.stock}</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-auto">
-                    <div className="text-sm font-bold text-green-600 dark:text-green-400 mb-2 text-center">
-                      ${producto.precio?.toLocaleString() || 'Consultar'}
-                    </div>
-                    
-                    {/* Botón condicional según autenticación y disponibilidad */}
-                    {!producto.disponible ? (
-                      // Producto no disponible
-                      <button
-                        disabled
-                        className="w-full bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed px-2 py-1 rounded text-xs font-medium"
-                      >
-                        No Disponible
-                      </button>
-                    ) : !isSignedIn ? (
-                      // Usuario no logueado - Mostrar botón para iniciar sesión
-                      <SignInButton>
-                        <button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-2 py-1 rounded text-xs font-medium transition-all duration-200">
-                          Iniciar Sesión
-                        </button>
-                      </SignInButton>
-                    ) : (
-                      // Usuario logueado y producto disponible
-                      <button
-                        onClick={() => handleSolicitar(producto)}
-                        className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-all duration-200"
-                      >
-                        Solicitar
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+                producto={producto}
+                onSolicitar={handleSolicitar}
+                showAdminActions={false}
+              />
             ))}
-          </div>
+          </ProductGrid>
 
           {/* Mensaje si no hay productos */}
           {!loading && productosFiltrados.length === 0 && (
