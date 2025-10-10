@@ -313,11 +313,18 @@ export default function MisSolicitudesPage() {
                               </div>
                             ) : (
                               <div className="p-3 bg-green-50 rounded-lg">
-                                <p className="text-green-800 font-medium">¡Pago Aprobado!</p>
-                                {solicitud.requiere_transporte && (
-                                  <p className="text-sm text-green-700 mt-1">
-                                    📞 El administrador se pondrá en contacto contigo para coordinar el transporte.
-                                  </p>
+                                {/* Mostrar el mensaje completo de la base de datos si existe, o mensaje por defecto */}
+                                {solicitud.mensaje && solicitud.mensaje.includes('¡Pago Aprobado!') ? (
+                                  <p className="text-green-800 font-medium whitespace-pre-line">{solicitud.mensaje}</p>
+                                ) : (
+                                  <>
+                                    <p className="text-green-800 font-medium">¡Pago Aprobado!</p>
+                                    {solicitud.requiere_transporte && (
+                                      <p className="text-sm text-green-700 mt-1">
+                                        📞 El administrador se pondrá en contacto contigo para coordinar el transporte.
+                                      </p>
+                                    )}
+                                  </>
                                 )}
                               </div>
                             )}
@@ -331,9 +338,9 @@ export default function MisSolicitudesPage() {
                       <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <p className="text-sm text-gray-600 dark:text-gray-300">
                           <span className="font-medium">Estado:</span> 
-                          {solicitud.estado === 'rechazada' 
-                            ? ' Tu solicitud ha sido rechazada. Contacta al administrador para más detalles.' 
-                            : ' Se requiere más información. El administrador se pondrá en contacto contigo.'
+                          {solicitud.mensaje || (solicitud.estado === 'rechazada' 
+                            ? ' Tu solicitud ha sido rechazada. Vuelve a intentarlo.' 
+                            : ' Se requiere más información. El administrador se pondrá en contacto contigo.')
                           }
                         </p>
                       </div>

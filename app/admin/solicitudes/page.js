@@ -115,22 +115,28 @@ export default function SolicitudesPage() {
 
   async function aprobarPago() {
     try {
-      // Verificar si requiere transporte y hay contacto
-      if (solicitudActual.requiere_transporte && !contactoTransporte.trim()) {
-        toast.error('Debes proporcionar información de contacto para el transporte');
-        return;
+      // Verificar si requiere transporte y hay contacto válido
+      if (solicitudActual.requiere_transporte) {
+        if (!contactoTransporte.trim()) {
+          toast.error('Debes proporcionar tu contacto para que el cliente se comunique contigo');
+          return;
+        }
+        if (contactoTransporte.trim().length < 8) {
+          toast.error('Tu contacto debe tener mínimo 8 caracteres');
+          return;
+        }
       }
 
       const updateData = { 
         estado_pago: 'aprobado'
       };
 
-      // Agregar contacto de transporte si se proporcionó
+      // Agregar contacto del admin si se proporcionó
       if (solicitudActual.requiere_transporte && contactoTransporte.trim()) {
         updateData.contacto_transporte = contactoTransporte.trim();
-        updateData.mensaje = `Pago aprobado. Contacto de transporte: ${contactoTransporte.trim()}`;
+        updateData.mensaje = `¡Pago Aprobado! 📞 Contáctate con el administrador para coordinar el transporte: ${contactoTransporte.trim()}`;
       } else {
-        updateData.mensaje = 'Pago aprobado. No requiere transporte.';
+        updateData.mensaje = '¡Pago Aprobado! ✅ Tu producto está listo.';
       }
 
       const { error } = await supabase
@@ -141,7 +147,7 @@ export default function SolicitudesPage() {
       if (error) throw error;
       
       const mensajeExito = solicitudActual.requiere_transporte 
-        ? 'Pago aprobado. Información de transporte guardada.' 
+        ? 'Pago aprobado. El cliente recibirá tu contacto para coordinar el transporte.' 
         : 'Pago aprobado correctamente.';
       
       toast.success(mensajeExito);
@@ -461,22 +467,42 @@ export default function SolicitudesPage() {
                   </div>
                 )}
 
-                {/* Campo para contacto de transporte si requiere transporte */}
+                {/* Campo para contacto del admin si requiere transporte */}
                 {solicitudActual.requiere_transporte && (
                   <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
                     <label className="block text-sm font-medium text-yellow-800 mb-2">
-                      🚛 Contacto de Transporte (Requerido)
+                      � Tu Contacto para el Cliente (Requerido)
                     </label>
                     <input
                       type="text"
                       value={contactoTransporte}
                       onChange={(e) => setContactoTransporte(e.target.value)}
-                      placeholder="Ej: WhatsApp +56912345678, Email: transporte@empresa.cl"
-                      className="w-full p-2 border border-yellow-300 rounded text-sm focus:outline-none focus:border-yellow-500"
+                      placeholder="Ej: WhatsApp +56912345678, Email: admin@confiatrade.cl"
+                      className={`w-full p-2 border rounded text-sm focus:outline-none ${
+                        contactoTransporte.trim().length > 0 && contactoTransporte.trim().length < 8
+                          ? 'border-red-300 focus:border-red-500 bg-red-50'
+                          : contactoTransporte.trim().length >= 8
+                          ? 'border-green-300 focus:border-green-500 bg-green-50'
+                          : 'border-yellow-300 focus:border-yellow-500'
+                      }`}
                     />
-                    <p className="text-xs text-yellow-600 mt-1">
-                      💡 Proporciona información de contacto para coordinar el transporte con el cliente
-                    </p>
+                    <div className="flex justify-between items-center mt-1">
+                      <p className="text-xs text-yellow-600">
+                        💡 El cliente recibirá este contacto para coordinar el transporte contigo
+                      </p>
+                      <p className={`text-xs ${
+                        contactoTransporte.trim().length < 8 
+                          ? contactoTransporte.trim().length > 0 ? 'text-red-600' : 'text-gray-500'
+                          : 'text-green-600'
+                      }`}>
+                        {contactoTransporte.trim().length}/8 min
+                      </p>
+                    </div>
+                    {contactoTransporte.trim().length > 0 && contactoTransporte.trim().length < 8 && (
+                      <p className="text-xs text-red-600 mt-1">
+                        ⚠️ Mínimo 8 caracteres requeridos
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -499,7 +525,7 @@ export default function SolicitudesPage() {
                   </button>
                   <button
                     onClick={aprobarPago}
-                    disabled={solicitudActual.requiere_transporte && !contactoTransporte.trim()}
+                    disabled={solicitudActual.requiere_transporte && (!contactoTransporte.trim() || contactoTransporte.trim().length < 8)}
                     className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     ✅ Aprobar Pago
@@ -509,7 +535,9 @@ export default function SolicitudesPage() {
                 {/* Mensaje de ayuda */}
                 <p className="text-xs text-blue-600 mt-2">
                   {solicitudActual.requiere_transporte 
-                    ? '⚠️ Debes proporcionar contacto de transporte antes de aprobar el pago' 
+                    ? contactoTransporte.trim().length >= 8
+                      ? '✅ Tu contacto está listo - El cliente recibirá esta información'
+                      : '⚠️ Proporciona tu contacto para que el cliente pueda comunicarse contigo (mín. 8 caracteres)'
                     : '✅ Listo para aprobar - No requiere información adicional'
                   }
                 </p>
