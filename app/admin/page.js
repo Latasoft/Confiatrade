@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from 'react-hot-toast';
+import { ProductCard } from '@/components/ui/ProductCard';
+import { ProductGrid } from '@/components/ui/ProductGrid';
 
 export default function ProductosAdminPage() {
   const [productos, setProductos] = useState([]);
@@ -324,82 +326,18 @@ export default function ProductosAdminPage() {
           <p className="text-gray-600 dark:text-gray-300">No hay productos {filtro !== 'todos' ? `en estado "${filtro}"` : ''}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <ProductGrid>
           {productos.map((producto) => (
-            <div key={producto.id} className="glass rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full h-full flex flex-col">
-              {/* Imagen */}
-              <div className="relative w-full aspect-square overflow-hidden">
-                <img 
-                  src={producto.imagen_url || 'https://via.placeholder.com/200x200/ffffff/cccccc?text=Producto'} 
-                  alt={producto.nombre}
-                  className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              
-              <div className="p-3 flex-1 flex flex-col">
-                <div className="mb-2">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 mb-1">{producto.nombre}</h3>
-                  <span className={`px-1 py-0.5 text-xs rounded text-white ${getEstadoColor(producto.estado)}`}>
-                    {producto.estado}
-                  </span>
-                </div>
-                
-                <p className="text-gray-600 dark:text-gray-300 text-xs mb-2 line-clamp-1">{producto.descripcion}</p>
-                
-                <div className="space-y-1 mb-2 flex-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs">Precio:</span>
-                    <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs font-medium ml-1">{formatearPrecio(producto.precio)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs">Stock:</span>
-                    <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs font-medium ml-1">{producto.stock} {producto.unidad}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs">Ubicación:</span>
-                    <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs font-medium truncate ml-1">{producto.ubicacion}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs">Proveedor:</span>
-                    <span className="bg-gray-600 dark:bg-gray-500 text-white px-1 py-0.5 rounded text-xs font-medium truncate ml-1">{producto.proveedor}</span>
-                  </div>
-                </div>
-                
-                <div className="mt-auto space-y-1">
-                  <button
-                    onClick={() => abrirEditar(producto)}
-                    className="w-full px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs font-medium transition-colors"
-                  >
-                    Editar
-                  </button>
-                  
-                  {producto.estado === 'disponible' ? (
-                    <button
-                      onClick={() => cambiarEstado(producto.id, 'agotado')}
-                      className="w-full px-2 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 text-xs font-medium transition-colors"
-                    >
-                      Agotar
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => cambiarEstado(producto.id, 'disponible')}
-                      className="w-full px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs font-medium transition-colors"
-                    >
-                      Activar
-                    </button>
-                  )}
-                  
-                  <button
-                    onClick={() => eliminarProducto(producto.id)}
-                    className="w-full px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs font-medium transition-colors"
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ProductCard
+              key={producto.id}
+              producto={producto}
+              onEdit={abrirEditar}
+              onDelete={eliminarProducto}
+              onStatusChange={cambiarEstado}
+              showAdminActions={true}
+            />
           ))}
-        </div>
+        </ProductGrid>
       )}
 
       {/* Modal */}

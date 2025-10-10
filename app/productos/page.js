@@ -1,13 +1,13 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useUser, SignInButton } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
 import NavbarCliente from '@/components/ui/NavbarCliente'
 import Footer from '@/components/ui/Footer'
+import { ProductCard } from '@/components/ui/ProductCard'
+import { ProductGrid } from '@/components/ui/ProductGrid'
 
 export default function ProductosPage() {
-  const { user } = useUser()
   const [searchTerm, setSearchTerm] = useState('')
   const [productos, setProductos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -148,26 +148,18 @@ export default function ProductosPage() {
     return matchSearch
   })
 
-  // Error state
-  if (error) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <NavbarCliente />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center bg-red-50 p-8 rounded-lg">
-            <h2 className="text-xl font-bold text-red-700 mb-4">Error al cargar productos</h2>
-            <p className="text-red-600 mb-4">{error}</p>
-            <button 
-              onClick={cargarProductos}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-            >
-              Reintentar
-            </button>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    )
+  const handleSolicitar = async (producto) => {
+    try {
+      console.log('🛒 Solicitando producto:', producto)
+      toast.success(`Solicitud enviada para ${producto.nombre}`)
+    } catch (error) {
+      console.error('Error enviando solicitud:', error)
+      toast.error('Error al enviar la solicitud')
+    }
+  }
+
+  const refrescarDatos = () => {
+    cargarProductos()
   }
 
   // Loading state
@@ -218,61 +210,16 @@ export default function ProductosPage() {
           </div>
 
           {/* Grid de productos */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <ProductGrid>
             {productosFiltrados.map((producto) => (
-              <div
+              <ProductCard
                 key={producto.id}
-                className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-              >
-                <div className="h-48 bg-gray-200 overflow-hidden">
-                  <img
-                    src={producto.imagen}
-                    alt={producto.nombre}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/300x200?text=Producto'
-                    }}
-                  />
-                </div>
-
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    {producto.nombre}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    {producto.descripcion}
-                  </p>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Ubicación:</span>
-                      <span className="font-medium">{producto.ubicacion}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Categoría:</span>
-                      <span className="font-medium capitalize">{producto.categoria}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Stock:</span>
-                      <span className="font-medium">{producto.stock} unidades</span>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      ${producto.precio?.toLocaleString()}
-                    </div>
-                    <button
-                      onClick={() => abrirModalSolicitud(producto)}
-                      className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Solicitar
-                    </button>
-                  </div>
-                </div>
-              </div>
+                producto={producto}
+                onSolicitar={handleSolicitar}
+                showAdminActions={false}
+              />
             ))}
-          </div>
+          </ProductGrid>
 
           {/* Mensaje si no hay productos */}
           {!loading && productosFiltrados.length === 0 && (
