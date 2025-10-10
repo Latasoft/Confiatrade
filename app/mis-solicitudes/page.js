@@ -71,19 +71,37 @@ export default function MisSolicitudesPage() {
 
   const manejarEnvioComprobante = async (archivo, setLoadingComprobante) => {
     try {
-      // Actualizar estado de pago a 'comprobante_enviado'
+      console.log('📤 Iniciando subida de comprobante:', archivo.name)
+      
+      // 1. Convertir archivo a base64 para guardarlo en la BD
+      const convertirABase64 = (file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.readAsDataURL(file)
+          reader.onload = () => resolve(reader.result)
+          reader.onerror = error => reject(error)
+        })
+      }
+
+      const archivoBase64 = await convertirABase64(archivo)
+      console.log('✅ Archivo convertido a base64')
+
+      // 2. Actualizar la base de datos con toda la información
       const { error } = await supabase
         .from('solicitudes_compra')
         .update({ 
           estado_pago: 'comprobante_enviado',
-          fecha_comprobante: new Date().toISOString()
+          mensaje: `Comprobante: ${archivo.name} (${(archivo.size / 1024).toFixed(1)}KB) - Subido: ${new Date().toLocaleString()}`,
+          comprobante_data: archivoBase64,
+          comprobante_url: archivo.name // Guardamos el nombre como referencia
         })
         .eq('id', solicitudSeleccionada.id)
 
       if (error) throw error
 
+      console.log('✅ Comprobante guardado exitosamente en la base de datos')
       setLoadingComprobante(false)
-      toast.success('Comprobante enviado correctamente. El admin revisará tu pago.')
+      toast.success('📄 Comprobante enviado y guardado correctamente. El admin podrá verlo para revisar tu pago.')
       cerrarModalPago()
       cargarMisSolicitudes() // Recargar las solicitudes
     } catch (error) {
@@ -227,10 +245,29 @@ export default function MisSolicitudesPage() {
 
                       {/* Estado y acciones */}
                       <div className="flex flex-col items-start lg:items-end space-y-3">
-                        <div className="flex items-center space-x-2">
-                          <span className={`px-3 py-1 rounded-full text-white text-sm font-medium ${getEstadoColor(solicitud.estado)}`}>
-                            {solicitud.estado.charAt(0).toUpperCase() + solicitud.estado.slice(1)}
-                          </span>
+                        {/* Indicador de proceso */}
+                        <div className="text-xs space-y-1 mb-2">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium">1. Solicitud:</span>
+                            <span className={`px-2 py-1 rounded-full text-white text-xs ${getEstadoColor(solicitud.estado)}`}>
+                              {solicitud.estado.charAt(0).toUpperCase() + solicitud.estado.slice(1)}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium">2. Pago:</span>
+                            <span className={`px-2 py-1 rounded-full text-white text-xs ${
+                              solicitud.estado_pago === 'aprobado' ? 'bg-green-600' :
+                              solicitud.estado_pago === 'comprobante_enviado' ? 'bg-yellow-500' :
+                              solicitud.estado_pago === 'rechazado' ? 'bg-red-600' :
+                              solicitud.estado === 'aprobada' ? 'bg-gray-500' : 'bg-gray-300'
+                            }`}>
+                              {solicitud.estado !== 'aprobada' ? 'Esperando aprobación' :
+                               solicitud.estado_pago === 'aprobado' ? 'Aprobado' :
+                               solicitud.estado_pago === 'comprobante_enviado' ? 'En revisión' :
+                               solicitud.estado_pago === 'rechazado' ? 'Rechazado' :
+                               'Pendiente'}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Botón de pago para solicitudes aprobadas */}
@@ -262,20 +299,24 @@ export default function MisSolicitudesPage() {
                                 <span>Proceder al Pago</span>
                               </button>
                             ) : solicitud.estado_pago === 'comprobante_enviado' ? (
-                              <button
-                                disabled
-                                className="flex items-center space-x-2 px-4 py-2 bg-gray-400 text-white rounded-lg font-medium cursor-not-allowed"
-                              >
-                                <Clock className="h-4 w-4" />
-                                <span>Comprobante Enviado - Esperando Aprobación</span>
-                              </button>
+                              <div className="space-y-2">
+                                <button
+                                  disabled
+                                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-lg font-medium cursor-not-allowed w-full"
+                                >
+                                  <FileText className="h-4 w-4" />
+                                  <span>📄 Comprobante Enviado</span>
+                                </button>
+                                <p className="text-xs text-blue-600 text-center">
+                                  El admin está revisando tu pago
+                                </p>
+                              </div>
                             ) : (
                               <div className="p-3 bg-green-50 rounded-lg">
                                 <p className="text-green-800 font-medium">¡Pago Aprobado!</p>
-                                {solicitud.requiere_transporte && solicitud.contacto_transporte && (
+                                {solicitud.requiere_transporte && (
                                   <p className="text-sm text-green-700 mt-1">
-                                    Contáctese al siguiente número o correo electrónico para coordinar transporte: 
-                                    <span className="font-medium"> {solicitud.contacto_transporte}</span>
+                                    📞 El administrador se pondrá en contacto contigo para coordinar el transporte.
                                   </p>
                                 )}
                               </div>

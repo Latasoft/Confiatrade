@@ -115,14 +115,22 @@ export default function SolicitudesPage() {
 
   async function aprobarPago() {
     try {
+      // Verificar si requiere transporte y hay contacto
+      if (solicitudActual.requiere_transporte && !contactoTransporte.trim()) {
+        toast.error('Debes proporcionar información de contacto para el transporte');
+        return;
+      }
+
       const updateData = { 
-        estado_pago: 'aprobado',
-        descripcion_pago: descripcionPago.trim() || null
+        estado_pago: 'aprobado'
       };
 
-      // Si requiere transporte, incluir contacto
+      // Agregar contacto de transporte si se proporcionó
       if (solicitudActual.requiere_transporte && contactoTransporte.trim()) {
         updateData.contacto_transporte = contactoTransporte.trim();
+        updateData.mensaje = `Pago aprobado. Contacto de transporte: ${contactoTransporte.trim()}`;
+      } else {
+        updateData.mensaje = 'Pago aprobado. No requiere transporte.';
       }
 
       const { error } = await supabase
@@ -132,7 +140,12 @@ export default function SolicitudesPage() {
 
       if (error) throw error;
       
-      toast.success('Pago aprobado correctamente');
+      const mensajeExito = solicitudActual.requiere_transporte 
+        ? 'Pago aprobado. Información de transporte guardada.' 
+        : 'Pago aprobado correctamente.';
+      
+      toast.success(mensajeExito);
+      setContactoTransporte(''); // Limpiar el campo
       cerrarModal();
       fetchSolicitudes();
     } catch (error) {
@@ -146,8 +159,7 @@ export default function SolicitudesPage() {
       const { error } = await supabase
         .from('solicitudes_compra')
         .update({ 
-          estado_pago: 'rechazado',
-          descripcion_pago: descripcionPago.trim() || null
+          estado_pago: 'rechazado'
         })
         .eq('id', solicitudActual.id);
 
@@ -215,7 +227,6 @@ export default function SolicitudesPage() {
           <table className="w-full border-collapse shadow-lg bg-white">
             <thead>
               <tr className="bg-blue-700 text-white">
-                <th className="p-2">ID</th>
                 <th className="p-2">Cliente</th>
                 <th className="p-2">Producto</th>
                 <th className="p-2">Cantidad</th>
@@ -229,7 +240,6 @@ export default function SolicitudesPage() {
             <tbody>
               {solicitudes.map((s) => (
                 <tr key={s.id} className="hover:bg-gray-50 text-center">
-                  <td className="p-2">{s.id}</td>
                   <td className="p-2">{s.cliente_nombre || s.cliente_id}</td>
                   <td className="p-2">{s.producto_nombre}</td>
                   <td className="p-2">{s.cantidad} kg</td>
@@ -255,10 +265,10 @@ export default function SolicitudesPage() {
                         'bg-gray-500'
                       }`
                     }>
-                      {s.estado_pago === 'aprobado' ? 'Aprobado' :
-                       s.estado_pago === 'comprobante_enviado' ? 'Comprobante' :
-                       s.estado_pago === 'rechazado' ? 'Rechazado' :
-                       'Pendiente'}
+                      {s.estado_pago === 'aprobado' ? '✅ Aprobado' :
+                       s.estado_pago === 'comprobante_enviado' ? '📄 Comprobante' :
+                       s.estado_pago === 'rechazado' ? '❌ Rechazado' :
+                       '⏳ Pendiente'}
                     </span>
                   </td>
                   <td className="p-2">
@@ -317,6 +327,72 @@ export default function SolicitudesPage() {
               )}
             </div>
 
+            {/* Información del comprobante si existe */}
+            {solicitudActual.estado_pago === 'comprobante_enviado' && (solicitudActual.comprobante_data || (solicitudActual.mensaje && solicitudActual.mensaje.includes('Comprobante:'))) && (
+              <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                <h3 className="font-semibold text-green-800 mb-3">📄 Comprobante de Pago Subido</h3>
+                
+                {/* Información del archivo */}
+                <div className="text-sm text-green-700 mb-3">
+                  {solicitudActual.mensaje}
+                </div>
+
+                {/* Mostrar el comprobante si existe */}
+                {solicitudActual.comprobante_data && (
+                  <div className="mt-3">
+                    <p className="text-sm font-medium text-green-800 mb-2">Vista previa del comprobante:</p>
+                    <div className="border border-green-300 rounded-lg p-2 bg-white max-w-md">
+                      {solicitudActual.comprobante_data.startsWith('data:image/') ? (
+                        <img 
+                          src={solicitudActual.comprobante_data} 
+                          alt="Comprobante de pago"
+                          className="max-w-full h-auto rounded cursor-pointer hover:scale-105 transition-transform"
+                          onClick={() => window.open(solicitudActual.comprobante_data, '_blank')}
+                          style={{maxHeight: '200px'}}
+                        />
+                      ) : solicitudActual.comprobante_data.startsWith('data:application/pdf') ? (
+                        <div className="text-center p-4">
+                          <p className="text-sm text-gray-600 mb-2">📄 Documento PDF</p>
+                          <a 
+                            href={solicitudActual.comprobante_data} 
+                            download={solicitudActual.comprobante_url || 'comprobante.pdf'}
+                            className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                          >
+                            📥 Descargar PDF
+                          </a>
+                        </div>
+                      ) : (
+                        <div className="text-center p-4 text-gray-600">
+                          <p className="text-sm">📎 Archivo adjunto</p>
+                          <a 
+                            href={solicitudActual.comprobante_data} 
+                            download={solicitudActual.comprobante_url || 'comprobante'}
+                            className="text-blue-600 hover:underline"
+                          >
+                            Descargar archivo
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-green-600 mt-2">
+                      💡 Haz clic en la imagen para ampliarla o usa el botón de descarga
+                    </p>
+                  </div>
+                )}
+
+                <div className="mt-3 p-2 bg-green-100 rounded text-xs text-green-600">
+                  ℹ️ Revisa el comprobante arriba y verifica la transferencia en tu cuenta bancaria antes de aprobar el pago.
+                </div>
+              </div>
+            )}
+
+            {/* Proceso de aprobación */}
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-800 font-medium">
+                📋 Proceso: 1° Aprobar Solicitud → 2° Gestionar Pago (cuando cliente envíe comprobante)
+              </p>
+            </div>
+
             {/* Estados */}
             <div className="mb-6 grid grid-cols-2 gap-4">
               <div>
@@ -334,66 +410,109 @@ export default function SolicitudesPage() {
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Estado de Pago</h3>
-                <span className={
-                  `px-3 py-1 rounded text-white ${
-                    solicitudActual.estado_pago === 'aprobado' ? 'bg-green-600' : 
-                    solicitudActual.estado_pago === 'comprobante_enviado' ? 'bg-blue-500' :
-                    solicitudActual.estado_pago === 'rechazado' ? 'bg-red-600' :
-                    'bg-gray-500'
-                  }`
-                }>
-                  {solicitudActual.estado_pago === 'aprobado' ? 'Aprobado' :
-                   solicitudActual.estado_pago === 'comprobante_enviado' ? 'Comprobante Enviado' :
-                   solicitudActual.estado_pago === 'rechazado' ? 'Rechazado' :
-                   'Pendiente'}
-                </span>
+                <div className="space-y-2">
+                  <span className={
+                    `px-3 py-1 rounded text-white ${
+                      solicitudActual.estado_pago === 'aprobado' ? 'bg-green-600' : 
+                      solicitudActual.estado_pago === 'comprobante_enviado' ? 'bg-blue-500' :
+                      solicitudActual.estado_pago === 'rechazado' ? 'bg-red-600' :
+                      'bg-gray-500'
+                    }`
+                  }>
+                    {solicitudActual.estado_pago === 'aprobado' ? 'Aprobado' :
+                     solicitudActual.estado_pago === 'comprobante_enviado' ? 'Comprobante Enviado' :
+                     solicitudActual.estado_pago === 'rechazado' ? 'Rechazado' :
+                     'Pendiente'}
+                  </span>
+                  {solicitudActual.estado !== 'aprobada' && solicitudActual.estado_pago === 'comprobante_enviado' && (
+                    <div className="text-xs text-orange-600 bg-orange-100 p-2 rounded">
+                      ⚠️ Debe aprobar la solicitud antes de gestionar el pago
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Gestión de Pago - Solo visible si hay comprobante enviado */}
-            {solicitudActual.estado_pago === 'comprobante_enviado' && (
+            {/* Gestión de Pago - Solo visible si la solicitud está aprobada Y hay comprobante enviado */}
+            {solicitudActual.estado === 'aprobada' && solicitudActual.estado_pago === 'comprobante_enviado' && (
               <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h3 className="font-semibold mb-3 text-blue-800">Gestión de Pago</h3>
+                <h3 className="font-semibold mb-3 text-blue-800">💳 Gestión de Pago</h3>
                 
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Descripción del pago (opcional)</label>
-                  <textarea
-                    value={descripcionPago}
-                    onChange={(e) => setDescripcionPago(e.target.value)}
-                    className="w-full border rounded p-2"
-                    rows="2"
-                    placeholder="Agregar comentarios sobre el pago..."
-                  />
+                <div className="mb-4 p-3 bg-blue-100 rounded-lg">
+                  <p className="text-sm text-blue-800 font-medium">
+                    ✅ Comprobante recibido del cliente
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Revisa los detalles del comprobante arriba y verifica la transferencia en tu cuenta bancaria.
+                  </p>
                 </div>
 
+                {/* Botón para descargar comprobante */}
+                {solicitudActual.comprobante_data && (
+                  <div className="mb-4 p-3 bg-white rounded border border-blue-300">
+                    <p className="text-sm font-medium text-blue-800 mb-2">📄 Descargar Comprobante</p>
+                    <a 
+                      href={solicitudActual.comprobante_data} 
+                      download={solicitudActual.comprobante_url || 'comprobante_pago'}
+                      className="inline-block px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+                    >
+                      📥 Descargar Archivo
+                    </a>
+                  </div>
+                )}
+
+                {/* Campo para contacto de transporte si requiere transporte */}
                 {solicitudActual.requiere_transporte && (
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2">Contacto para transporte *</label>
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    <label className="block text-sm font-medium text-yellow-800 mb-2">
+                      🚛 Contacto de Transporte (Requerido)
+                    </label>
                     <input
                       type="text"
                       value={contactoTransporte}
                       onChange={(e) => setContactoTransporte(e.target.value)}
-                      className="w-full border rounded p-2"
-                      placeholder="Teléfono o email para coordinar transporte"
+                      placeholder="Ej: WhatsApp +56912345678, Email: transporte@empresa.cl"
+                      className="w-full p-2 border border-yellow-300 rounded text-sm focus:outline-none focus:border-yellow-500"
                     />
+                    <p className="text-xs text-yellow-600 mt-1">
+                      💡 Proporciona información de contacto para coordinar el transporte con el cliente
+                    </p>
+                  </div>
+                )}
+
+                {/* Mensaje informativo sobre transporte */}
+                {!solicitudActual.requiere_transporte && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded">
+                    <p className="text-sm text-green-800">
+                      ✨ <strong>Sin transporte requerido:</strong> Este producto no requiere transporte. 
+                      Puedes aprobar directamente el pago.
+                    </p>
                   </div>
                 )}
 
                 <div className="flex gap-2">
                   <button
                     onClick={rechazarPago}
-                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                   >
-                    Rechazar Pago
+                    ❌ Rechazar Pago
                   </button>
                   <button
                     onClick={aprobarPago}
                     disabled={solicitudActual.requiere_transporte && !contactoTransporte.trim()}
-                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    Aprobar Pago
+                    ✅ Aprobar Pago
                   </button>
                 </div>
+
+                {/* Mensaje de ayuda */}
+                <p className="text-xs text-blue-600 mt-2">
+                  {solicitudActual.requiere_transporte 
+                    ? '⚠️ Debes proporcionar contacto de transporte antes de aprobar el pago' 
+                    : '✅ Listo para aprobar - No requiere información adicional'
+                  }
+                </p>
               </div>
             )}
             
