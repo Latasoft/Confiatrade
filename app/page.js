@@ -153,7 +153,7 @@ export default function ClienteDashboard() {
 
             {/* Solicitudes - Solo visible si está logueado */}
             {profile && (
-              <Link href="/solicitudes" className="group">
+              <Link href="/mis-solicitudes" className="group">
                 <div className="glass rounded-xl hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300 transform group-hover:scale-105 group-hover:shadow-2xl">
                   <div className="p-6">
                     <div className="flex items-center">
