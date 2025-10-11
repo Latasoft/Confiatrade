@@ -343,41 +343,41 @@ export default function ProductosAdminPage() {
       {/* Modal */}
       {modalAbierto && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
               {productoEditando ? 'Editar Producto' : 'Nuevo Producto'}
             </h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Nombre *</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Nombre *</label>
                 <input
                   type="text"
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Descripción</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Descripción</label>
                 <textarea
                   value={formData.descripcion}
                   onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   rows="3"
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Precio *</label>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Precio *</label>
                   <input
                     type="number"
                     value={formData.precio}
                     onChange={(e) => setFormData({ ...formData, precio: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     min="0"
                     step="0.01"
                     required
@@ -385,12 +385,12 @@ export default function ProductosAdminPage() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Stock</label>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Stock</label>
                   <input
                     type="number"
                     value={formData.stock}
                     onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     min="0"
                   />
                 </div>
@@ -398,11 +398,11 @@ export default function ProductosAdminPage() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Unidad</label>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Unidad</label>
                   <select
                     value={formData.unidad}
                     onChange={(e) => setFormData({ ...formData, unidad: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="kg">Kilogramos</option>
                     <option value="tonelada">Toneladas</option>
@@ -413,11 +413,11 @@ export default function ProductosAdminPage() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Estado</label>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Estado</label>
                   <select
                     value={formData.estado}
                     onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="disponible">Disponible</option>
                     <option value="agotado">Agotado</option>
@@ -427,40 +427,40 @@ export default function ProductosAdminPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Ubicación</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Ubicación</label>
                 <input
                   type="text"
                   value={formData.ubicacion}
                   onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Proveedor</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Proveedor</label>
                 <input
                   type="text"
                   value={formData.proveedor}
                   onChange={(e) => setFormData({ ...formData, proveedor: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Imagen del Producto</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Imagen del Producto</label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleImagenChange}
-                  className="w-full border rounded px-3 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800"
                 />
-                <p className="text-xs text-gray-500 mt-1">Formatos admitidos: JPG, PNG, GIF (máx. 5MB)</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Formatos admitidos: JPG, PNG, GIF (máx. 5MB)</p>
                 
                 {/* Vista previa de la imagen */}
                 {vistaPrevia && (
                   <div className="mt-3">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Vista previa:</p>
-                    <div className="relative w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vista previa:</p>
+                    <div className="relative w-32 h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                       <img
                         src={vistaPrevia}
                         alt="Vista previa"
@@ -485,7 +485,7 @@ export default function ProductosAdminPage() {
               <div className="flex gap-4 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
                 >
                   {productoEditando ? 'Actualizar' : 'Crear'}
                 </button>
@@ -496,7 +496,7 @@ export default function ProductosAdminPage() {
                     setImagenArchivo(null);
                     setVistaPrevia(null);
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                  className="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
                 >
                   Cancelar
                 </button>

@@ -1,6 +1,8 @@
 'use client';
-
+  // Sin redirección automática por ahoraIN REDIRECCIÓN AUTOMÁTICA - Evitar buclest { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useProfile } from '@/lib/useProfile';
+import { useUserRole } from '@/lib/useUserRole';
 import { SignedOut, SignedIn, SignInButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
@@ -8,6 +10,15 @@ import Footer from '@/components/ui/Footer';
 
 export default function ClienteDashboard() {
   const { profile, loading } = useProfile();
+  const { userProfile, isAdmin } = useUserRole();
+  const router = useRouter();
+
+  // Redirección INMEDIATA para admin
+  if (userProfile?.rol === 'admin') {
+    console.log('� ADMIN DETECTADO - REDIRIGIENDO INMEDIATAMENTE')
+    window.location.replace('/admin')
+    return null // No renderizar nada mientras redirecciona
+  }
 
   if (loading) {
     return (
@@ -18,8 +29,8 @@ export default function ClienteDashboard() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
       
       <main className="flex-1 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 w-full">
         {/* Header */}
@@ -265,10 +276,7 @@ export default function ClienteDashboard() {
                         <button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                           Iniciar Sesión
                         </button>
-                      </SignInButton>
-                      <Link href="/sobre-nosotros" className="glass text-gray-800 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/10 px-6 py-3 rounded-xl font-medium transition-all duration-200 border border-gray-300 dark:border-gray-600">
-                        Conocer Más
-                      </Link>
+                      </SignInButton>      
                     </div>
                   </div>
                 )}

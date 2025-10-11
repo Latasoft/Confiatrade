@@ -1,11 +1,11 @@
 import NavbarAdmin from '@/components/ui/NavbarAdmin'
 import Footer from '@/components/ui/Footer'
 import { BackgroundWrapper } from '@/components/ui/BackgroundWrapper'
-//import ProtectedRoute from '@/lib/ProtectedRoute'
+import { AdminProtectedRoute } from '@/components/ProtectedRoutes'
 
 export default function AdminLayout({ children }) {
   return (
-    //<ProtectedRoute role="admin">
+    <AdminProtectedRoute>
       <BackgroundWrapper>
         <div className="flex flex-col min-h-screen">
           <NavbarAdmin />
@@ -13,6 +13,6 @@ export default function AdminLayout({ children }) {
           <Footer />
         </div>
       </BackgroundWrapper>
-    //</ProtectedRoute>
+    </AdminProtectedRoute>
   )
 }

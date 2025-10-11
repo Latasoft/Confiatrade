@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
-import NavbarCliente from '@/components/ui/NavbarCliente'
+import Navbar from '@/components/Navbar'
 import Footer from '@/components/ui/Footer'
 import { ProductCard } from '@/components/ui/ProductCard'
 import { ProductGrid } from '@/components/ui/ProductGrid'
@@ -45,7 +45,14 @@ export default function ProductosPage() {
       setProductos(data || [])
 
       if (data && data.length === 0) {
-        toast.info('No hay productos disponibles')
+        toast('ℹ️ No hay productos disponibles', {
+          style: {
+            background: '#3b82f6',
+            color: '#ffffff',
+            borderRadius: '10px',
+            border: '1px solid #1d4ed8'
+          }
+        })
       }
     } catch (error) {
       console.error('❌ Error cargando productos:', error)
@@ -196,7 +203,7 @@ export default function ProductosPage() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
-        <NavbarCliente />
+        <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500 mx-auto"></div>
@@ -215,7 +222,7 @@ export default function ProductosPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <NavbarCliente />
+      <Navbar />
       <div className="flex-1">
         <div className="container mx-auto px-4 py-8">
           {/* Header con glass effect */}
@@ -268,12 +275,12 @@ export default function ProductosPage() {
 
       {/* Modal de solicitud */}
       {modalSolicitud && productoSeleccionado && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white/20 dark:bg-gray-900/20 backdrop-blur-xl rounded-3xl w-full max-w-md shadow-2xl border border-white/30 dark:border-gray-700/30 my-8 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-gray-700 my-8 max-h-[90vh] overflow-y-auto">
             {/* Header del modal */}
-            <div className="p-6 border-b border-white/20 dark:border-gray-700/30">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                   Solicitar Producto
                 </h2>
                 <button
@@ -287,7 +294,7 @@ export default function ProductosPage() {
             
             <div className="p-6 space-y-5">
               {/* Producto info compacta */}
-              <div className="flex items-start space-x-4 p-4 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm rounded-xl border border-white/20 dark:border-gray-700/20">
+              <div className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
                 <img 
                   src={productoSeleccionado.imagen_url || 'https://via.placeholder.com/80x80/f0f0f0/cccccc?text=Producto'} 
                   alt={productoSeleccionado.nombre}
@@ -306,7 +313,7 @@ export default function ProductosPage() {
 
               {/* Cantidad */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                   Cantidad a solicitar *
                 </label>
                 <input
@@ -318,10 +325,10 @@ export default function ProductosPage() {
                     ...prev,
                     cantidad: e.target.value
                   }))}
-                  className="w-full px-3 py-2 bg-white/50 dark:bg-gray-800/50 border border-white/30 dark:border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-gray-900 dark:text-white transition-all duration-200"
+                  className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white transition-all duration-200 font-medium text-lg"
                   placeholder="Ej: 100"
                 />
-                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                <p className="text-sm text-blue-600 dark:text-blue-400 mt-2 font-medium">
                   • Cantidad mínima: 100 {productoSeleccionado.unidad || 'unidades'}
                 </p>
                 {formSolicitud.cantidad && formSolicitud.cantidad < 100 && (
@@ -333,7 +340,7 @@ export default function ProductosPage() {
 
               {/* Transporte */}
               <div>
-                <div className="flex items-center space-x-3 p-3 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm rounded-lg border border-white/20 dark:border-gray-700/20">
+                <div className="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                   <input
                     type="checkbox"
                     id="requiere_transporte"
@@ -343,9 +350,9 @@ export default function ProductosPage() {
                       requiere_transporte: e.target.checked,
                       direccion_entrega: e.target.checked ? prev.direccion_entrega : ''
                     }))}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                   />
-                  <label htmlFor="requiere_transporte" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <label htmlFor="requiere_transporte" className="text-sm font-semibold text-gray-900 dark:text-white cursor-pointer">
                     🚛 Necesito servicio de transporte
                   </label>
                 </div>
@@ -362,15 +369,15 @@ export default function ProductosPage() {
 
               {/* Resumen compacto */}
               {formSolicitud.cantidad > 0 && (
-                <div className="p-3 bg-emerald-500/20 dark:bg-emerald-500/10 backdrop-blur-sm rounded-lg border border-emerald-300/30 dark:border-emerald-500/20">
+                <div className="p-4 bg-green-50 dark:bg-green-900/30 rounded-lg border-2 border-green-200 dark:border-green-700">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Total estimado:</span>
-                    <span className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">Total estimado:</span>
+                    <span className="font-bold text-xl text-green-600 dark:text-green-400">
                       ${((productoSeleccionado.precio || 0) * (formSolicitud.cantidad || 0)).toLocaleString()}
                     </span>
                   </div>
                   {formSolicitud.requiere_transporte && (
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">+ Transporte incluido</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 mt-2 font-medium">+ Transporte incluido</p>
                   )}
                 </div>
               )}

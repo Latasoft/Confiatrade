@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
     <ClerkProvider
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     >
-      <html lang="es" suppressHydrationWarning>
+      <html lang="es" suppressHydrationWarning data-scroll-behavior="smooth">
         <body>
           <ThemeProvider>
             <CartProvider>
@@ -69,7 +69,7 @@ function LayoutWrapper({ children }) {
   const pathname = usePathname()
   
   // Páginas que tienen su propio BackgroundWrapper en su layout
-  const isClientePage = pathname?.startsWith('/cliente')
+  const isClientePage = false // Páginas de cliente eliminadas
   const isAdminPage = pathname?.startsWith('/admin')
   const isAuthPage = pathname?.startsWith('/sign-')
   

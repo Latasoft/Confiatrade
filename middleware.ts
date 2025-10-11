@@ -52,23 +52,21 @@ export default clerkMiddleware(async (auth, req) => {
     
     try {
       const { data: userData, error } = await supabase
-        .from('users')
-        .select('rol, role, is_admin, estado')
+        .from('usuarios_roles')
+        .select('rol, activo')
         .eq('clerk_id', userId)
         .single()
 
       if (!error && userData) {
-        // Verificar si es admin
-        const isAdmin = 
-          userData.rol === 'admin' || 
-          userData.rol === 'Administrador' ||
-          userData.role === 'admin' || 
-          userData.is_admin === 'true' ||
-          userData.is_admin === true
-
-        userRole = isAdmin ? 'admin' : 'cliente'
+        userRole = userData.rol || 'cliente'
         console.log(`🎭 Rol del usuario desde Supabase: ${userRole}`)
         console.log(`📊 Datos de usuario:`, userData)
+        
+        // REDIRECCIÓN AUTOMÁTICA PARA ADMIN
+        if (userRole === 'admin' && req.nextUrl.pathname === '/') {
+          console.log(`🚀 ADMIN detectado en /, redirigiendo a /admin`)
+          return NextResponse.redirect(new URL('/admin', req.url))
+        }
       } else {
         console.log(`⚠️ Usuario no encontrado en Supabase, usando rol por defecto: cliente`)
       }
@@ -84,22 +82,14 @@ export default clerkMiddleware(async (auth, req) => {
       if (userRole === 'admin') {
         console.log(`🚀 Redirigiendo admin a /admin`);
         return NextResponse.redirect(new URL('/admin', req.url))
-      } else {
-        console.log(`🚀 Redirigiendo cliente a /cliente`);
-        return NextResponse.redirect(new URL('/cliente', req.url))
       }
+      // Los clientes permanecen en la página principal
     }
 
     // Proteger rutas de admin solo para admins
     if (isAdminRoute(req) && userRole !== 'admin') {
-      console.log(`🚫 Acceso denegado a admin, redirigiendo a cliente`);
-      return NextResponse.redirect(new URL('/cliente', req.url))
-    }
-
-    // Proteger rutas de cliente - admin puede acceder
-    if (isClientRoute(req) && userRole === 'admin') {
-      console.log(`⚠️ Admin accediendo a ruta de cliente - permitido`);
-      return NextResponse.next()
+      console.log(`🚫 Acceso denegado a admin, redirigiendo a página principal`);
+      return NextResponse.redirect(new URL('/', req.url))
     }
 
     console.log(`✅ Acceso permitido a: ${req.nextUrl.pathname}`);
