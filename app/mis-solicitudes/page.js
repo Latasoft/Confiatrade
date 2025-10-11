@@ -127,12 +127,28 @@ export default function MisSolicitudesPage() {
     }
   }
 
+  const getEstadoProductoColor = (estadoProducto) => {
+    switch (estadoProducto) {
+      case 'finalizada': return 'bg-indigo-500'
+      case 'en_proceso': return 'bg-blue-500'
+      default: return 'bg-gray-500'
+    }
+  }
+
   const getEstadoIcono = (estado) => {
     switch (estado) {
       case 'pendiente': return <Clock className="h-4 w-4" />
       case 'aprobada': return <CheckCircle className="h-4 w-4" />
       case 'rechazada': return <XCircle className="h-4 w-4" />
       case 'mas_info': return <FileText className="h-4 w-4" />
+      default: return <Package className="h-4 w-4" />
+    }
+  }
+
+  const getEstadoProductoIcono = (estadoProducto) => {
+    switch (estadoProducto) {
+      case 'finalizada': return <Package className="h-4 w-4" />
+      case 'en_proceso': return <Clock className="h-4 w-4" />
       default: return <Package className="h-4 w-4" />
     }
   }
@@ -274,6 +290,14 @@ export default function MisSolicitudesPage() {
                                'Pendiente'}
                             </span>
                           </div>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium">3. Compra Producto:</span>
+                            <span className={`px-2 py-1 rounded-full text-white text-xs ${getEstadoProductoColor(solicitud.estado_producto)}`}>
+                              {solicitud.estado_producto === 'finalizada' ? 'Finalizada' :
+                               solicitud.estado_producto === 'en_proceso' ? 'En Proceso' :
+                               'Pendiente'}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Botón de pago para solicitudes aprobadas */}
@@ -349,6 +373,48 @@ export default function MisSolicitudesPage() {
                             : ' Se requiere más información. El administrador se pondrá en contacto contigo.')
                           }
                         </p>
+                      </div>
+                    )}
+
+                    {/* Comentarios del Admin por Etapa */}
+                    {(solicitud.comentario_solicitud || solicitud.comentario_pago || solicitud.comentario_producto) && (
+                      <div className="mt-4 space-y-3">
+                        <h4 className="font-semibold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-2">
+                          💬 Comentarios del Administrador
+                        </h4>
+                        
+                        {/* Comentario de Solicitud */}
+                        {solicitud.comentario_solicitud && (
+                          <div className="p-3 bg-blue-50/80 dark:bg-blue-900/20 backdrop-blur-sm rounded-lg border border-blue-200/50 dark:border-blue-700/30">
+                            <div className="flex items-center gap-2 mb-1">
+                              <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                              <span className="text-xs font-medium text-blue-800 dark:text-blue-300">Sobre tu solicitud:</span>
+                            </div>
+                            <p className="text-sm text-blue-700 dark:text-blue-400">{solicitud.comentario_solicitud}</p>
+                          </div>
+                        )}
+                        
+                        {/* Comentario de Pago */}
+                        {solicitud.comentario_pago && (
+                          <div className="p-3 bg-green-50/80 dark:bg-green-900/20 backdrop-blur-sm rounded-lg border border-green-200/50 dark:border-green-700/30">
+                            <div className="flex items-center gap-2 mb-1">
+                              <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
+                              <span className="text-xs font-medium text-green-800 dark:text-green-300">Sobre tu pago:</span>
+                            </div>
+                            <p className="text-sm text-green-700 dark:text-green-400">{solicitud.comentario_pago}</p>
+                          </div>
+                        )}
+                        
+                        {/* Comentario de Producto */}
+                        {solicitud.comentario_producto && (
+                          <div className="p-3 bg-purple-50/80 dark:bg-purple-900/20 backdrop-blur-sm rounded-lg border border-purple-200/50 dark:border-purple-700/30">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Package className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                              <span className="text-xs font-medium text-purple-800 dark:text-purple-300">Sobre tu producto:</span>
+                            </div>
+                            <p className="text-sm text-purple-700 dark:text-purple-400">{solicitud.comentario_producto}</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

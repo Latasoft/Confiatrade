@@ -9,10 +9,13 @@ export default function SolicitudesPage() {
   const [loading, setLoading] = useState(true);
   const [modalSolicitud, setModalSolicitud] = useState(false);
   const [solicitudActual, setSolicitudActual] = useState(null);
-  const [filtro, setFiltro] = useState('pendiente'); // pendiente, aprobada, rechazada, todas
+  const [filtro, setFiltro] = useState('pendiente'); // pendiente, aprobada, rechazada, mas_info, producto_finalizada, todas
   const [comentario, setComentario] = useState('');
   const [contactoTransporte, setContactoTransporte] = useState('');
   const [descripcionPago, setDescripcionPago] = useState('');
+  const [comentarioSolicitud, setComentarioSolicitud] = useState('');
+  const [comentarioPago, setComentarioPago] = useState('');
+  const [comentarioProducto, setComentarioProducto] = useState('');
 
   useEffect(() => {
     fetchSolicitudes();
@@ -25,13 +28,37 @@ export default function SolicitudesPage() {
       
       // Aplicar filtro si no es 'todas'
       if (filtro !== 'todas') {
-        query = query.eq('estado', filtro);
+        if (filtro === 'producto_finalizada') {
+          // Solo filtrar por estado_producto si la columna existe
+          try {
+            query = query.eq('estado_producto', 'finalizada');
+          } catch (error) {
+            console.warn('Columna estado_producto no existe aún. Ejecuta el script SQL primero.');
+            query = query.eq('estado', 'pendiente'); // Fallback temporal
+          }
+        } else {
+          query = query.eq('estado', filtro);
+        }
       }
       
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
-      setSolicitudes(data || []);
+      
+      // Procesar solicitudes y mostrar ID de cliente de forma más amigable
+      const solicitudesConNombres = (data || []).map(solicitud => {
+        // Extraer las primeras 8 letras/números del cliente_id para mostrar
+        const clienteDisplay = solicitud.cliente_nombre 
+          || solicitud.cliente_email 
+          || (solicitud.cliente_id ? `Usuario-${solicitud.cliente_id.substring(0, 8)}...` : 'Usuario desconocido');
+          
+        return {
+          ...solicitud,
+          cliente_nombre: clienteDisplay
+        };
+      });
+      
+      setSolicitudes(solicitudesConNombres);
     } catch (error) {
       console.error('Error al cargar solicitudes:', error);
       toast.error('Error al cargar las solicitudes');
@@ -51,15 +78,28 @@ export default function SolicitudesPage() {
     setComentario('');
     setContactoTransporte('');
     setDescripcionPago('');
+    setComentarioSolicitud('');
+    setComentarioPago('');
+    setComentarioProducto('');
   }
 
   async function aprobarSolicitud() {
     try {
+      const updateData = { 
+        estado: 'aprobada'
+      };
+      
+      // Agregar comentario si se proporcionó
+      if (comentarioSolicitud.trim()) {
+        updateData.comentario_solicitud = comentarioSolicitud.trim();
+        updateData.mensaje = `Solicitud Aprobada ✅ - Comentario del Admin: ${comentarioSolicitud.trim()}`;
+      } else {
+        updateData.mensaje = 'Solicitud Aprobada ✅ - Puedes proceder a realizar el pago.';
+      }
+      
       const { error } = await supabase
         .from('solicitudes_compra')
-        .update({ 
-          estado: 'aprobada'
-        })
+        .update(updateData)
         .eq('id', solicitudActual.id);
 
       if (error) throw error;
@@ -75,11 +115,22 @@ export default function SolicitudesPage() {
 
   async function solicitarMasInfo() {
     try {
+      const updateData = { 
+        estado: 'mas_info'
+      };
+      
+      // El comentario es obligatorio para solicitar más info
+      if (!comentarioSolicitud.trim()) {
+        toast.error('Debes especificar qué información adicional necesitas');
+        return;
+      }
+      
+      updateData.comentario_solicitud = comentarioSolicitud.trim();
+      updateData.mensaje = `Más Información Solicitada ℹ️ - Admin: ${comentarioSolicitud.trim()}`;
+      
       const { error } = await supabase
         .from('solicitudes_compra')
-        .update({ 
-          estado: 'mas_info'
-        })
+        .update(updateData)
         .eq('id', solicitudActual.id);
 
       if (error) throw error;
@@ -95,11 +146,21 @@ export default function SolicitudesPage() {
 
   async function rechazarSolicitud() {
     try {
+      const updateData = { 
+        estado: 'rechazada'
+      };
+      
+      // Agregar comentario si se proporcionó
+      if (comentarioSolicitud.trim()) {
+        updateData.comentario_solicitud = comentarioSolicitud.trim();
+        updateData.mensaje = `Solicitud Rechazada ❌ - Motivo: ${comentarioSolicitud.trim()}`;
+      } else {
+        updateData.mensaje = 'Solicitud Rechazada ❌';
+      }
+      
       const { error } = await supabase
         .from('solicitudes_compra')
-        .update({ 
-          estado: 'rechazada'
-        })
+        .update(updateData)
         .eq('id', solicitudActual.id);
 
       if (error) throw error;
@@ -110,6 +171,43 @@ export default function SolicitudesPage() {
     } catch (error) {
       console.error('Error al rechazar solicitud:', error);
       toast.error('Error al rechazar la solicitud');
+    }
+  }
+
+  async function finalizarCompraProducto() {
+    try {
+      // Verificar si la columna estado_producto existe
+      const updateData = {};
+      
+      // Solo intentar actualizar estado_producto si la columna existe
+      if (solicitudActual.hasOwnProperty('estado_producto')) {
+        updateData.estado_producto = 'finalizada';
+      } else {
+        toast.error('⚠️ Primero ejecuta el script SQL para agregar la columna estado_producto');
+        return;
+      }
+      
+      // Agregar comentario específico del producto finalizado
+      if (comentarioProducto.trim()) {
+        updateData.comentario_producto = comentarioProducto.trim();
+        updateData.mensaje = `¡Compra Finalizada! ✅ Tu producto ha sido entregado exitosamente. Comentario del Admin: ${comentarioProducto.trim()} | ¡Gracias por confiar en nosotros!`;
+      } else {
+        updateData.mensaje = '¡Compra Finalizada! ✅ Tu producto ha sido entregado exitosamente. ¡Gracias por confiar en nosotros!';
+      }
+
+      const { error } = await supabase
+        .from('solicitudes_compra')
+        .update(updateData)
+        .eq('id', solicitudActual.id);
+
+      if (error) throw error;
+      
+      toast.success('Compra de producto marcada como finalizada');
+      cerrarModal();
+      fetchSolicitudes();
+    } catch (error) {
+      console.error('Error al finalizar compra de producto:', error);
+      toast.error('Error al finalizar la compra del producto. ¿Ejecutaste el script SQL?');
     }
   }
 
@@ -129,13 +227,31 @@ export default function SolicitudesPage() {
         estado_pago: 'aprobado',
         contacto_transporte: contactoTransporte.trim()
       };
+      
+      // Agregar comentario específico del pago si se proporcionó
+      if (comentarioPago.trim()) {
+        updateData.comentario_pago = comentarioPago.trim();
+      }
+
+      // Solo agregar estado_producto si la columna existe (después de ejecutar el script SQL)
+      if (solicitudActual.hasOwnProperty('estado_producto')) {
+        updateData.estado_producto = 'en_proceso';
+      }
 
       // Mensaje diferente según si requiere transporte o no
+      let mensajeBase;
       if (solicitudActual.requiere_transporte) {
-        updateData.mensaje = `¡Pago Aprobado! 🚚 Contáctate con el administrador para coordinar el transporte: ${contactoTransporte.trim()}`;
+        mensajeBase = `¡Pago Aprobado! 🚚 Tu producto está en proceso. Contáctate con el Vendedor para coordinar Transporte: ${contactoTransporte.trim()}`;
       } else {
-        updateData.mensaje = `¡Pago Aprobado! 📞 Contáctate con el administrador para coordinar la entrega: ${contactoTransporte.trim()}`;
+        mensajeBase = `¡Pago Aprobado! 📞 Tu producto está en proceso. Contáctate con el Vendedor para coordinar Entrega: ${contactoTransporte.trim()}`;
       }
+      
+      // Agregar comentario del admin si existe
+      if (comentarioPago.trim()) {
+        mensajeBase += ` | Comentario Admin: ${comentarioPago.trim()}`;
+      }
+      
+      updateData.mensaje = mensajeBase;
 
       const { error } = await supabase
         .from('solicitudes_compra')
@@ -243,6 +359,16 @@ export default function SolicitudesPage() {
           >
             Requieren más info
           </button>
+          <button 
+            onClick={() => setFiltro('producto_finalizada')} 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              filtro === 'producto_finalizada' 
+                ? 'bg-indigo-600 text-white shadow-lg' 
+                : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/50'
+            }`}
+          >
+            Productos Finalizados
+          </button>
         </div>
       </div>
 
@@ -268,6 +394,7 @@ export default function SolicitudesPage() {
                 <th className="p-2">Total</th>
                 <th className="p-2">Estado Solicitud</th>
                 <th className="p-2">Estado Pago</th>
+                <th className="p-2">Estado Producto</th>
                 <th className="p-2">Fecha</th>
                 <th className="p-2">Acciones</th>
               </tr>
@@ -304,6 +431,21 @@ export default function SolicitudesPage() {
                        s.estado_pago === 'comprobante_enviado' ? '📄 Comprobante' :
                        s.estado_pago === 'rechazado' ? '❌ Rechazado' :
                        '⏳ Pendiente'}
+                    </span>
+                  </td>
+                  <td className="p-2">
+                    <span className={
+                      `px-2 py-1 rounded text-white ${
+                        s.estado_producto === 'finalizada' ? 'bg-indigo-500' : 
+                        s.estado_producto === 'en_proceso' ? 'bg-blue-500' :
+                        'bg-gray-500'
+                      }`
+                    }>
+                      {s.hasOwnProperty('estado_producto') ? (
+                        s.estado_producto === 'finalizada' ? '✅ Finalizada' :
+                        s.estado_producto === 'en_proceso' ? '🔄 En Proceso' :
+                        '⏳ Pendiente'
+                      ) : '⚠️ Script SQL'}
                     </span>
                   </td>
                   <td className="p-2">
@@ -430,9 +572,9 @@ export default function SolicitudesPage() {
             </div>
 
             {/* Estados */}
-            <div className="mb-6 grid grid-cols-2 gap-4">
+            <div className="mb-6 grid grid-cols-3 gap-4">
               <div>
-                <h3 className="font-semibold mb-2">Estado de Solicitud</h3>
+                <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">1. Estado de Solicitud</h3>
                 <span className={
                   `px-3 py-1 rounded text-white ${
                     solicitudActual.estado === 'aprobada' ? 'bg-green-500' : 
@@ -445,7 +587,7 @@ export default function SolicitudesPage() {
                 </span>
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Estado de Pago</h3>
+                <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">2. Estado de Pago</h3>
                 <div className="space-y-2">
                   <span className={
                     `px-3 py-1 rounded text-white ${
@@ -466,6 +608,25 @@ export default function SolicitudesPage() {
                     </div>
                   )}
                 </div>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">3. Compra Producto</h3>
+                <span className={
+                  `px-3 py-1 rounded text-white ${
+                    solicitudActual.estado_producto === 'finalizada' ? 'bg-indigo-500' : 
+                    solicitudActual.estado_producto === 'en_proceso' ? 'bg-blue-500' :
+                    'bg-gray-500'
+                  }`
+                }>
+                  {solicitudActual.hasOwnProperty('estado_producto') ? (
+                    solicitudActual.estado_producto === 'finalizada' ? 'Finalizada' :
+                    solicitudActual.estado_producto === 'en_proceso' ? 'En Proceso' :
+                    'Pendiente'
+                  ) : 'Ejecutar Script SQL'}
+                </span>
+                {!solicitudActual.hasOwnProperty('estado_producto') && (
+                  <p className="text-xs text-orange-600 mt-1">⚠️ Columna no encontrada</p>
+                )}
               </div>
             </div>
 
@@ -590,16 +751,70 @@ export default function SolicitudesPage() {
               </div>
             )}
             
-            {/* Comentarios del administrador */}
-            <div className="mb-6">
-              <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Comentarios para el cliente</h3>
-              <textarea
-                value={comentario}
-                onChange={(e) => setComentario(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                rows="3"
-                placeholder="Añade un comentario para el cliente..."
-              ></textarea>
+            {/* Comentarios específicos por etapa */}
+            <div className="mb-6 space-y-4">
+              <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">💬 Comentarios para el Cliente</h3>
+              
+              {/* Comentario para Solicitud */}
+              {solicitudActual.estado === 'pendiente' && (
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                  <label className="block text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+                    📝 Comentario sobre la Solicitud
+                  </label>
+                  <textarea
+                    value={comentarioSolicitud}
+                    onChange={(e) => setComentarioSolicitud(e.target.value)}
+                    className="w-full border border-blue-300 dark:border-blue-600 rounded p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    rows="2"
+                    placeholder={
+                      solicitudActual.estado === 'pendiente' 
+                        ? "Opcional: Comentario al aprobar/rechazar solicitud."
+                        : "Comentario sobre la solicitud..."
+                    }
+                  ></textarea>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                    💡 Se mostrará al cliente cuando actualices el estado de la solicitud
+                  </p>
+                </div>
+              )}
+              
+              {/* Comentario para Pago */}
+              {solicitudActual.estado === 'aprobada' && solicitudActual.estado_pago === 'comprobante_enviado' && (
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
+                  <label className="block text-sm font-medium text-green-800 dark:text-green-300 mb-2">
+                    💳 Comentario sobre el Pago
+                  </label>
+                  <textarea
+                    value={comentarioPago}
+                    onChange={(e) => setComentarioPago(e.target.value)}
+                    className="w-full border border-green-300 dark:border-green-600 rounded p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    rows="2"
+                    placeholder="Opcional: Comentario adicional sobre el pago aprobado..."
+                  ></textarea>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                    💡 Se mostrará junto con tu contacto cuando apruebes el pago
+                  </p>
+                </div>
+              )}
+              
+              {/* Comentario para Producto Finalizado */}
+              {solicitudActual.estado === 'aprobada' && solicitudActual.estado_pago === 'aprobado' && solicitudActual.hasOwnProperty('estado_producto') && solicitudActual.estado_producto !== 'finalizada' && (
+                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
+                  <label className="block text-sm font-medium text-purple-800 dark:text-purple-300 mb-2">
+                    📦 Comentario al Finalizar Producto
+                  </label>
+                  <textarea
+                    value={comentarioProducto}
+                    onChange={(e) => setComentarioProducto(e.target.value)}
+                    className="w-full border border-purple-300 dark:border-purple-600 rounded p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    rows="2"
+                    placeholder="Opcional: Comentario al entregar el producto finalizado..."
+                  ></textarea>
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                    💡 Se mostrará cuando marques el producto como finalizado
+                  </p>
+                </div>
+              )}
             </div>
             
             {/* Acciones */}
@@ -632,6 +847,23 @@ export default function SolicitudesPage() {
                     Aprobar solicitud
                   </button>
                 </>
+              )}
+              
+              {/* Botón para finalizar compra cuando solicitud y pago estén aprobados */}
+              {solicitudActual.estado === 'aprobada' && solicitudActual.estado_pago === 'aprobado' && solicitudActual.hasOwnProperty('estado_producto') && solicitudActual.estado_producto !== 'finalizada' && (
+                <button
+                  onClick={finalizarCompraProducto}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                >
+                  ✅ Finalizar Compra Producto
+                </button>
+              )}
+              
+              {/* Mensaje si no se ha ejecutado el script SQL */}
+              {solicitudActual.estado === 'aprobada' && solicitudActual.estado_pago === 'aprobado' && !solicitudActual.hasOwnProperty('estado_producto') && (
+                <div className="px-4 py-2 bg-orange-100 text-orange-800 rounded border border-orange-300">
+                  ⚠️ Para usar la funcionalidad de "Compra Producto", ejecuta primero el script SQL
+                </div>
               )}
             </div>
           </div>
