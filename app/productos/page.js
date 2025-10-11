@@ -104,7 +104,7 @@ export default function ProductosPage() {
       const solicitudData = {
         cliente_id: user.id,
         cliente_email: user.emailAddresses[0]?.emailAddress || '',
-        cliente_nombre: user.firstName + ' ' + (user.lastName || ''),
+        cliente_nombre: [user.firstName, user.lastName].filter(Boolean).join(' ') || user.emailAddresses[0]?.emailAddress || 'Usuario',
         producto_id: productoSeleccionado.id,
         producto_nombre: productoSeleccionado.nombre,
         cantidad: parseInt(formSolicitud.cantidad),

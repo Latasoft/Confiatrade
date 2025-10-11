@@ -43,16 +43,37 @@ export default function SolicitudesPage() {
       
       if (error) throw error;
       
-      // Procesar solicitudes y mostrar ID de cliente de forma más amigable
+      console.log('📋 Datos de solicitudes recibidos:', data);
+      
+      // Procesar solicitudes y mostrar información del cliente correctamente
       const solicitudesConNombres = (data || []).map(solicitud => {
-        // Extraer las primeras 8 letras/números del cliente_id para mostrar
-        const clienteDisplay = solicitud.cliente_nombre 
-          || solicitud.cliente_email 
-          || (solicitud.cliente_id ? `Usuario-${solicitud.cliente_id.substring(0, 8)}...` : 'Usuario desconocido');
+        console.log('🔍 Procesando solicitud:', {
+          id: solicitud.id,
+          cliente_id: solicitud.cliente_id,
+          cliente_nombre: solicitud.cliente_nombre,
+          cliente_email: solicitud.cliente_email
+        });
+        
+        // Usar la información que ya está guardada en la solicitud
+        let clienteDisplay = 'Usuario desconocido';
+        
+        // Verificar cliente_nombre (excluyendo 'null' literal y valores vacíos)
+        if (solicitud.cliente_nombre && 
+            solicitud.cliente_nombre.trim() !== '' && 
+            solicitud.cliente_nombre.toLowerCase() !== 'null' &&
+            solicitud.cliente_nombre !== 'undefined') {
+          clienteDisplay = solicitud.cliente_nombre;
+        } else if (solicitud.cliente_email && 
+                   solicitud.cliente_email.trim() !== '' &&
+                   solicitud.cliente_email.toLowerCase() !== 'null') {
+          clienteDisplay = solicitud.cliente_email;
+        } else if (solicitud.cliente_id) {
+          clienteDisplay = `Usuario-${solicitud.cliente_id.substring(0, 8)}`;
+        }
           
         return {
           ...solicitud,
-          cliente_nombre: clienteDisplay
+          cliente_display: clienteDisplay
         };
       });
       
@@ -398,7 +419,7 @@ export default function SolicitudesPage() {
             <tbody>
               {solicitudes.map((s) => (
                 <tr key={s.id} className="hover:bg-gray-50 text-center">
-                  <td className="p-2">{s.cliente_nombre || s.cliente_id}</td>
+                  <td className="p-2">{s.cliente_display || (s.cliente_nombre && s.cliente_nombre !== 'null' ? s.cliente_nombre : null) || s.cliente_email || 'Usuario desconocido'}</td>
                   <td className="p-2">{s.producto_nombre}</td>
                   <td className="p-2">{s.cantidad} kg</td>
                   <td className="p-2">${s.precio_total?.toLocaleString()}</td>
@@ -481,7 +502,7 @@ export default function SolicitudesPage() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <h3 className="font-semibold">Información del Cliente</h3>
-                <p><strong>Nombre:</strong> {solicitudActual.cliente_nombre}</p>
+                <p><strong>Nombre:</strong> {solicitudActual.cliente_display || (solicitudActual.cliente_nombre && solicitudActual.cliente_nombre !== 'null' ? solicitudActual.cliente_nombre : null) || solicitudActual.cliente_email || 'Usuario desconocido'}</p>
                 <p><strong>ID:</strong> {solicitudActual.cliente_id}</p>
                 <p><strong>Email:</strong> {solicitudActual.cliente_email}</p>
               </div>

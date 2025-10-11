@@ -258,7 +258,7 @@ export default function ClienteDashboard() {
                       <Link href="/productos" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                         Ver Productos
                       </Link>
-                      <Link href="/solicitudes" className="glass text-gray-800 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/10 px-6 py-3 rounded-xl font-medium transition-all duration-200 border border-gray-300 dark:border-gray-600">
+                      <Link href="/mis-solicitudes" className="glass text-gray-800 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/10 px-6 py-3 rounded-xl font-medium transition-all duration-200 border border-gray-300 dark:border-gray-600">
                         Mis Solicitudes
                       </Link>
                     </div>
