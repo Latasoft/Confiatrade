@@ -115,28 +115,26 @@ export default function SolicitudesPage() {
 
   async function aprobarPago() {
     try {
-      // Verificar si requiere transporte y hay contacto válido
-      if (solicitudActual.requiere_transporte) {
-        if (!contactoTransporte.trim()) {
-          toast.error('Debes proporcionar tu contacto para que el cliente se comunique contigo');
-          return;
-        }
-        if (contactoTransporte.trim().length < 8) {
-          toast.error('Tu contacto debe tener mínimo 8 caracteres');
-          return;
-        }
+      // Verificar contacto válido - SIEMPRE REQUERIDO
+      if (!contactoTransporte.trim()) {
+        toast.error('Debes proporcionar tu contacto para que el cliente se comunique contigo');
+        return;
+      }
+      if (contactoTransporte.trim().length < 8) {
+        toast.error('Tu contacto debe tener mínimo 8 caracteres');
+        return;
       }
 
       const updateData = { 
-        estado_pago: 'aprobado'
+        estado_pago: 'aprobado',
+        contacto_transporte: contactoTransporte.trim()
       };
 
-      // Agregar contacto del admin si se proporcionó
-      if (solicitudActual.requiere_transporte && contactoTransporte.trim()) {
-        updateData.contacto_transporte = contactoTransporte.trim();
-        updateData.mensaje = `¡Pago Aprobado! 📞 Contáctate con el administrador para coordinar el transporte: ${contactoTransporte.trim()}`;
+      // Mensaje diferente según si requiere transporte o no
+      if (solicitudActual.requiere_transporte) {
+        updateData.mensaje = `¡Pago Aprobado! 🚚 Contáctate con el administrador para coordinar el transporte: ${contactoTransporte.trim()}`;
       } else {
-        updateData.mensaje = '¡Pago Aprobado! ✅ Tu producto está listo.';
+        updateData.mensaje = `¡Pago Aprobado! 📞 Contáctate con el administrador para coordinar la entrega: ${contactoTransporte.trim()}`;
       }
 
       const { error } = await supabase
@@ -146,9 +144,7 @@ export default function SolicitudesPage() {
 
       if (error) throw error;
       
-      const mensajeExito = solicitudActual.requiere_transporte 
-        ? 'Pago aprobado. El cliente recibirá tu contacto para coordinar el transporte.' 
-        : 'Pago aprobado correctamente.';
+      const mensajeExito = 'Pago aprobado. El cliente recibirá tu contacto para comunicarse contigo.';
       
       toast.success(mensajeExito);
       setContactoTransporte(''); // Limpiar el campo
@@ -501,9 +497,8 @@ export default function SolicitudesPage() {
                   </div>
                 )}
 
-                {/* Campo para contacto del admin si requiere transporte */}
-                {solicitudActual.requiere_transporte && (
-                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                {/* Campo para contacto del admin - SIEMPRE OBLIGATORIO */}
+                <div className="mb-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded">
                     <label className="block text-sm font-medium text-yellow-800 mb-2">
                       � Tu Contacto para el Cliente (Requerido)
                     </label>
@@ -512,43 +507,32 @@ export default function SolicitudesPage() {
                       value={contactoTransporte}
                       onChange={(e) => setContactoTransporte(e.target.value)}
                       placeholder="Ej: WhatsApp +56912345678, Email: admin@confiatrade.cl"
-                      className={`w-full p-2 border rounded text-sm focus:outline-none ${
+                      className={`w-full p-2 border rounded text-sm focus:outline-none text-gray-900 dark:text-white ${
                         contactoTransporte.trim().length > 0 && contactoTransporte.trim().length < 8
-                          ? 'border-red-300 focus:border-red-500 bg-red-50'
+                          ? 'border-red-300 dark:border-red-600 focus:border-red-500 bg-red-50 dark:bg-red-900/20'
                           : contactoTransporte.trim().length >= 8
-                          ? 'border-green-300 focus:border-green-500 bg-green-50'
-                          : 'border-yellow-300 focus:border-yellow-500'
+                          ? 'border-green-300 dark:border-green-600 focus:border-green-500 bg-green-50 dark:bg-green-900/20'
+                          : 'border-orange-300 dark:border-orange-600 focus:border-orange-500 bg-white dark:bg-gray-800'
                       }`}
                     />
                     <div className="flex justify-between items-center mt-1">
-                      <p className="text-xs text-yellow-600">
-                        💡 El cliente recibirá este contacto para coordinar el transporte contigo
+                      <p className="text-xs text-orange-600 dark:text-orange-400">
+                        💡 El cliente recibirá este contacto para comunicarse contigo
                       </p>
                       <p className={`text-xs ${
                         contactoTransporte.trim().length < 8 
-                          ? contactoTransporte.trim().length > 0 ? 'text-red-600' : 'text-gray-500'
-                          : 'text-green-600'
+                          ? contactoTransporte.trim().length > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'
+                          : 'text-green-600 dark:text-green-400'
                       }`}>
                         {contactoTransporte.trim().length}/8 min
                       </p>
                     </div>
                     {contactoTransporte.trim().length > 0 && contactoTransporte.trim().length < 8 && (
-                      <p className="text-xs text-red-600 mt-1">
+                      <p className="text-xs text-red-600 dark:text-red-400 mt-1">
                         ⚠️ Mínimo 8 caracteres requeridos
                       </p>
                     )}
                   </div>
-                )}
-
-                {/* Mensaje informativo sobre transporte */}
-                {!solicitudActual.requiere_transporte && (
-                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded">
-                    <p className="text-sm text-green-800">
-                      ✨ <strong>Sin transporte requerido:</strong> Este producto no requiere transporte. 
-                      Puedes aprobar directamente el pago.
-                    </p>
-                  </div>
-                )}
 
                 <div className="flex gap-2">
                   <button
@@ -559,7 +543,7 @@ export default function SolicitudesPage() {
                   </button>
                   <button
                     onClick={aprobarPago}
-                    disabled={solicitudActual.requiere_transporte && (!contactoTransporte.trim() || contactoTransporte.trim().length < 8)}
+                    disabled={!contactoTransporte.trim() || contactoTransporte.trim().length < 8}
                     className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     ✅ Aprobar Pago
@@ -567,12 +551,10 @@ export default function SolicitudesPage() {
                 </div>
 
                 {/* Mensaje de ayuda */}
-                <p className="text-xs text-blue-600 mt-2">
-                  {solicitudActual.requiere_transporte 
-                    ? contactoTransporte.trim().length >= 8
-                      ? '✅ Tu contacto está listo - El cliente recibirá esta información'
-                      : '⚠️ Proporciona tu contacto para que el cliente pueda comunicarse contigo (mín. 8 caracteres)'
-                    : '✅ Listo para aprobar - No requiere información adicional'
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                  {contactoTransporte.trim().length >= 8
+                    ? '✅ Tu contacto está listo - El cliente recibirá esta información'
+                    : '⚠️ Proporciona tu contacto para que el cliente pueda comunicarse contigo (mín. 8 caracteres)'
                   }
                 </p>
               </div>
@@ -610,11 +592,11 @@ export default function SolicitudesPage() {
             
             {/* Comentarios del administrador */}
             <div className="mb-6">
-              <h3 className="font-semibold mb-2">Comentarios para el cliente</h3>
+              <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Comentarios para el cliente</h3>
               <textarea
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
-                className="w-full border rounded p-2"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 rows="3"
                 placeholder="Añade un comentario para el cliente..."
               ></textarea>
@@ -624,7 +606,7 @@ export default function SolicitudesPage() {
             <div className="flex justify-end gap-3">
               <button
                 onClick={cerrarModal}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
               >
                 Cerrar
               </button>

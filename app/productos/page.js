@@ -304,8 +304,8 @@ export default function ProductosPage() {
                   <h3 className="font-semibold text-gray-900 dark:text-white text-base truncate">
                     {productoSeleccionado.nombre}
                   </h3>
-                  <p className="text-sm font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
-                    ${productoSeleccionado.precio?.toLocaleString()}/{productoSeleccionado.unidad || 'unidad'}
+                  <p className="text-sm font-bold text-green-600 dark:text-green-400">
+                    ${productoSeleccionado.precio?.toLocaleString()}/{productoSeleccionado.unidad || 'kg'}
                   </p>
                   <p className="text-xs text-gray-600 dark:text-gray-400">Stock: {productoSeleccionado.stock}</p>
                 </div>
