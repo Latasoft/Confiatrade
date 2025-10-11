@@ -343,16 +343,39 @@ export default function MisSolicitudesPage() {
                               </div>
                             ) : (
                               <div className="p-3 bg-emerald-500/20 dark:bg-emerald-500/10 backdrop-blur-sm rounded-lg border border-emerald-300/30 dark:border-emerald-500/20">
-                                {/* Mostrar el mensaje completo de la base de datos si existe, o mensaje por defecto */}
-                                {solicitud.mensaje && solicitud.mensaje.includes('¡Pago Aprobado!') ? (
-                                  <p className="text-emerald-800 dark:text-emerald-300 font-medium whitespace-pre-line">{solicitud.mensaje}</p>
+                                {/* Mostrar siempre el mensaje de la base de datos con el contacto del admin */}
+                                {solicitud.mensaje && (solicitud.mensaje.includes('¡Pago Aprobado!') || solicitud.mensaje.includes('Contáctate')) ? (
+                                  <div className="space-y-2">
+                                    <p className="text-emerald-800 dark:text-emerald-300 font-medium whitespace-pre-line">{solicitud.mensaje}</p>
+                                    {solicitud.contacto_transporte && (
+                                      <div className="p-2 bg-emerald-600/20 dark:bg-emerald-600/10 rounded border border-emerald-400/30 dark:border-emerald-500/20">
+                                        <p className="text-xs font-medium text-emerald-900 dark:text-emerald-200">
+                                          📞 Contacto del Vendedor:
+                                        </p>
+                                        <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300">
+                                          {solicitud.contacto_transporte}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
                                 ) : (
                                   <>
                                     <p className="text-emerald-800 dark:text-emerald-300 font-medium">¡Pago Aprobado!</p>
-                                    {solicitud.requiere_transporte && (
-                                      <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-1">
-                                        📞 El administrador se pondrá en contacto contigo para coordinar el transporte.
-                                      </p>
+                                    <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-1">
+                                      {solicitud.requiere_transporte 
+                                        ? "🚚 Contáctate con el Vendedor para coordinar el Envío"
+                                        : "📦 Contáctate con el Vendedor para coordinar la Entrega del Producto"
+                                      }
+                                    </p>
+                                    {solicitud.contacto_transporte && (
+                                      <div className="p-2 bg-emerald-600/20 dark:bg-emerald-600/10 rounded border border-emerald-400/30 dark:border-emerald-500/20 mt-2">
+                                        <p className="text-xs font-medium text-emerald-900 dark:text-emerald-200">
+                                          📞 Contacto del Vendedor:
+                                        </p>
+                                        <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300">
+                                          {solicitud.contacto_transporte}
+                                        </p>
+                                      </div>
                                     )}
                                   </>
                                 )}

@@ -241,9 +241,9 @@ export default function SolicitudesPage() {
       // Mensaje diferente según si requiere transporte o no
       let mensajeBase;
       if (solicitudActual.requiere_transporte) {
-        mensajeBase = `¡Pago Aprobado! 🚚 Tu producto está en proceso. Contáctate con el Vendedor para coordinar Transporte: ${contactoTransporte.trim()}`;
+        mensajeBase = `¡Pago Aprobado! 🚚 Tu producto está en proceso. Contáctate con el Vendedor para coordinar Envío: ${contactoTransporte.trim()}`;
       } else {
-        mensajeBase = `¡Pago Aprobado! 📞 Tu producto está en proceso. Contáctate con el Vendedor para coordinar Entrega: ${contactoTransporte.trim()}`;
+        mensajeBase = `¡Pago Aprobado! � Tu producto está en proceso. Contáctate con el Vendedor para coordinar Entrega del Producto: ${contactoTransporte.trim()}`;
       }
       
       // Agregar comentario del admin si existe
