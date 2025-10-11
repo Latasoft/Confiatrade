@@ -10,9 +10,7 @@ export default function SolicitudesPage() {
   const [modalSolicitud, setModalSolicitud] = useState(false);
   const [solicitudActual, setSolicitudActual] = useState(null);
   const [filtro, setFiltro] = useState('pendiente'); // pendiente, aprobada, rechazada, mas_info, producto_finalizada, todas
-  const [comentario, setComentario] = useState('');
   const [contactoTransporte, setContactoTransporte] = useState('');
-  const [descripcionPago, setDescripcionPago] = useState('');
   const [comentarioSolicitud, setComentarioSolicitud] = useState('');
   const [comentarioPago, setComentarioPago] = useState('');
   const [comentarioProducto, setComentarioProducto] = useState('');
@@ -75,9 +73,7 @@ export default function SolicitudesPage() {
   function cerrarModal() {
     setModalSolicitud(false);
     setSolicitudActual(null);
-    setComentario('');
     setContactoTransporte('');
-    setDescripcionPago('');
     setComentarioSolicitud('');
     setComentarioPago('');
     setComentarioProducto('');
@@ -862,7 +858,7 @@ export default function SolicitudesPage() {
               {/* Mensaje si no se ha ejecutado el script SQL */}
               {solicitudActual.estado === 'aprobada' && solicitudActual.estado_pago === 'aprobado' && !solicitudActual.hasOwnProperty('estado_producto') && (
                 <div className="px-4 py-2 bg-orange-100 text-orange-800 rounded border border-orange-300">
-                  ⚠️ Para usar la funcionalidad de "Compra Producto", ejecuta primero el script SQL
+                  ⚠️ Para usar la funcionalidad de &quot;Compra Producto&quot;, ejecuta primero el script SQL
                 </div>
               )}
             </div>

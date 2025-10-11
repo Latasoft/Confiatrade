@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
+import Link from 'next/link';
 
 export default function RoleManagementPage() {
   const { user } = useUser();
@@ -113,12 +114,12 @@ export default function RoleManagementPage() {
         </div>
 
         <div className="mt-4">
-          <a 
+          <Link 
             href="/"
             className="text-blue-500 hover:text-blue-700 text-sm"
           >
             ← Volver al inicio
-          </a>
+          </Link>
         </div>
       </div>
     </div>

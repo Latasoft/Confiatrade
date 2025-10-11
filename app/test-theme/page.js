@@ -1,5 +1,6 @@
 import Navbar from '@/components/Navbar'
 import { ThemeDemo } from '@/components/ThemeDemo'
+import Link from 'next/link'
 
 export default function TestThemePage() {
   return (
@@ -60,12 +61,12 @@ export default function TestThemePage() {
                 🧭 Páginas Actualizadas
               </h2>
               <div className="grid md:grid-cols-3 gap-4">
-                <a href="/" className="glass rounded-xl p-4 hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300 group">
+                <Link href="/" className="glass rounded-xl p-4 hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300 group">
                   <div className="text-center">
                     <span className="text-2xl mb-2 block">🏠</span>
                     <span className="text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">Página Principal</span>
                   </div>
-                </a>
+                </Link>
                 <a href="/cliente" className="glass rounded-xl p-4 hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300 group">
                   <div className="text-center">
                     <span className="text-2xl mb-2 block">👤</span>
