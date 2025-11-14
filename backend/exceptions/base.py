@@ -11,7 +11,11 @@ class NotFoundError(ConfiaTradError):
         message = f"{resource} no encontrado"
         if identifier:
             message += f": {identifier}"
-        super().__init__(message, status_code=404, details={"resource": resource, "identifier": identifier})
+        super().__init__(
+            message,
+            status_code=404,
+            details={"resource": resource, "identifier": identifier},
+        )
 
 
 class ValidationError(ConfiaTradError):
@@ -19,7 +23,7 @@ class ValidationError(ConfiaTradError):
         super().__init__(
             f"Error de validación en '{field}': {message}",
             status_code=400,
-            details={"field": field, "value": value}
+            details={"field": field, "value": value},
         )
 
 
@@ -28,7 +32,7 @@ class DuplicateError(ConfiaTradError):
         super().__init__(
             f"{resource} ya existe con {field} = '{value}'",
             status_code=409,
-            details={"resource": resource, "field": field, "value": value}
+            details={"resource": resource, "field": field, "value": value},
         )
 
 
@@ -37,7 +41,7 @@ class BusinessRuleError(ConfiaTradError):
         super().__init__(
             f"Regla de negocio violada: {message}",
             status_code=422,
-            details={"rule": rule}
+            details={"rule": rule},
         )
 
 

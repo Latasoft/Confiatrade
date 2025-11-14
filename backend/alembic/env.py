@@ -10,22 +10,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from config import settings
 from database import Base
 
-from models.sqlalchemy.empresa import EmpresaModel
-from models.sqlalchemy.participante import ParticipanteModel
-from models.sqlalchemy.pais_model import PaisModel
-from models.sqlalchemy.sector_model import SectorModel
-from models.sqlalchemy.curaduria_model import CuraduriaModel
-from models.sqlalchemy.bloque_horario_model import BloqueHorarioModel
-from models.sqlalchemy.reunion_model import ReunionModel
-from models.sqlalchemy.seguimiento_model import SeguimientoModel
-from models.sqlalchemy.nda_model import NDAModel
-from models.sqlalchemy.kpi_model import KPIModel
-from models.sqlalchemy.usuario_model import UsuarioModel
-from models.sqlalchemy.mesa_tematica_model import MesaTematicaModel
-from models.sqlalchemy.ruta_turistica_model import RutaTuristicaModel
-from models.sqlalchemy.evento_model import EventoModel
-from models.sqlalchemy.empresa_evento_model import EmpresaEventoModel
-
 config = context.config
 
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

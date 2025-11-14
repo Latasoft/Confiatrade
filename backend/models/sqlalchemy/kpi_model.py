@@ -1,6 +1,7 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, Date, DateTime, Numeric, UniqueConstraint
+
 from database import Base
+from sqlalchemy import Column, Date, DateTime, Integer, Numeric, UniqueConstraint
 
 
 class KPIModel(Base):
@@ -22,6 +23,4 @@ class KPIModel(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    __table_args__ = (
-        UniqueConstraint('fecha', name='kpis_fecha_unique'),
-    )
+    __table_args__ = (UniqueConstraint("fecha", name="kpis_fecha_unique"),)

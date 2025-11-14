@@ -1,10 +1,12 @@
-from sqlalchemy import Column, Integer, Date, DateTime, Numeric, UniqueConstraint
 from datetime import datetime
+
 from database import Base
+from sqlalchemy import Column, Date, DateTime, Integer, Numeric, UniqueConstraint
+
 
 class KPI(Base):
     __tablename__ = "kpis"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     fecha = Column(Date, nullable=False, default=datetime.utcnow().date, index=True)
     empresas_meta = Column(Integer, default=100)
@@ -20,7 +22,5 @@ class KPI(Base):
     nps = Column(Numeric(5, 2), default=0.0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    __table_args__ = (
-        UniqueConstraint('fecha', name='kpis_fecha_unique'),
-    )
+
+    __table_args__ = (UniqueConstraint("fecha", name="kpis_fecha_unique"),)

@@ -3,6 +3,7 @@
 ## 📦 Estado Actual
 
 ### ✅ Completado
+
 - [x] Build de producción funcional (`dist/` generado)
 - [x] Variables de entorno configuradas (`.env`, `.env.example`)
 - [x] Tipos de TypeScript corregidos (`vite-env.d.ts`)
@@ -12,6 +13,7 @@
 - [x] Servidor de desarrollo corriendo en `http://localhost:5173`
 
 ### 📊 Tamaño del Bundle
+
 ```
 dist/index.html                   0.47 kB │ gzip:  0.31 kB
 dist/assets/index-*.css          12.20 kB │ gzip:  3.12 kB
@@ -25,6 +27,7 @@ dist/assets/index-*.js          293.67 kB │ gzip: 97.29 kB
 ### Opción 1️⃣: Vercel (Recomendado - 5 minutos)
 
 **Pasos:**
+
 1. Ve a https://vercel.com
 2. "Add New Project" → Importa `Latasoft/Confiatrade`
 3. Root Directory: `frontend`
@@ -37,6 +40,7 @@ dist/assets/index-*.js          293.67 kB │ gzip: 97.29 kB
 ### Opción 2️⃣: Netlify (Drag & Drop - 2 minutos)
 
 **Pasos:**
+
 1. En esta terminal:
    ```bash
    cd frontend
@@ -51,9 +55,11 @@ dist/assets/index-*.js          293.67 kB │ gzip: 97.29 kB
 ### Opción 3️⃣: Túnel con Ngrok (Demo temporal - 30 segundos)
 
 **Para compartir el localhost:**
+
 ```bash
 npx ngrok http 5173
 ```
+
 **URL generada** (válida 2 horas): `https://abc123.ngrok-free.app`
 
 ---
@@ -61,6 +67,7 @@ npx ngrok http 5173
 ## 🎨 Lo que Verá el Cliente
 
 ### Páginas Disponibles:
+
 - ✅ **Dashboard** (`/`)
 - ✅ **Empresas** (`/empresas`)
 - ✅ **Participantes** (`/participantes`)
@@ -71,6 +78,7 @@ npx ngrok http 5173
 - ✅ **Seguimiento** (`/seguimiento`)
 
 ### Estado Actual:
+
 - ✅ Navegación funcional
 - ✅ Diseño profesional (azul/blanco)
 - ✅ Sistema de notificaciones
@@ -82,6 +90,7 @@ npx ngrok http 5173
 ## 🔗 Comandos Rápidos
 
 ### Ver en Localhost
+
 ```bash
 cd frontend
 npm run dev
@@ -89,6 +98,7 @@ npm run dev
 ```
 
 ### Build de Producción
+
 ```bash
 cd frontend
 npm run build
@@ -97,6 +107,7 @@ npm run preview
 ```
 
 ### Deploy a Vercel (CLI)
+
 ```bash
 npm i -g vercel
 cd frontend
@@ -142,7 +153,7 @@ Equipo Latasoft
 - [x] Variables de entorno configuradas
 - [x] Build optimizado generado
 - [x] Documentación lista
-- [ ] Deploy realizado *(pendiente de tu elección)*
+- [ ] Deploy realizado _(pendiente de tu elección)_
 - [ ] URL compartida con cliente
 
 ---

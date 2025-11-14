@@ -1,14 +1,15 @@
-from sqlalchemy import Column, String, Boolean, Date, Integer, Text, DateTime
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
 import uuid
 from datetime import datetime
+
 from database import Base
+from sqlalchemy import Boolean, Column, Date, DateTime, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 
 class EventoModel(Base):
     __tablename__ = "eventos"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     nombre = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)
@@ -22,6 +23,6 @@ class EventoModel(Base):
     activo = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     empresas = relationship("EmpresaEventoModel", back_populates="evento")
     bloques_horarios = relationship("BloqueHorarioModel", back_populates="evento")

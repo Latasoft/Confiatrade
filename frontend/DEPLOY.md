@@ -7,12 +7,14 @@ Sistema de gestión de eventos B2B - Interfaz de usuario.
 ### Opción 1: Deploy Automático (Recomendado)
 
 1. **Conectar con GitHub:**
+
    - Ve a [vercel.com](https://vercel.com)
    - Click en "Add New Project"
    - Importa el repositorio `Latasoft/Confiatrade`
    - Selecciona la carpeta `frontend` como Root Directory
 
 2. **Configuración del Proyecto:**
+
    ```
    Framework Preset: Vite
    Root Directory: frontend
@@ -22,6 +24,7 @@ Sistema de gestión de eventos B2B - Interfaz de usuario.
    ```
 
 3. **Variables de Entorno:**
+
    ```
    VITE_API_URL = https://tu-backend.railway.app/api/v1
    ```
@@ -89,6 +92,7 @@ npm run build
 ### Netlify
 
 1. **Deploy Manual:**
+
    ```bash
    npm install -g netlify-cli
    npm run build
@@ -130,6 +134,7 @@ npm run build
 ### Variables de Entorno
 
 Crear archivo `.env.production`:
+
 ```env
 VITE_API_URL=https://confiatrade-api.railway.app/api/v1
 ```
@@ -161,26 +166,29 @@ npm run build
 ## 🚨 Troubleshooting
 
 ### Error: "Cannot find module"
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
 ```
 
 ### Error de CORS en producción
+
 - Verifica que el backend tenga el dominio de Vercel en `CORS_ORIGINS`
 - Backend config.py: `CORS_ORIGINS=["https://confiatrade.vercel.app"]`
 
 ### Rutas no funcionan después del deploy
+
 - Vercel: Crear `vercel.json`:
+
 ```json
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
 ```
 
 ### Variables de entorno no funcionan
+
 - Asegúrate de que empiecen con `VITE_`
 - Reinicia el servidor de desarrollo
 - En Vercel: Variables de entorno deben estar configuradas en el dashboard
@@ -192,6 +200,7 @@ npm install
 URL temporal para el cliente: `https://confiatrade-[hash].vercel.app`
 
 **Credenciales de prueba (cuando backend esté listo):**
+
 ```
 Usuario: admin@confiatrade.com
 Password: demo123

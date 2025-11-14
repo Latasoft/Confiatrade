@@ -1,6 +1,6 @@
+from database import Base
 from sqlalchemy import Boolean, Column, Integer, String, Text
 from sqlalchemy.orm import relationship
-from database import Base
 
 
 class SectorModel(Base):

@@ -1,12 +1,14 @@
-from sqlalchemy import Column, String, Text, Boolean, Date, Time, Numeric, DateTime
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime
+
 from database import Base
+from sqlalchemy import Boolean, Column, Date, DateTime, Numeric, String, Text, Time
+from sqlalchemy.dialects.postgresql import UUID
+
 
 class RutaTuristica(Base):
     __tablename__ = "rutas_turisticas"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     nombre = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)

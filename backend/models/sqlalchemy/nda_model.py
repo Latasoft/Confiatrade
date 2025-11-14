@@ -1,16 +1,19 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Boolean, ForeignKey, DateTime, Text, Date
+
+from database import Base
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from database import Base
 
 
 class NDAModel(Base):
     __tablename__ = "ndas"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    empresa_id = Column(UUID(as_uuid=True), ForeignKey("empresas.id"), nullable=False, index=True)
+    empresa_id = Column(
+        UUID(as_uuid=True), ForeignKey("empresas.id"), nullable=False, index=True
+    )
     tipo = Column(String(50), default="unilateral", index=True)
     firmada = Column(Boolean, default=False, index=True)
     fecha_firma = Column(Date, nullable=True)

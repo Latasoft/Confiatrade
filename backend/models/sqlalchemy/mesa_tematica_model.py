@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Text, Boolean, DateTime
-from sqlalchemy.dialects.postgresql import UUID
+
 from database import Base
+from sqlalchemy import Boolean, Column, DateTime, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 
 class MesaTematicaModel(Base):

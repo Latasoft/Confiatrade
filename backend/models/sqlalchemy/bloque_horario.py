@@ -1,11 +1,13 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date, Time, DateTime
-from sqlalchemy.orm import relationship
 from datetime import datetime
+
 from database import Base
+from sqlalchemy import Boolean, Column, Date, DateTime, Integer, String, Time
+from sqlalchemy.orm import relationship
+
 
 class BloqueHorario(Base):
     __tablename__ = "bloques_horarios"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     fecha = Column(Date, nullable=False, default=datetime.utcnow().date, index=True)
     hora_inicio = Column(Time, nullable=False)
@@ -15,5 +17,5 @@ class BloqueHorario(Base):
     label = Column(String(50), nullable=True)
     activo = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    
+
     reuniones = relationship("Reunion", back_populates="bloque")

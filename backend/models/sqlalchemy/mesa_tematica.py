@@ -1,13 +1,14 @@
-from sqlalchemy import Column, String, Text, Boolean, DateTime
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
 import uuid
 from datetime import datetime
+
 from database import Base
+from sqlalchemy import Boolean, Column, DateTime, String, Text
+from sqlalchemy.dialects.postgresql import UUID
+
 
 class MesaTematica(Base):
     __tablename__ = "mesas_tematicas"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     nombre = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)

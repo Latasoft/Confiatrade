@@ -1,18 +1,17 @@
 from api.v1.router import api_router
 from config import settings
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.exceptions import RequestValidationError
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-
 from exceptions.base import ConfiaTradError
+from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from middleware.error_handler import (
     confiatrade_exception_handler,
-    validation_exception_handler,
+    general_exception_handler,
     integrity_error_handler,
     sqlalchemy_exception_handler,
-    general_exception_handler
+    validation_exception_handler,
 )
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

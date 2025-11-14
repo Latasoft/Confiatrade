@@ -29,9 +29,28 @@ class EmpresaModel(Base):
     participantes = relationship(
         "ParticipanteModel", back_populates="empresa", cascade="all, delete-orphan"
     )
-    curaduria = relationship("CuraduriaModel", back_populates="empresa", uselist=False, cascade="all, delete-orphan")
-    reuniones_a = relationship("ReunionModel", foreign_keys="ReunionModel.empresa_a_id", back_populates="empresa_a")
-    reuniones_b = relationship("ReunionModel", foreign_keys="ReunionModel.empresa_b_id", back_populates="empresa_b")
-    seguimientos = relationship("SeguimientoModel", back_populates="empresa", cascade="all, delete-orphan")
-    ndas = relationship("NDAModel", back_populates="empresa", cascade="all, delete-orphan")
-    eventos = relationship("EmpresaEventoModel", back_populates="empresa", cascade="all, delete-orphan")
+    curaduria = relationship(
+        "CuraduriaModel",
+        back_populates="empresa",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    reuniones_a = relationship(
+        "ReunionModel",
+        foreign_keys="ReunionModel.empresa_a_id",
+        back_populates="empresa_a",
+    )
+    reuniones_b = relationship(
+        "ReunionModel",
+        foreign_keys="ReunionModel.empresa_b_id",
+        back_populates="empresa_b",
+    )
+    seguimientos = relationship(
+        "SeguimientoModel", back_populates="empresa", cascade="all, delete-orphan"
+    )
+    ndas = relationship(
+        "NDAModel", back_populates="empresa", cascade="all, delete-orphan"
+    )
+    eventos = relationship(
+        "EmpresaEventoModel", back_populates="empresa", cascade="all, delete-orphan"
+    )

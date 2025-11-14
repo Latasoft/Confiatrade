@@ -1,16 +1,19 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, ForeignKey, DateTime, Text, Date, ARRAY
+
+from database import Base
+from sqlalchemy import ARRAY, Column, Date, DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from database import Base
 
 
 class SeguimientoModel(Base):
     __tablename__ = "seguimiento"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    empresa_id = Column(UUID(as_uuid=True), ForeignKey("empresas.id"), nullable=False, index=True)
+    empresa_id = Column(
+        UUID(as_uuid=True), ForeignKey("empresas.id"), nullable=False, index=True
+    )
     tipo = Column(String(50), default="seguimiento", index=True)
     descripcion = Column(Text, nullable=False)
     responsable = Column(String(255), nullable=True)

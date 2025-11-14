@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Text, Boolean, Date, Time, Numeric, DateTime
-from sqlalchemy.dialects.postgresql import UUID
+
 from database import Base
+from sqlalchemy import Boolean, Column, Date, DateTime, Numeric, String, Text, Time
+from sqlalchemy.dialects.postgresql import UUID
 
 
 class RutaTuristicaModel(Base):

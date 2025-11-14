@@ -1,15 +1,27 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, Date, Time, DateTime, ForeignKey
+
+from database import Base
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Time,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from database import Base
 
 
 class BloqueHorarioModel(Base):
     __tablename__ = "bloques_horarios"
 
     id = Column(Integer, primary_key=True, index=True)
-    evento_id = Column(UUID(as_uuid=True), ForeignKey("eventos.id"), nullable=True, index=True)
+    evento_id = Column(
+        UUID(as_uuid=True), ForeignKey("eventos.id"), nullable=True, index=True
+    )
     fecha = Column(Date, nullable=False, index=True)
     hora_inicio = Column(Time, nullable=False)
     hora_fin = Column(Time, nullable=False)
