@@ -23,7 +23,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"]
     if settings.ENVIRONMENT == "development"
-    else settings.CORS_ORIGINS,
+    else settings.cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

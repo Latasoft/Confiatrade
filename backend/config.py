@@ -18,13 +18,14 @@ class Settings(BaseSettings):
 
     ENVIRONMENT: str = "development"
 
-    # CORS origins - se expanden en producción
-    CORS_ORIGINS: list[str] = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://confiatrade.netlify.app",
-        "https://*.netlify.app",
-    ]
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """Convierte CORS_ORIGINS string a lista"""
+        return [
+            origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()
+        ]
 
     class Config:
         env_file = ".env"
