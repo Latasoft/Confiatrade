@@ -27,7 +27,7 @@ export default function AgendaPage() {
     sala: selectedSala || undefined,
   });
 
-  const { data: bloquesData, isLoading: loadingBloques } = useBloquesHorarios({
+  const { data: _bloquesData, isLoading: _loadingBloques } = useBloquesHorarios({
     fecha: selectedDate,
     activo: true,
   });
@@ -233,7 +233,7 @@ export default function AgendaPage() {
       </div>
 
       {/* Content */}
-      {loadingReuniones || loadingBloques ? (
+      {loadingReuniones || _loadingBloques ? (
         <div className="flex justify-center items-center py-12">
           <LoadingSpinner size="lg" text="Cargando reuniones..." />
         </div>
