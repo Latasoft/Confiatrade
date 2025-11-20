@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 from database import Base
+
 from sqlalchemy import Boolean, Column, Date, DateTime, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -13,7 +14,7 @@ class EventoModel(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     nombre = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)
-    pais_sede_id = Column(Integer, nullable=True)
+    pais_sede = Column(String(100), nullable=True)
     ciudad_sede = Column(String(100), nullable=True)
     fecha_inicio = Column(Date, nullable=False, index=True)
     fecha_fin = Column(Date, nullable=False)

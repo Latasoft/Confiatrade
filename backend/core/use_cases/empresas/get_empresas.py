@@ -14,7 +14,12 @@ class GetEmpresas:
         limit: int = 100,
         pais_id: Optional[int] = None,
         sector_id: Optional[int] = None,
+        aprobada: Optional[bool] = None,
     ) -> List[Empresa]:
         return self.repository.get_all(
-            skip=skip, limit=limit, pais_id=pais_id, sector_id=sector_id
+            skip=skip,
+            limit=limit,
+            pais_id=pais_id,
+            sector_id=sector_id,
+            aprobada=aprobada,
         )

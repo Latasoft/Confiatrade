@@ -47,6 +47,7 @@ class PostgresEmpresaRepository(EmpresaRepository):
         limit: int = 100,
         pais_id: Optional[int] = None,
         sector_id: Optional[int] = None,
+        aprobada: Optional[bool] = None,
     ) -> List[Empresa]:
         query = self.db.query(EmpresaModel)
 
@@ -54,6 +55,8 @@ class PostgresEmpresaRepository(EmpresaRepository):
             query = query.filter(EmpresaModel.pais_id == pais_id)
         if sector_id:
             query = query.filter(EmpresaModel.sector_id == sector_id)
+        if aprobada is not None:
+            query = query.filter(EmpresaModel.aprobada == aprobada)
 
         db_empresas = query.offset(skip).limit(limit).all()
 

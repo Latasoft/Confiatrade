@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 from database import Base
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -15,7 +16,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 
-class Participante(Base):
+class ParticipanteModel(Base):
     __tablename__ = "participantes"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
@@ -33,6 +34,8 @@ class Participante(Base):
     requiere_interprete = Column(Boolean, default=False)
     foto_url = Column(String(500), nullable=True)
     qr_data = Column(Text, nullable=True)
+    check_in_realizado = Column(Boolean, default=False, index=True)
+    fecha_check_in = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -40,4 +43,9 @@ class Participante(Base):
         UniqueConstraint("empresa_id", "email", name="email_unique_per_empresa"),
     )
 
-    empresa = relationship("Empresa", back_populates="participantes")
+    empresa = relationship("EmpresaModel", back_populates="participantes")
+    credenciales_generadas = relationship(
+        "CredencialGeneradaModel",
+        back_populates="participante",
+        cascade="all, delete-orphan",
+    )

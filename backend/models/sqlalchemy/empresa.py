@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 from database import Base
+
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -47,6 +48,11 @@ class EmpresaModel(Base):
     )
     seguimientos = relationship(
         "SeguimientoModel", back_populates="empresa", cascade="all, delete-orphan"
+    )
+    credenciales_generadas = relationship(
+        "CredencialGeneradaModel",
+        back_populates="empresa",
+        cascade="all, delete-orphan",
     )
     ndas = relationship(
         "NDAModel", back_populates="empresa", cascade="all, delete-orphan"

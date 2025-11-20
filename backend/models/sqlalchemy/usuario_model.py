@@ -2,8 +2,10 @@ import uuid
 from datetime import datetime
 
 from database import Base
-from sqlalchemy import Boolean, Column, DateTime, String
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 
 class UsuarioModel(Base):
@@ -13,7 +15,13 @@ class UsuarioModel(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
     nombre_completo = Column(String(255), nullable=True)
-    rol = Column(String(50), default="staff")
+    rol = Column(String(50), default="empresa", index=True)  # 'admin' o 'empresa'
+    empresa_id = Column(
+        UUID(as_uuid=True), ForeignKey("empresas.id"), nullable=True, index=True
+    )
     activo = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationship
+    empresa = relationship("EmpresaModel", backref="usuarios")

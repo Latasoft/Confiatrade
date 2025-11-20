@@ -50,7 +50,7 @@ function NotificationToastItem({ notification }: NotificationToastItemProps) {
 
   return (
     <div
-      className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg transition-all ${STYLES[notification.type]}`}
+      className={`flex items-start gap-3 p-4 rounded-xl border-2 transition-all ${STYLES[notification.type]}`}
       role="alert"
     >
       <div className="flex-shrink-0 mt-0.5">

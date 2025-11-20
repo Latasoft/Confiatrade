@@ -10,6 +10,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from config import settings
 from database import Base
 
+# Import all models to ensure they are registered with SQLAlchemy
+
 config = context.config
 
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

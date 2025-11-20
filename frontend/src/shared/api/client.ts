@@ -11,16 +11,31 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  console.log('[API Request]', config.method?.toUpperCase(), config.url, config.params);
+  
+  // Obtener token del localStorage (donde zustand persist lo guarda)
+  try {
+    const authStorage = localStorage.getItem('confiatrade-auth');
+    if (authStorage) {
+      const { state } = JSON.parse(authStorage);
+      if (state?.token) {
+        config.headers.Authorization = `Bearer ${state.token}`;
+      }
+    }
+  } catch (error) {
+    console.error('[Auth] Error reading token:', error);
   }
+  
   return config;
 });
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('[API Response]', response.status, response.config.url, 'Data keys:', Object.keys(response.data || {}));
+    return response;
+  },
   (error: AxiosError<any>) => {
+    console.error('[API Error]', error.config?.url, error.response?.status, error.message);
     const notify = useNotificationStore.getState().add;
     
     if (error.response) {

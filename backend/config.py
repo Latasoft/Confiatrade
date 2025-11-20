@@ -18,7 +18,13 @@ class Settings(BaseSettings):
 
     ENVIRONMENT: str = "development"
 
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    # CORS origins - se expanden en producción
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://confiatrade.netlify.app",
+        "https://*.netlify.app",
+    ]
 
     class Config:
         env_file = ".env"

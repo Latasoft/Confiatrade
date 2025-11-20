@@ -2,7 +2,8 @@ import uuid
 from datetime import datetime
 
 from database import Base
-from sqlalchemy import ARRAY, Column, Date, DateTime, ForeignKey, String, Text
+
+from sqlalchemy import ARRAY, Column, Date, DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -19,6 +20,8 @@ class SeguimientoModel(Base):
     responsable = Column(String(255), nullable=True)
     fecha_compromiso = Column(Date, nullable=True)
     estado = Column(String(50), default="pendiente", index=True)
+    resultado = Column(String(50), nullable=True, index=True)
+    monto_estimado = Column(Numeric(15, 2), nullable=True)
     documentos_url = Column(ARRAY(Text), nullable=True)
     notas = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

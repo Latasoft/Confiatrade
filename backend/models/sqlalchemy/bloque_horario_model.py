@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from database import Base
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -28,6 +29,7 @@ class BloqueHorarioModel(Base):
     duracion_minutos = Column(Integer, nullable=False)
     ubicacion = Column(String(100), nullable=True)
     label = Column(String(50), nullable=True)
+    disponible = Column(Boolean, default=True, index=True)
     activo = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 

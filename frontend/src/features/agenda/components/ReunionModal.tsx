@@ -1,0 +1,267 @@
+import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { useCreateReunion, useUpdateReunion } from '../hooks/useReuniones';
+import { useBloquesHorarios } from '../hooks/useBloquesHorarios';
+import type { Reunion, CreateReunionData } from '../api/reunionesApi';
+
+// Mock empresas (reemplazar con API real)
+const EMPRESAS_MOCK = [
+  { id: 'a77f7089-420a-4e06-a970-f2670c00d325', nombre: 'Transportes Chile SPA' },
+  { id: '2bd2ef0d-3f47-47d4-ae4e-c500940eb08b', nombre: 'Tech Solutions Brasil' },
+  { id: 'bc50b7f3-f66d-4b18-8203-099ec81ee4e4', nombre: 'Energia Renovable ARG' },
+];
+
+interface ReunionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  reunion?: Reunion;
+  fecha?: string;
+}
+
+export function ReunionModal({ isOpen, onClose, reunion, fecha }: ReunionModalProps) {
+  const [selectedFecha, setSelectedFecha] = useState<string>(
+    fecha || new Date().toISOString().split('T')[0]
+  );
+
+  const { data: bloquesData } = useBloquesHorarios({
+    fecha: selectedFecha,
+    activo: true,
+  });
+
+  const createMutation = useCreateReunion();
+  const updateMutation = useUpdateReunion();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<CreateReunionData>({
+    defaultValues: reunion
+      ? {
+          bloque_id: reunion.bloque_id,
+          empresa_a_id: reunion.empresa_a_id,
+          empresa_b_id: reunion.empresa_b_id,
+          sala: reunion.sala || '',
+          notas: reunion.notas || '',
+          estado: reunion.estado,
+        }
+      : {
+          estado: 'programada',
+        },
+  });
+
+  const empresa_a_id = watch('empresa_a_id');
+
+  useEffect(() => {
+    if (reunion) {
+      reset({
+        bloque_id: reunion.bloque_id,
+        empresa_a_id: reunion.empresa_a_id,
+        empresa_b_id: reunion.empresa_b_id,
+        sala: reunion.sala || '',
+        notas: reunion.notas || '',
+        estado: reunion.estado,
+      });
+    }
+  }, [reunion, reset]);
+
+  const onSubmit = async (data: CreateReunionData) => {
+    try {
+      if (reunion) {
+        await updateMutation.mutateAsync({
+          id: reunion.id,
+          data: {
+            sala: data.sala,
+            notas: data.notas,
+            estado: data.estado,
+          },
+        });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+      reset();
+      onClose();
+    } catch (error) {
+      console.error('Error al guardar reunión:', error);
+    }
+  };
+
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  const bloques = bloquesData?.bloques || [];
+  const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {reunion ? 'Editar Reunión' : 'Nueva Reunión'}
+          </h2>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600 transition"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+          {/* Fecha selector (solo en crear) */}
+          {!reunion && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Fecha <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                value={selectedFecha}
+                onChange={(e) => setSelectedFecha(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Selecciona la fecha para ver bloques disponibles
+              </p>
+            </div>
+          )}
+
+          {/* Bloque Horario */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Bloque Horario <span className="text-red-500">*</span>
+            </label>
+            <select
+              {...register('bloque_id', { required: 'Bloque horario requerido' })}
+              disabled={!!reunion}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            >
+              <option value="">Selecciona un bloque horario</option>
+              {bloques.map((bloque) => (
+                <option key={bloque.id} value={bloque.id}>
+                  {bloque.label} ({bloque.hora_inicio} - {bloque.hora_fin})
+                </option>
+              ))}
+            </select>
+            {errors.bloque_id && (
+              <p className="text-sm text-red-600 mt-1">{errors.bloque_id.message}</p>
+            )}
+          </div>
+
+          {/* Empresas */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Empresa A <span className="text-red-500">*</span>
+              </label>
+              <select
+                {...register('empresa_a_id', { required: 'Empresa A requerida' })}
+                disabled={!!reunion}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              >
+                <option value="">Selecciona empresa A</option>
+                {EMPRESAS_MOCK.map((empresa) => (
+                  <option key={empresa.id} value={empresa.id}>
+                    {empresa.nombre}
+                  </option>
+                ))}
+              </select>
+              {errors.empresa_a_id && (
+                <p className="text-sm text-red-600 mt-1">{errors.empresa_a_id.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Empresa B <span className="text-red-500">*</span>
+              </label>
+              <select
+                {...register('empresa_b_id', {
+                  required: 'Empresa B requerida',
+                  validate: (value) =>
+                    value !== empresa_a_id || 'Las empresas deben ser diferentes',
+                })}
+                disabled={!!reunion}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              >
+                <option value="">Selecciona empresa B</option>
+                {EMPRESAS_MOCK.filter((e) => e.id !== empresa_a_id).map((empresa) => (
+                  <option key={empresa.id} value={empresa.id}>
+                    {empresa.nombre}
+                  </option>
+                ))}
+              </select>
+              {errors.empresa_b_id && (
+                <p className="text-sm text-red-600 mt-1">{errors.empresa_b_id.message}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Sala */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Sala</label>
+            <input
+              type="text"
+              {...register('sala')}
+              placeholder="Ej: Sala 1, Sala VIP, etc."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* Estado */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+            <select
+              {...register('estado')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="programada">Programada</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="realizada">Realizada</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+
+          {/* Notas */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Notas</label>
+            <textarea
+              {...register('notas')}
+              rows={3}
+              placeholder="Notas adicionales sobre la reunión..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isLoading}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              {isLoading ? 'Guardando...' : reunion ? 'Actualizar' : 'Crear Reunión'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

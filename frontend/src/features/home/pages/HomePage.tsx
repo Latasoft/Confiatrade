@@ -61,7 +61,7 @@ export function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-              ConfíaTrade
+              ConfiaGlobal
             </h1>
             <p className="text-xl sm:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
               Plataforma integral para la gestión de eventos B2B y encuentros empresariales internacionales
@@ -69,7 +69,7 @@ export function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/empresas"
-                className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 transition-colors shadow-lg"
+                className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 transition-colors"
               >
                 Comenzar
                 <ArrowRightIcon className="ml-2 h-5 w-5" />
@@ -109,7 +109,7 @@ export function HomePage() {
               <Link
                 key={feature.name}
                 to={feature.href}
-                className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden"
+                className="group relative bg-white rounded-2xl border-2 border-gray-200 hover:border-blue-400 transition-all duration-300 overflow-hidden"
               >
                 {/* Gradient background on hover */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity`} />

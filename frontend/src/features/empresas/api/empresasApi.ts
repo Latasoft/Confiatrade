@@ -2,8 +2,14 @@ import { apiClient } from '@/shared/api/client';
 import { Empresa, EmpresaCreate } from '@/shared/types';
 
 export const empresasApi = {
-  getAll: async (): Promise<Empresa[]> => {
-    const { data } = await apiClient.get('/empresas');
+  getAll: async (aprobada?: boolean): Promise<Empresa[]> => {
+    const params = aprobada !== undefined ? { aprobada } : {};
+    const { data } = await apiClient.get('/empresas', { params });
+    return data;
+  },
+
+  getAprobadas: async (): Promise<Empresa[]> => {
+    const { data } = await apiClient.get('/empresas', { params: { aprobada: true } });
     return data;
   },
 
@@ -24,5 +30,15 @@ export const empresasApi = {
 
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/empresas/${id}`);
+  },
+
+  aprobar: async (id: string): Promise<Empresa> => {
+    const { data } = await apiClient.patch(`/empresas/${id}/aprobar`);
+    return data;
+  },
+
+  rechazar: async (id: string): Promise<Empresa> => {
+    const { data } = await apiClient.patch(`/empresas/${id}/rechazar`);
+    return data;
   },
 };
