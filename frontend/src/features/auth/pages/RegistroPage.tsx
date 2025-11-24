@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useRegistroEmpresa } from '../hooks/useAuth';
 import { usePaises, useSectores } from '@/shared/hooks/useCatalogos';
 import { empresasApi } from '@/features/empresas/api/empresasApi';
