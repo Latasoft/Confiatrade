@@ -31,6 +31,7 @@ class CreateEmpresa:
             email=email,
             direccion=direccion,
             logo_url=None,
+            presentacion_url=None,
             aprobada=False,
             fecha_registro=datetime.utcnow(),
             updated_at=datetime.utcnow(),

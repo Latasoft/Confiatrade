@@ -31,16 +31,21 @@ class EliminarReunionUseCase:
         # Obtener bloque_id antes de eliminar
         bloque_id = reunion.bloque_id
 
+        # Verificar si hay otras reuniones en el mismo bloque ANTES de eliminar
+        otras_reuniones = self.reunion_repository.get_by_bloque(bloque_id)
+        # Filtrar la reunión actual
+        otras_reuniones_sin_actual = [r for r in otras_reuniones if r.id != reunion_id]
+
         # Eliminar reunión
         eliminado = self.reunion_repository.delete(reunion_id)
 
         # Liberar bloque si no hay otras reuniones en el mismo bloque
-        if eliminado:
-            otras_reuniones = self.reunion_repository.get_by_bloque(bloque_id)
-            if not otras_reuniones or len(otras_reuniones) == 0:
-                bloque = self.bloque_repository.get_by_id(bloque_id)
-                if bloque:
-                    bloque.disponible = True
-                    self.bloque_repository.update(bloque)
+        if eliminado and len(otras_reuniones_sin_actual) == 0:
+            bloque = self.bloque_repository.get_by_id(bloque_id)
+            if bloque:
+                self.bloque_repository.update(
+                    bloque_id=bloque_id,
+                    disponible=True
+                )
 
         return {"success": eliminado, "message": "Reunión eliminada exitosamente"}

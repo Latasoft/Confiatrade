@@ -25,15 +25,20 @@ class EmpresaUpdate(BaseModel):
     descripcion: Optional[str] = None
     telefono: Optional[str] = None
     email: Optional[EmailStr] = None
+    sitio_web: Optional[str] = None
     direccion: Optional[str] = None
+    presentacion_url: Optional[str] = None
 
 
 class EmpresaResponse(EmpresaBase):
     id: UUID
-    logo_url: Optional[str]
+    logo_url: Optional[str] = None
+    presentacion_url: Optional[str] = None
     aprobada: bool
     fecha_registro: datetime
     updated_at: datetime
+    pais_nombre: Optional[str] = None
+    sector_nombre: Optional[str] = None
 
     class Config:
         from_attributes = True

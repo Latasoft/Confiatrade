@@ -82,3 +82,28 @@ export function useDeleteParticipante() {
     },
   });
 }
+
+export function useCheckInParticipante() {
+  const queryClient = useQueryClient();
+  const addNotification = useNotificationStore((state) => state.add);
+
+  return useMutation({
+    mutationFn: ({ id, qrData, force }: { id: string; qrData?: string; force?: boolean }) =>
+      participantesApi.checkIn(id, qrData, force),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: participanteKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: participanteKeys.detail(variables.id) });
+      addNotification({
+        type: 'success',
+        message: 'Check-in realizado exitosamente',
+      });
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || 'Error al realizar check-in';
+      addNotification({
+        type: 'error',
+        message: errorMessage,
+      });
+    },
+  });
+}

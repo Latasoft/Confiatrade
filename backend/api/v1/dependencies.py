@@ -223,6 +223,14 @@ def eliminar_participante_use_case(
     return EliminarParticipanteUseCase(repository)
 
 
+def realizar_check_in_use_case(
+    repository: ParticipanteRepository = Depends(get_participante_repository),
+):
+    from core.use_cases.participantes.realizar_check_in import RealizarCheckInUseCase
+
+    return RealizarCheckInUseCase(repository)
+
+
 # === BLOQUES HORARIOS DEPENDENCIES ===
 
 

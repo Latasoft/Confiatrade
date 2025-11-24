@@ -20,7 +20,9 @@ class EmpresaEventoRepository:
         self.db.add(inscripcion)
         self.db.commit()
         self.db.refresh(inscripcion)
-        return inscripcion
+        
+        # Recargar con relaciones para evitar errores de serialización
+        return self.get_by_id(inscripcion.id)
 
     def get_by_id(self, inscripcion_id: UUID) -> Optional[EmpresaEventoModel]:
         """Obtener inscripción por ID"""
@@ -118,7 +120,9 @@ class EmpresaEventoRepository:
 
         self.db.commit()
         self.db.refresh(inscripcion)
-        return inscripcion
+        
+        # Recargar con relaciones para evitar errores de serialización
+        return self.get_by_id(inscripcion_id)
 
     def delete(self, inscripcion_id: UUID) -> bool:
         """Eliminar inscripción (hard delete)"""

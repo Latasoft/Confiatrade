@@ -41,7 +41,9 @@ class ParticipanteRepository:
         self.db.add(participante)
         self.db.commit()
         self.db.refresh(participante)
-        return participante
+        
+        # Recargar con relaciones para evitar errores de serialización
+        return self.get_by_id(participante.id)
 
     def get_by_id(self, participante_id: UUID) -> Optional[ParticipanteModel]:
         """Obtener participante por ID con empresa cargada"""
@@ -100,6 +102,8 @@ class ParticipanteRepository:
         idioma: Optional[str] = None,
         requiere_interprete: Optional[bool] = None,
         foto_url: Optional[str] = None,
+        check_in_realizado: Optional[bool] = None,
+        fecha_check_in=None,
     ) -> Optional[ParticipanteModel]:
         """Actualizar participante"""
         participante = self.get_by_id(participante_id)
@@ -120,9 +124,19 @@ class ParticipanteRepository:
             participante.requiere_interprete = requiere_interprete
         if foto_url is not None:
             participante.foto_url = foto_url
+        if check_in_realizado is not None:
+            participante.check_in_realizado = check_in_realizado
+        if fecha_check_in is not None:
+            participante.fecha_check_in = fecha_check_in
 
         self.db.commit()
         self.db.refresh(participante)
+        
+        # Asegurar que la relación empresa esté cargada
+        if participante.empresa is None:
+            # Solo recargar si no está cargada
+            participante = self.get_by_id(participante_id)
+        
         return participante
 
     def delete(self, participante_id: UUID) -> bool:

@@ -5,6 +5,7 @@ from uuid import UUID
 
 from api.schemas.empresa_evento import (
     EmpresaEventoCreate,
+    EmpresaEventoDetailResponse,
     EmpresaEventoListResponse,
     EmpresaEventoResponse,
     EmpresaEventoUpdate,
@@ -40,7 +41,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/", response_model=EmpresaEventoResponse, status_code=status.HTTP_201_CREATED
+    "/", response_model=EmpresaEventoDetailResponse, status_code=status.HTTP_201_CREATED
 )
 def inscribir_empresa(
     inscripcion_data: EmpresaEventoCreate,
@@ -58,9 +59,23 @@ def inscribir_empresa(
     - No puede existir inscripción previa
     - El evento no debe haber alcanzado su capacidad máxima
     """
+    from api.schemas.empresa_evento import EmpresaEventoDetailResponse
+    
     try:
         inscripcion = use_case.execute(inscripcion_data)
-        return inscripcion
+        
+        # Construir response detallado con campos calculados
+        return EmpresaEventoDetailResponse(
+            id=inscripcion.id,
+            empresa_id=inscripcion.empresa_id,
+            evento_id=inscripcion.evento_id,
+            aprobada=inscripcion.aprobada,
+            fecha_inscripcion=inscripcion.fecha_inscripcion,
+            created_at=inscripcion.created_at,
+            updated_at=inscripcion.updated_at,
+            empresa_nombre=inscripcion.empresa.nombre if inscripcion.empresa else None,
+            evento_nombre=inscripcion.evento.nombre if inscripcion.evento else None,
+        )
     except NotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except ValidationException as e:
@@ -134,7 +149,7 @@ def list_empresas_por_evento(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
-@router.put("/{inscripcion_id}", response_model=EmpresaEventoResponse)
+@router.put("/{inscripcion_id}", response_model=EmpresaEventoDetailResponse)
 def aprobar_inscripcion(
     inscripcion_id: UUID,
     update_data: EmpresaEventoUpdate,
@@ -146,9 +161,23 @@ def aprobar_inscripcion(
     - **inscripcion_id**: UUID de la inscripción
     - **aprobada**: true para aprobar, false para rechazar
     """
+    from api.schemas.empresa_evento import EmpresaEventoDetailResponse
+    
     try:
         inscripcion = use_case.execute(inscripcion_id, update_data)
-        return inscripcion
+        
+        # Construir response detallado con campos calculados
+        return EmpresaEventoDetailResponse(
+            id=inscripcion.id,
+            empresa_id=inscripcion.empresa_id,
+            evento_id=inscripcion.evento_id,
+            aprobada=inscripcion.aprobada,
+            fecha_inscripcion=inscripcion.fecha_inscripcion,
+            created_at=inscripcion.created_at,
+            updated_at=inscripcion.updated_at,
+            empresa_nombre=inscripcion.empresa.nombre if inscripcion.empresa else None,
+            evento_nombre=inscripcion.evento.nombre if inscripcion.evento else None,
+        )
     except NotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 

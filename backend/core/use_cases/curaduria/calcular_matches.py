@@ -48,10 +48,8 @@ class CalcularMatchesUseCase:
         # 1. Validar que empresa target tiene curaduría
         curaduria_target = self.curaduria_repository.get_by_empresa_id(empresa_id)
         if not curaduria_target:
-            raise NotFoundException(
-                message=f"Empresa {empresa_id} no tiene curaduría configurada",
-                details={"empresa_id": str(empresa_id)},
-            )
+            # Si no tiene curaduría, retornar lista vacía (no es un error)
+            return []
 
         # Parse keywords de empresa target
         target_ofrece = self._parse_keywords(curaduria_target.ofrece)

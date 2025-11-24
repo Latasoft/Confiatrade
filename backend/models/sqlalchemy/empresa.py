@@ -21,6 +21,7 @@ class EmpresaModel(Base):
     email = Column(String(255))
     direccion = Column(Text)
     logo_url = Column(String(500))
+    presentacion_url = Column(String(500))
     aprobada = Column(Boolean, default=False, index=True)
     fecha_registro = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -60,3 +61,13 @@ class EmpresaModel(Base):
     eventos = relationship(
         "EmpresaEventoModel", back_populates="empresa", cascade="all, delete-orphan"
     )
+
+    @property
+    def pais_nombre(self) -> str | None:
+        """Retorna el nombre del país de la empresa."""
+        return self.pais.nombre if self.pais else None
+
+    @property
+    def sector_nombre(self) -> str | None:
+        """Retorna el nombre del sector de la empresa."""
+        return self.sector.nombre if self.sector else None

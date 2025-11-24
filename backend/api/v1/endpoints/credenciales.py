@@ -60,8 +60,8 @@ def generar_credencial_empresa(
     pdf_buffer = pdf_generator.generar_badge_empresa(
         empresa_nombre=empresa.nombre,
         empresa_email=empresa.email,
-        empresa_pais=empresa.pais or "N/A",
-        empresa_sector=empresa.sector or "N/A",
+        empresa_pais=empresa.pais.nombre if empresa.pais else "N/A",
+        empresa_sector=empresa.sector.nombre if empresa.sector else "N/A",
         qr_data_json=qr_data_json,
         formato="badge",
     )
@@ -196,8 +196,8 @@ def generar_credenciales_empresas_batch(
             pdf_buffer = pdf_generator.generar_badge_empresa(
                 empresa_nombre=empresa.nombre,
                 empresa_email=empresa.email,
-                empresa_pais=empresa.pais or "N/A",
-                empresa_sector=empresa.sector or "N/A",
+                empresa_pais=empresa.pais.nombre if empresa.pais else "N/A",
+                empresa_sector=empresa.sector.nombre if empresa.sector else "N/A",
                 qr_data_json=qr_data_json,
                 formato="badge",
             )

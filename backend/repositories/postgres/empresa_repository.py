@@ -4,7 +4,7 @@ from uuid import UUID
 from core.entities.empresa import Empresa
 from core.interfaces.repositories.empresa_repository import EmpresaRepository
 from models.sqlalchemy.empresa import EmpresaModel
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 
 class PostgresEmpresaRepository(EmpresaRepository):
@@ -23,6 +23,7 @@ class PostgresEmpresaRepository(EmpresaRepository):
             email=empresa.email,
             direccion=empresa.direccion,
             logo_url=empresa.logo_url,
+            presentacion_url=empresa.presentacion_url,
             aprobada=empresa.aprobada,
             fecha_registro=empresa.fecha_registro,
             updated_at=empresa.updated_at,
@@ -32,11 +33,14 @@ class PostgresEmpresaRepository(EmpresaRepository):
         self.db.commit()
         self.db.refresh(db_empresa)
 
-        return self._to_entity(db_empresa)
+        return self.get_by_id(db_empresa.id)
 
     def get_by_id(self, empresa_id: UUID) -> Optional[Empresa]:
         db_empresa = (
-            self.db.query(EmpresaModel).filter(EmpresaModel.id == empresa_id).first()
+            self.db.query(EmpresaModel)
+            .options(joinedload(EmpresaModel.pais), joinedload(EmpresaModel.sector))
+            .filter(EmpresaModel.id == empresa_id)
+            .first()
         )
 
         return self._to_entity(db_empresa) if db_empresa else None
@@ -49,7 +53,9 @@ class PostgresEmpresaRepository(EmpresaRepository):
         sector_id: Optional[int] = None,
         aprobada: Optional[bool] = None,
     ) -> List[Empresa]:
-        query = self.db.query(EmpresaModel)
+        query = self.db.query(EmpresaModel).options(
+            joinedload(EmpresaModel.pais), joinedload(EmpresaModel.sector)
+        )
 
         if pais_id:
             query = query.filter(EmpresaModel.pais_id == pais_id)
@@ -77,7 +83,7 @@ class PostgresEmpresaRepository(EmpresaRepository):
         self.db.commit()
         self.db.refresh(db_empresa)
 
-        return self._to_entity(db_empresa)
+        return self.get_by_id(db_empresa.id)
 
     def delete(self, empresa_id: UUID) -> bool:
         db_empresa = (
@@ -107,6 +113,7 @@ class PostgresEmpresaRepository(EmpresaRepository):
             email=model.email,
             direccion=model.direccion,
             logo_url=model.logo_url,
+            presentacion_url=model.presentacion_url,
             aprobada=model.aprobada,
             fecha_registro=model.fecha_registro,
             updated_at=model.updated_at,

@@ -34,7 +34,7 @@ class CuraduriaRepository:
         self.db.add(curaduria)
         self.db.commit()
         self.db.refresh(curaduria)
-        return curaduria
+        return self.get_by_id(curaduria.id)
 
     def get_by_id(self, curaduria_id: UUID) -> Optional[CuraduriaModel]:
         """Obtener curaduría por ID con empresa cargada"""

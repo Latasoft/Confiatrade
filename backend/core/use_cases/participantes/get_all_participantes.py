@@ -40,6 +40,8 @@ class GetAllParticipantesUseCase:
                 "requiere_interprete": p.requiere_interprete,
                 "foto_url": p.foto_url,
                 "qr_data": p.qr_data,
+                "check_in_realizado": p.check_in_realizado,
+                "fecha_check_in": p.fecha_check_in,
                 "created_at": p.created_at,
                 "updated_at": p.updated_at,
                 "empresa_nombre": p.empresa.nombre if p.empresa else None,

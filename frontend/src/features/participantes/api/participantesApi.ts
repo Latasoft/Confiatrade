@@ -4,41 +4,41 @@ import { apiClient } from '@/shared/api/client';
 export interface Participante {
   id: string;
   empresa_id: string;
-  nombre: string;
+  nombre_completo: string;
   email: string;
   telefono?: string;
   cargo?: string;
   foto_url?: string;
-  qr_code: string;
+  qr_data?: string;
   idioma: 'ES' | 'EN' | 'PT' | 'FR';
+  requiere_interprete: boolean;
+  check_in_realizado: boolean;
+  fecha_check_in?: string;
   created_at: string;
   updated_at: string;
-  // Relaciones
-  empresa?: {
-    id: string;
-    nombre: string;
-    sector?: string;
-    pais?: string;
-  };
+  // Campo plano calculado del backend (ParticipanteDetailResponse)
+  empresa_nombre?: string;
 }
 
 export interface CreateParticipanteData {
   empresa_id: string;
-  nombre: string;
+  nombre_completo: string;
   email: string;
   telefono?: string;
   cargo?: string;
   foto_url?: string;
   idioma?: 'ES' | 'EN' | 'PT' | 'FR';
+  requiere_interprete?: boolean;
 }
 
 export interface UpdateParticipanteData {
-  nombre?: string;
+  nombre_completo?: string;
   email?: string;
   telefono?: string;
   cargo?: string;
   foto_url?: string;
   idioma?: 'ES' | 'EN' | 'PT' | 'FR';
+  requiere_interprete?: boolean;
 }
 
 export interface ParticipanteListParams {
@@ -82,5 +82,14 @@ export const participantesApi = {
   // Eliminar participante
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/participantes/${id}`);
+  },
+
+  // Realizar check-in
+  checkIn: async (id: string, qrData?: string, force?: boolean): Promise<Participante> => {
+    const response = await apiClient.post(`/participantes/${id}/check-in`, {
+      qr_data: qrData,
+      force: force || false,
+    });
+    return response.data;
   },
 };

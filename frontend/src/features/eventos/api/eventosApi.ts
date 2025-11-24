@@ -7,10 +7,13 @@ export interface Evento {
   fecha_inicio: string;
   fecha_fin: string;
   ubicacion?: string;
+  ciudad_sede?: string;
   pais_sede: string;
+  tipo?: string;
   capacidad_empresas?: number;
   estado: 'planificacion' | 'inscripcion_abierta' | 'en_curso' | 'finalizado' | 'cancelado';
   activo: boolean;
+  empresas_inscritas?: number;
   created_at: string;
   updated_at: string;
 }
@@ -21,7 +24,9 @@ export interface CreateEventoData {
   fecha_inicio: string;
   fecha_fin: string;
   ubicacion?: string;
+  ciudad_sede?: string;
   pais_sede: string;
+  tipo?: string;
   capacidad_empresas?: number;
   estado?: string;
 }
@@ -33,6 +38,15 @@ export interface EventoListResponse {
   total: number;
   activos: number;
   finalizados: number;
+}
+
+export interface Inscripcion {
+  id: string;
+  evento_id: string;
+  empresa_id: string;
+  aprobada: boolean;
+  fecha_inscripcion: string;
+  evento: Evento;
 }
 
 export const eventosApi = {
@@ -69,5 +83,29 @@ export const eventosApi = {
   // Eliminar evento (soft delete)
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/eventos/${id}`);
+  },
+
+  // ==================== ENDPOINTS PARA EMPRESAS ====================
+
+  // Obtener eventos disponibles para inscripción
+  getEventosDisponibles: async (params?: {
+    skip?: number;
+    limit?: number;
+    pais_sede?: string;
+  }): Promise<Evento[]> => {
+    const { data } = await apiClient.get<Evento[]>('/eventos/disponibles', { params });
+    return data;
+  },
+
+  // Inscribirse a un evento
+  inscribirseEvento: async (eventoId: string): Promise<Inscripcion> => {
+    const { data } = await apiClient.post<Inscripcion>(`/eventos/${eventoId}/inscribirse`);
+    return data;
+  },
+
+  // Obtener mis inscripciones
+  getMisInscripciones: async (): Promise<Inscripcion[]> => {
+    const { data } = await apiClient.get<Inscripcion[]>('/eventos/mis-inscripciones');
+    return data;
   },
 };

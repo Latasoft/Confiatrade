@@ -212,11 +212,11 @@ export default function CredencialesPage() {
                         <td className="px-6 py-4">
                           {tieneCredencial ? (
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border-2 border-emerald-300">
-                              ✓ Generada
+                              Generada
                             </span>
                           ) : (
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border-2 border-amber-300">
-                              ⌛ Pendiente
+                              Pendiente
                             </span>
                           )}
                         </td>
@@ -250,7 +250,7 @@ export default function CredencialesPage() {
         {/* Info adicional */}
         <div className="mt-8 bg-blue-50 border-2 border-blue-300 rounded-xl p-6">
           <h3 className="text-lg font-bold text-blue-900 mb-2">
-            💡 Información sobre Credenciales
+            Información sobre Credenciales
           </h3>
           <ul className="text-blue-800 space-y-2">
             <li>• Las credenciales incluyen el nombre de la empresa, logo, y código QR único</li>

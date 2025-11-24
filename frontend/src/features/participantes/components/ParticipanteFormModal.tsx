@@ -38,7 +38,7 @@ export function ParticipanteFormModal({
     defaultValues: participante
       ? {
           empresa_id: participante.empresa_id,
-          nombre: participante.nombre,
+          nombre_completo: participante.nombre_completo,
           email: participante.email,
           telefono: participante.telefono || '',
           cargo: participante.cargo || '',
@@ -54,7 +54,7 @@ export function ParticipanteFormModal({
     if (participante) {
       reset({
         empresa_id: participante.empresa_id,
-        nombre: participante.nombre,
+        nombre_completo: participante.nombre_completo,
         email: participante.email,
         telefono: participante.telefono || '',
         cargo: participante.cargo || '',
@@ -90,7 +90,7 @@ export function ParticipanteFormModal({
         await updateMutation.mutateAsync({
           id: participante.id,
           data: {
-            nombre: data.nombre,
+            nombre_completo: data.nombre_completo,
             email: data.email,
             telefono: data.telefono,
             cargo: data.cargo,
@@ -211,12 +211,12 @@ export function ParticipanteFormModal({
               </label>
               <input
                 type="text"
-                {...register('nombre', { required: 'Nombre requerido' })}
+                {...register('nombre_completo', { required: 'Nombre requerido' })}
                 placeholder="Juan Pérez"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              {errors.nombre && (
-                <p className="text-sm text-red-600 mt-1">{errors.nombre.message}</p>
+              {errors.nombre_completo && (
+                <p className="text-sm text-red-600 mt-1">{errors.nombre_completo.message}</p>
               )}
             </div>
 
@@ -295,7 +295,7 @@ export function ParticipanteFormModal({
                     Código QR generado
                   </p>
                   <p className="text-xs text-blue-700 mt-1">
-                    QR: {participante.qr_code.substring(0, 20)}...
+                    QR: {participante.qr_data?.substring(0, 20) || 'N/A'}...
                   </p>
                 </div>
               </div>

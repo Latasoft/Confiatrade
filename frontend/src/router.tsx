@@ -7,6 +7,7 @@ import CuraduriaPage from './features/curaduria/pages/CuraduriaPage';
 import MatchingPage from './features/curaduria/pages/MatchingPage';
 import AgendaPage from './features/agenda/pages/AgendaPage';
 import ParticipantesPage from './features/participantes/pages/ParticipantesPage';
+import CheckInDashboardPage from './features/participantes/pages/CheckInDashboardPage';
 import KPIsPage from './features/kpis/pages/KPIsPage';
 import SeguimientoPage from './features/seguimiento/pages/SeguimientoPage';
 import CredencialesPage from './features/credenciales/pages/CredencialesPage';
@@ -14,6 +15,7 @@ import CredencialesHistorialPage from './features/credenciales/pages/Credenciale
 import LoginPage from './features/auth/pages/LoginPage';
 import RegistroPage from './features/auth/pages/RegistroPage';
 import EmpresaDashboardPage from './features/empresa/pages/EmpresaDashboardPage';
+import { EventosDisponiblesPage } from './features/empresa/pages/EventosDisponiblesPage';
 import { ProtectedRoute, PublicRoute } from './features/auth/components/ProtectedRoute';
 
 export const router = createBrowserRouter([
@@ -43,6 +45,10 @@ export const router = createBrowserRouter([
           {
             path: 'dashboard',
             element: <EmpresaDashboardPage />,
+          },
+          {
+            path: 'eventos',
+            element: <EventosDisponiblesPage />,
           },
           {
             path: 'agenda',
@@ -76,6 +82,10 @@ export const router = createBrowserRouter([
           {
             path: 'participantes',
             element: <ParticipantesPage />,
+          },
+          {
+            path: 'check-in-dashboard',
+            element: <CheckInDashboardPage />,
           },
           {
             path: 'curaduria',

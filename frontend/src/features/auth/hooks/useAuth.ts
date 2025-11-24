@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { authApi, type LoginData, type RegistroEmpresaData, type CambiarPasswordData } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -56,18 +57,20 @@ export function usePerfil() {
     enabled: isAuthenticated,
   });
 
-  // Actualizar usuario cuando hay datos
-  if (query.data) {
-    updateUser({
-      id: query.data.id,
-      email: query.data.email,
-      nombre_completo: query.data.nombre_completo,
-      rol: query.data.rol as 'admin' | 'empresa',
-      empresa_id: query.data.empresa?.id || null,
-      activo: query.data.activo,
-      created_at: query.data.created_at,
-    });
-  }
+  // Actualizar usuario cuando hay datos (usar useEffect para evitar setState durante render)
+  useEffect(() => {
+    if (query.data) {
+      updateUser({
+        id: query.data.id,
+        email: query.data.email,
+        nombre_completo: query.data.nombre_completo,
+        rol: query.data.rol as 'admin' | 'empresa',
+        empresa_id: query.data.empresa?.id || null,
+        activo: query.data.activo,
+        created_at: query.data.created_at,
+      });
+    }
+  }, [query.data, updateUser]);
 
   return query;
 }
@@ -90,10 +93,12 @@ export function useVerificarToken() {
     retry: false,
   });
 
-  // Si hay error, limpiar auth
-  if (query.isError) {
-    clearAuth();
-  }
+  // Si hay error, limpiar auth (usar useEffect para evitar setState durante render)
+  useEffect(() => {
+    if (query.isError) {
+      clearAuth();
+    }
+  }, [query.isError, clearAuth]);
 
   return query;
 }

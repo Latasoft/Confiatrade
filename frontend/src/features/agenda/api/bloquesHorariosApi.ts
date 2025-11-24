@@ -2,15 +2,19 @@ import { apiClient } from '@/shared/api/client';
 
 // Interfaces
 export interface BloqueHorario {
-  id: string;
+  id: number;  // Backend usa int, no UUID
   fecha: string;
   hora_inicio: string;
   hora_fin: string;
+  duracion_minutos: number;
   evento_id?: string;
-  label: string;
+  ubicacion?: string;
+  label?: string;
+  disponible: boolean;
   activo: boolean;
   created_at: string;
-  updated_at: string;
+  // Campos adicionales de DetailResponse
+  evento_nombre?: string;
 }
 
 export interface CreateBloqueData {
@@ -51,7 +55,7 @@ export interface GenerateBloqueRequest {
   hora_inicio: string;
   hora_fin: string;
   duracion_minutos: number;
-  label_prefix: string;
+  label_prefijo?: string;
 }
 
 export interface GenerateBloqueResponse {
@@ -68,7 +72,7 @@ export const bloquesHorariosApi = {
   },
 
   // Obtener por ID
-  getById: async (id: string): Promise<BloqueHorario> => {
+  getById: async (id: number): Promise<BloqueHorario> => {
     const response = await apiClient.get(`/bloques-horarios/${id}`);
     return response.data;
   },
@@ -80,13 +84,13 @@ export const bloquesHorariosApi = {
   },
 
   // Actualizar bloque
-  update: async (id: string, data: UpdateBloqueData): Promise<BloqueHorario> => {
+  update: async (id: number, data: UpdateBloqueData): Promise<BloqueHorario> => {
     const response = await apiClient.put(`/bloques-horarios/${id}`, data);
     return response.data;
   },
 
   // Eliminar bloque
-  delete: async (id: string): Promise<void> => {
+  delete: async (id: number): Promise<void> => {
     await apiClient.delete(`/bloques-horarios/${id}`);
   },
 

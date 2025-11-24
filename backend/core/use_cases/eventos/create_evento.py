@@ -40,10 +40,6 @@ class CreateEventoUseCase:
         # Crear evento con estado inicial
         evento_dict = evento_data.model_dump()
 
-        # Mapear ubicacion a ciudad_sede si viene ubicacion
-        if "ubicacion" in evento_dict:
-            evento_dict["ciudad_sede"] = evento_dict.pop("ubicacion")
-
         # Asegurar estado y tipo por defecto
         if "estado" not in evento_dict or not evento_dict["estado"]:
             evento_dict["estado"] = "planificacion"

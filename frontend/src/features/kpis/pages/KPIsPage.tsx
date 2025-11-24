@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useKPIsCurrent } from '../hooks/useKPIs';
 import {
   Users,
@@ -11,29 +10,6 @@ import {
   Target,
   DollarSign,
 } from 'lucide-react';
-
-// Mock data para demostración (eliminar cuando el backend esté listo)
-const MOCK_KPI_DATA = {
-  total_empresas: 45,
-  meta_empresas: 50,
-  empresas_inscritas: 38,
-  tasa_inscripcion: 84.4,
-  total_reuniones: 120,
-  reuniones_programadas: 85,
-  reuniones_confirmadas: 65,
-  reuniones_realizadas: 48,
-  reuniones_canceladas: 7,
-  tasa_realizacion: 73.8,
-  total_bloques: 200,
-  bloques_ocupados: 120,
-  tasa_ocupacion: 60.0,
-  total_seguimientos: 32,
-  acuerdos_cerrados: 12,
-  lois_firmadas: 8,
-  monto_total_estimado: 2450000,
-  total_participantes: 156,
-  participantes_checkin: 138,
-};
 
 interface KPICardProps {
   title: string;
@@ -81,12 +57,10 @@ function KPICard({ title, value, subtitle, icon, color, trend }: KPICardProps) {
 }
 
 export default function KPIsPage() {
-  const [useRealData] = useState(true); // Toggle para usar datos reales o mock
-
   // Hook para obtener datos reales del backend
   const { data: kpisResponse, isLoading } = useKPIsCurrent();
 
-  const kpis = useRealData ? kpisResponse?.kpis : MOCK_KPI_DATA;
+  const kpis = kpisResponse?.kpis;
 
   if (isLoading) {
     return (
@@ -141,10 +115,6 @@ export default function KPIsPage() {
             subtitle={`${kpis.empresas_inscritas}/${kpis.total_empresas} empresas`}
             icon={<Target size={24} />}
             color="purple"
-            trend={{
-              value: 12.5,
-              isPositive: true,
-            }}
           />
           <KPICard
             title="Participantes"
@@ -222,43 +192,41 @@ export default function KPIsPage() {
         </div>
       </div>
 
-      {/* Acuerdos Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Acuerdos y Seguimiento
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KPICard
-            title="Total Seguimientos"
-            value={kpis.total_seguimientos}
-            icon={<FileText size={24} />}
-            color="blue"
-          />
-          <KPICard
-            title="Acuerdos Cerrados"
-            value={kpis.acuerdos_cerrados}
-            icon={<CheckCircle size={24} />}
-            color="green"
-          />
-          <KPICard
-            title="LOIs Firmadas"
-            value={kpis.lois_firmadas}
-            icon={<FileText size={24} />}
-            color="purple"
-          />
-          <KPICard
-            title="Monto Total Estimado"
-            value={`$${(kpis.monto_total_estimado / 1000000).toFixed(1)}M`}
-            subtitle="USD estimados en acuerdos"
-            icon={<DollarSign size={24} />}
-            color="green"
-            trend={{
-              value: 18.3,
-              isPositive: true,
-            }}
-          />
+      {/* Acuerdos Section - Mostrar solo si hay datos */}
+      {(kpis.total_seguimientos > 0 || kpis.acuerdos_cerrados > 0 || kpis.lois_firmadas > 0) && (
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Acuerdos y Seguimiento
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <KPICard
+              title="Total Seguimientos"
+              value={kpis.total_seguimientos}
+              icon={<FileText size={24} />}
+              color="blue"
+            />
+            <KPICard
+              title="Acuerdos Cerrados"
+              value={kpis.acuerdos_cerrados}
+              icon={<CheckCircle size={24} />}
+              color="green"
+            />
+            <KPICard
+              title="LOIs Firmadas"
+              value={kpis.lois_firmadas}
+              icon={<FileText size={24} />}
+              color="purple"
+            />
+            <KPICard
+              title="Monto Total Estimado"
+              value={`$${(kpis.monto_total_estimado / 1000000).toFixed(1)}M`}
+              subtitle="USD estimados en acuerdos"
+              icon={<DollarSign size={24} />}
+              color="green"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Visual Chart Placeholder */}
       <div className="bg-white rounded-lg shadow p-6">

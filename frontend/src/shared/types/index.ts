@@ -9,9 +9,12 @@ export interface Empresa {
   email?: string;
   direccion?: string;
   logo_url?: string;
+  presentacion_url?: string;
   aprobada: boolean;
   fecha_registro: string;
   updated_at: string;
+  pais_nombre?: string;
+  sector_nombre?: string;
 }
 
 export interface EmpresaCreate {

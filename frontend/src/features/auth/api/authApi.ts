@@ -50,6 +50,11 @@ export interface PerfilUsuario {
     aprobada: boolean;
     pais_id: number;
     sector_id: number;
+    presentacion_url?: string | null;
+    descripcion?: string | null;
+    direccion?: string | null;
+    pais_nombre?: string;
+    sector_nombre?: string;
   } | null;
 }
 

@@ -14,7 +14,7 @@ export const bloqueKeys = {
   lists: () => [...bloqueKeys.all, 'list'] as const,
   list: (params?: BloqueListParams) => [...bloqueKeys.lists(), params] as const,
   details: () => [...bloqueKeys.all, 'detail'] as const,
-  detail: (id: string) => [...bloqueKeys.details(), id] as const,
+  detail: (id: number) => [...bloqueKeys.details(), id] as const,
 };
 
 // Queries
@@ -25,11 +25,11 @@ export function useBloquesHorarios(params?: BloqueListParams) {
   });
 }
 
-export function useBloqueHorario(id: string | undefined) {
+export function useBloqueHorario(id: number | undefined) {
   return useQuery({
     queryKey: bloqueKeys.detail(id!),
     queryFn: () => bloquesHorariosApi.getById(id!),
-    enabled: !!id,
+    enabled: id !== undefined,
   });
 }
 
@@ -55,7 +55,7 @@ export function useUpdateBloque() {
   const addNotification = useNotificationStore((state) => state.add);
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateBloqueData }) =>
+    mutationFn: ({ id, data }: { id: number; data: UpdateBloqueData }) =>
       bloquesHorariosApi.update(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: bloqueKeys.lists() });
@@ -73,7 +73,7 @@ export function useDeleteBloque() {
   const addNotification = useNotificationStore((state) => state.add);
 
   return useMutation({
-    mutationFn: (id: string) => bloquesHorariosApi.delete(id),
+    mutationFn: (id: number) => bloquesHorariosApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bloqueKeys.lists() });
       addNotification({

@@ -25,7 +25,7 @@ def get_seguimiento_repository(db: Session = Depends(get_db)) -> SeguimientoRepo
 
 @router.post(
     "/",
-    response_model=SeguimientoResponse,
+    response_model=SeguimientoDetailResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Crear seguimiento",
     description="Crear un nuevo seguimiento para una empresa",
@@ -37,7 +37,28 @@ async def crear_seguimiento(
     """Crear seguimiento con validaciones"""
     try:
         seguimiento = repo.create(seguimiento_data.model_dump())
-        return seguimiento
+        seg_dict = {
+            "id": seguimiento.id,
+            "empresa_id": seguimiento.empresa_id,
+            "tipo": seguimiento.tipo,
+            "descripcion": seguimiento.descripcion,
+            "estado": seguimiento.estado,
+            "responsable": seguimiento.responsable,
+            "fecha_compromiso": seguimiento.fecha_compromiso,
+            "resultado": seguimiento.resultado,
+            "monto_estimado": seguimiento.monto_estimado,
+            "notas": seguimiento.notas,
+            "created_at": seguimiento.created_at,
+            "updated_at": seguimiento.updated_at,
+            "empresa_nombre": seguimiento.empresa.nombre if seguimiento.empresa else None,
+            "empresa_pais": seguimiento.empresa.pais.nombre
+            if seguimiento.empresa and seguimiento.empresa.pais
+            else None,
+            "empresa_sector": seguimiento.empresa.sector.nombre
+            if seguimiento.empresa and seguimiento.empresa.sector
+            else None,
+        }
+        return SeguimientoDetailResponse(**seg_dict)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -139,7 +160,7 @@ async def obtener_seguimiento(
 
 @router.patch(
     "/{seguimiento_id}",
-    response_model=SeguimientoResponse,
+    response_model=SeguimientoDetailResponse,
     summary="Actualizar seguimiento",
     description="Actualizar campos de un seguimiento existente",
 )
@@ -155,7 +176,28 @@ async def actualizar_seguimiento(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Seguimiento no encontrado",
         )
-    return seguimiento
+    seg_dict = {
+        "id": seguimiento.id,
+        "empresa_id": seguimiento.empresa_id,
+        "tipo": seguimiento.tipo,
+        "descripcion": seguimiento.descripcion,
+        "estado": seguimiento.estado,
+        "responsable": seguimiento.responsable,
+        "fecha_compromiso": seguimiento.fecha_compromiso,
+        "resultado": seguimiento.resultado,
+        "monto_estimado": seguimiento.monto_estimado,
+        "notas": seguimiento.notas,
+        "created_at": seguimiento.created_at,
+        "updated_at": seguimiento.updated_at,
+        "empresa_nombre": seguimiento.empresa.nombre if seguimiento.empresa else None,
+        "empresa_pais": seguimiento.empresa.pais.nombre
+        if seguimiento.empresa and seguimiento.empresa.pais
+        else None,
+        "empresa_sector": seguimiento.empresa.sector.nombre
+        if seguimiento.empresa and seguimiento.empresa.sector
+        else None,
+    }
+    return SeguimientoDetailResponse(**seg_dict)
 
 
 @router.delete(

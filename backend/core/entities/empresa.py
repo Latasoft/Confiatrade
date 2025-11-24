@@ -16,6 +16,7 @@ class Empresa:
     email: Optional[str]
     direccion: Optional[str]
     logo_url: Optional[str]
+    presentacion_url: Optional[str]
     aprobada: bool
     fecha_registro: datetime
     updated_at: datetime

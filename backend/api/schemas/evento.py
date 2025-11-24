@@ -14,13 +14,19 @@ class EventoBase(BaseModel):
         ..., min_length=3, max_length=255, description="Nombre del evento"
     )
     ubicacion: Optional[str] = Field(
-        None, min_length=2, max_length=150, description="Ubicación del evento"
+        None, min_length=2, max_length=150, description="Ubicación/ciudad del evento"
+    )
+    ciudad_sede: Optional[str] = Field(
+        None, min_length=2, max_length=100, description="Ciudad sede del evento"
     )
     pais_sede: str = Field(
         ..., min_length=2, max_length=100, description="País sede del evento"
     )
     fecha_inicio: date = Field(..., description="Fecha de inicio del evento")
     fecha_fin: date = Field(..., description="Fecha de fin del evento")
+    tipo: Optional[str] = Field(
+        default="encuentro_empresarial", description="Tipo de evento"
+    )
     estado: Optional[str] = Field(
         default="planificacion",
         pattern="^(planificacion|inscripcion_abierta|en_curso|finalizado|cancelado)$",

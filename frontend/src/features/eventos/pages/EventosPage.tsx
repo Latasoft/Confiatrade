@@ -1,10 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useEventos, useDeleteEvento } from '../hooks/useEventos';
-import { Plus, Calendar, MapPin, Users, Edit, Trash2 } from 'lucide-react';
+import { Plus, Calendar, MapPin, Users, Edit, Trash2, Clock } from 'lucide-react';
 import { EventoFormModal } from '../components/EventoFormModal';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import { InscripcionesEventoModal } from '@/features/inscripciones/components/InscripcionesEventoModal';
+import { GenerarBloquesModal } from '../components/GenerarBloquesModal';
 import type { Evento } from '../api/eventosApi';
 
 export default function EventosPage() {
@@ -13,6 +15,10 @@ export default function EventosPage() {
   const [activoFilter, setActivoFilter] = useState<boolean | undefined>(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventoToDelete, setEventoToDelete] = useState<string | null>(null);
+  const [modalEventoId, setModalEventoId] = useState<string | null>(null);
+  const [modalEventoNombre, setModalEventoNombre] = useState<string>('');
+  const [bloquesModalOpen, setBloquesModalOpen] = useState(false);
+  const [selectedEventoForBloques, setSelectedEventoForBloques] = useState<Evento | null>(null);
 
   // Stabilize filters object to prevent query key recreation
   const filters = useMemo(() => {
@@ -199,21 +205,43 @@ export default function EventosPage() {
                 )}
               </div>
 
-              <div className="flex gap-3 mt-5 pt-4 border-t border-slate-200">
+              <div className="flex flex-col gap-2 mt-5 pt-4 border-t border-slate-200">
                 <button
-                  onClick={() => handleEdit(evento)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:scale-95 transition-all font-semibold"
+                  onClick={() => {
+                    setModalEventoId(evento.id);
+                    setModalEventoNombre(evento.nombre);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 active:scale-95 transition-all font-semibold"
                 >
-                  <Edit size={16} />
-                  Editar
+                  <Users size={16} />
+                  Inscripciones
                 </button>
                 <button
-                  onClick={() => handleDeleteClick(evento.id)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-500 text-white rounded-lg hover:bg-slate-600 active:scale-95 transition-all font-semibold"
+                  onClick={() => {
+                    setSelectedEventoForBloques(evento);
+                    setBloquesModalOpen(true);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 active:scale-95 transition-all font-semibold"
                 >
-                  <Trash2 size={16} />
-                  Eliminar
+                  <Clock size={16} />
+                  Generar Bloques Horarios
                 </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(evento)}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:scale-95 transition-all font-semibold text-sm"
+                  >
+                    <Edit size={16} />
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(evento.id)}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 active:scale-95 transition-all font-semibold text-sm"
+                  >
+                    <Trash2 size={16} />
+                    Eliminar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -253,6 +281,29 @@ export default function EventosPage() {
         variant="danger"
         isLoading={deleteEvento.isPending}
       />
+
+      {modalEventoId && (
+        <InscripcionesEventoModal
+          eventoId={modalEventoId}
+          eventoNombre={modalEventoNombre}
+          isOpen={true}
+          onClose={() => setModalEventoId(null)}
+        />
+      )}
+
+      {selectedEventoForBloques && (
+        <GenerarBloquesModal
+          isOpen={bloquesModalOpen}
+          onClose={() => {
+            setBloquesModalOpen(false);
+            setSelectedEventoForBloques(null);
+          }}
+          eventoId={selectedEventoForBloques.id}
+          eventoNombre={selectedEventoForBloques.nombre}
+          fechaInicio={selectedEventoForBloques.fecha_inicio}
+          fechaFin={selectedEventoForBloques.fecha_fin}
+        />
+      )}
       </div>
     </div>
   );

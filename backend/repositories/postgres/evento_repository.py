@@ -6,7 +6,7 @@ from uuid import UUID
 
 from models.sqlalchemy.evento_model import EventoModel
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 
 class EventoRepository:
@@ -21,11 +21,18 @@ class EventoRepository:
         self.db.add(evento)
         self.db.commit()
         self.db.refresh(evento)
-        return evento
+        
+        # Recargar con relaciones para calcular empresas_inscritas
+        return self.get_by_id(evento.id)
 
     def get_by_id(self, evento_id: UUID) -> Optional[EventoModel]:
-        """Obtener evento por ID"""
-        return self.db.query(EventoModel).filter(EventoModel.id == evento_id).first()
+        """Obtener evento por ID con relaciones cargadas"""
+        return (
+            self.db.query(EventoModel)
+            .options(joinedload(EventoModel.empresas))
+            .filter(EventoModel.id == evento_id)
+            .first()
+        )
 
     def get_all(
         self,
@@ -35,7 +42,7 @@ class EventoRepository:
         estado: Optional[str] = None,
     ) -> List[EventoModel]:
         """Obtener todos los eventos con filtros opcionales"""
-        query = self.db.query(EventoModel)
+        query = self.db.query(EventoModel).options(joinedload(EventoModel.empresas))
 
         if activo is not None:
             query = query.filter(EventoModel.activo == activo)
@@ -87,7 +94,9 @@ class EventoRepository:
 
         self.db.commit()
         self.db.refresh(evento)
-        return evento
+        
+        # Recargar con relaciones para calcular empresas_inscritas
+        return self.get_by_id(evento_id)
 
     def delete(self, evento_id: UUID) -> bool:
         """Eliminar (soft delete) un evento"""

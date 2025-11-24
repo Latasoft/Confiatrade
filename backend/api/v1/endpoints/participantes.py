@@ -16,6 +16,7 @@ from api.v1.dependencies import (
     eliminar_participante_use_case,
     get_all_participantes_use_case,
     get_participante_by_id_use_case,
+    realizar_check_in_use_case,
 )
 from core.exceptions import (
     BusinessLogicException,
@@ -35,14 +36,23 @@ from core.use_cases.participantes.get_all_participantes import (
 from core.use_cases.participantes.get_participante_by_id import (
     GetParticipanteByIdUseCase,
 )
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from core.use_cases.participantes.realizar_check_in import RealizarCheckInUseCase
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from pydantic import BaseModel
 
 router = APIRouter()
 
 
+class CheckInRequest(BaseModel):
+    """Schema para solicitud de check-in"""
+
+    qr_data: str | None = None
+    force: bool = False
+
+
 @router.post(
     "/",
-    response_model=ParticipanteResponse,
+    response_model=ParticipanteDetailResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Crear participante",
     description="Crear un nuevo participante con generación automática de QR",
@@ -68,7 +78,24 @@ async def crear_participante(
             requiere_interprete=participante_data.requiere_interprete,
             foto_url=participante_data.foto_url,
         )
-        return participante
+        # Construir response detallado con empresa_nombre
+        return ParticipanteDetailResponse(
+            id=participante.id,
+            empresa_id=participante.empresa_id,
+            nombre_completo=participante.nombre_completo,
+            cargo=participante.cargo,
+            email=participante.email,
+            telefono=participante.telefono,
+            idioma=participante.idioma,
+            requiere_interprete=participante.requiere_interprete,
+            foto_url=participante.foto_url,
+            qr_data=participante.qr_data,
+            check_in_realizado=participante.check_in_realizado,
+            fecha_check_in=participante.fecha_check_in,
+            created_at=participante.created_at,
+            updated_at=participante.updated_at,
+            empresa_nombre=participante.empresa.nombre if participante.empresa else None,
+        )
     except NotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.to_dict())
     except ValidationException as e:
@@ -90,7 +117,7 @@ async def listar_participantes(
         GetAllParticipantesUseCase, Depends(get_all_participantes_use_case)
     ],
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=500),
+    limit: int = Query(100, ge=1, le=2000),
     empresa_id: UUID | None = Query(None, description="Filtrar por empresa"),
 ):
     """Listar participantes con paginación y filtros"""
@@ -126,6 +153,8 @@ async def obtener_participante(
             requiere_interprete=participante.requiere_interprete,
             foto_url=participante.foto_url,
             qr_data=participante.qr_data,
+            check_in_realizado=participante.check_in_realizado,
+            fecha_check_in=participante.fecha_check_in,
             created_at=participante.created_at,
             updated_at=participante.updated_at,
             empresa_nombre=(
@@ -138,7 +167,7 @@ async def obtener_participante(
 
 @router.put(
     "/{participante_id}",
-    response_model=ParticipanteResponse,
+    response_model=ParticipanteDetailResponse,
     summary="Actualizar participante",
     description="Actualizar datos de un participante existente",
 )
@@ -161,7 +190,24 @@ async def actualizar_participante(
             requiere_interprete=participante_data.requiere_interprete,
             foto_url=participante_data.foto_url,
         )
-        return participante
+        # Construir response detallado con empresa_nombre
+        return ParticipanteDetailResponse(
+            id=participante.id,
+            empresa_id=participante.empresa_id,
+            nombre_completo=participante.nombre_completo,
+            cargo=participante.cargo,
+            email=participante.email,
+            telefono=participante.telefono,
+            idioma=participante.idioma,
+            requiere_interprete=participante.requiere_interprete,
+            foto_url=participante.foto_url,
+            qr_data=participante.qr_data,
+            check_in_realizado=participante.check_in_realizado,
+            fecha_check_in=participante.fecha_check_in,
+            created_at=participante.created_at,
+            updated_at=participante.updated_at,
+            empresa_nombre=participante.empresa.nombre if participante.empresa else None,
+        )
     except NotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.to_dict())
     except ValidationException as e:
@@ -190,3 +236,76 @@ async def eliminar_participante(
         return result
     except NotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.to_dict())
+
+
+@router.post(
+    "/{participante_id}/check-in",
+    response_model=ParticipanteDetailResponse,
+    summary="Realizar check-in de participante",
+    description="Realizar check-in de un participante mediante escaneo de QR o forzado manual",
+)
+async def realizar_check_in(
+    participante_id: UUID,
+    use_case: Annotated[RealizarCheckInUseCase, Depends(realizar_check_in_use_case)],
+    check_in_data: CheckInRequest | None = None,
+):
+    """
+    Realizar check-in de un participante
+
+    - Con QR: Valida el código QR y verifica que corresponda al participante
+    - Forzado: Permite check-in sin validación (force=true)
+    - Previene check-ins duplicados
+    """
+    # Si no se proporciona body, usar valores por defecto
+    if check_in_data is None:
+        check_in_data = CheckInRequest()
+    
+    print(f"\n{'='*80}")
+    print(f"[CHECK-IN ENDPOINT] Iniciando check-in")
+    print(f"  Participante ID: {participante_id}")
+    print(f"  QR Data recibido: {check_in_data.qr_data}")
+    print(f"  Force: {check_in_data.force}")
+    print(f"{'='*80}\n")
+    
+    try:
+        participante = use_case.execute(
+            participante_id=participante_id,
+            qr_data_json=check_in_data.qr_data,
+            force=check_in_data.force,
+        )
+        # Construir response detallado con empresa_nombre
+        result = ParticipanteDetailResponse(
+            id=participante.id,
+            empresa_id=participante.empresa_id,
+            nombre_completo=participante.nombre_completo,
+            cargo=participante.cargo,
+            email=participante.email,
+            telefono=participante.telefono,
+            idioma=participante.idioma,
+            requiere_interprete=participante.requiere_interprete,
+            foto_url=participante.foto_url,
+            qr_data=participante.qr_data,
+            check_in_realizado=participante.check_in_realizado,
+            fecha_check_in=participante.fecha_check_in,
+            created_at=participante.created_at,
+            updated_at=participante.updated_at,
+            empresa_nombre=participante.empresa.nombre if participante.empresa else None,
+        )
+        print(f"[CHECK-IN ENDPOINT] ✓ Check-in exitoso\n")
+        return result
+    except NotFoundException as e:
+        print(f"[CHECK-IN ENDPOINT] ✗ ERROR 404 - {e.message}\n")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.to_dict())
+    except ValidationException as e:
+        print(f"[CHECK-IN ENDPOINT] ✗ ERROR 400 - {e.message}\n")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.to_dict())
+    except BusinessLogicException as e:
+        print(f"[CHECK-IN ENDPOINT] ✗ ERROR 422 - {e.message}\n")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.to_dict()
+        )
+    except Exception as e:
+        print(f"[CHECK-IN ENDPOINT] ✗ ERROR 500 - {type(e).__name__}: {e}\n")
+        import traceback
+        traceback.print_exc()
+        raise

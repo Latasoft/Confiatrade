@@ -3,23 +3,21 @@ import { X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useCreateReunion, useUpdateReunion } from '../hooks/useReuniones';
 import { useBloquesHorarios } from '../hooks/useBloquesHorarios';
+import { useEmpresasAprobadas } from '@/features/empresas/hooks/useEmpresas';
 import type { Reunion, CreateReunionData } from '../api/reunionesApi';
-
-// Mock empresas (reemplazar con API real)
-const EMPRESAS_MOCK = [
-  { id: 'a77f7089-420a-4e06-a970-f2670c00d325', nombre: 'Transportes Chile SPA' },
-  { id: '2bd2ef0d-3f47-47d4-ae4e-c500940eb08b', nombre: 'Tech Solutions Brasil' },
-  { id: 'bc50b7f3-f66d-4b18-8203-099ec81ee4e4', nombre: 'Energia Renovable ARG' },
-];
 
 interface ReunionModalProps {
   isOpen: boolean;
   onClose: () => void;
   reunion?: Reunion;
   fecha?: string;
+  preselectedEmpresas?: {
+    empresa_a_id: string;
+    empresa_b_id: string;
+  };
 }
 
-export function ReunionModal({ isOpen, onClose, reunion, fecha }: ReunionModalProps) {
+export function ReunionModal({ isOpen, onClose, reunion, fecha, preselectedEmpresas }: ReunionModalProps) {
   const [selectedFecha, setSelectedFecha] = useState<string>(
     fecha || new Date().toISOString().split('T')[0]
   );
@@ -28,6 +26,9 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha }: ReunionModalPr
     fecha: selectedFecha,
     activo: true,
   });
+
+  const { data: empresasData } = useEmpresasAprobadas();
+  const empresas = empresasData || [];
 
   const createMutation = useCreateReunion();
   const updateMutation = useUpdateReunion();
@@ -48,6 +49,12 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha }: ReunionModalPr
           notas: reunion.notas || '',
           estado: reunion.estado,
         }
+      : preselectedEmpresas
+      ? {
+          empresa_a_id: preselectedEmpresas.empresa_a_id,
+          empresa_b_id: preselectedEmpresas.empresa_b_id,
+          estado: 'programada',
+        }
       : {
           estado: 'programada',
         },
@@ -65,8 +72,14 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha }: ReunionModalPr
         notas: reunion.notas || '',
         estado: reunion.estado,
       });
+    } else if (preselectedEmpresas) {
+      reset({
+        empresa_a_id: preselectedEmpresas.empresa_a_id,
+        empresa_b_id: preselectedEmpresas.empresa_b_id,
+        estado: 'programada',
+      });
     }
-  }, [reunion, reset]);
+  }, [reunion, preselectedEmpresas, reset]);
 
   const onSubmit = async (data: CreateReunionData) => {
     try {
@@ -165,11 +178,11 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha }: ReunionModalPr
               </label>
               <select
                 {...register('empresa_a_id', { required: 'Empresa A requerida' })}
-                disabled={!!reunion}
+                disabled={!!reunion || !!preselectedEmpresas}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
               >
                 <option value="">Selecciona empresa A</option>
-                {EMPRESAS_MOCK.map((empresa) => (
+                {empresas.map((empresa) => (
                   <option key={empresa.id} value={empresa.id}>
                     {empresa.nombre}
                   </option>
@@ -190,11 +203,11 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha }: ReunionModalPr
                   validate: (value) =>
                     value !== empresa_a_id || 'Las empresas deben ser diferentes',
                 })}
-                disabled={!!reunion}
+                disabled={!!reunion || !!preselectedEmpresas}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
               >
                 <option value="">Selecciona empresa B</option>
-                {EMPRESAS_MOCK.filter((e) => e.id !== empresa_a_id).map((empresa) => (
+                {empresas.filter((e) => e.id !== empresa_a_id).map((empresa) => (
                   <option key={empresa.id} value={empresa.id}>
                     {empresa.nombre}
                   </option>

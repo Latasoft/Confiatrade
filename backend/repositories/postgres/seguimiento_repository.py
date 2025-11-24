@@ -20,13 +20,18 @@ class SeguimientoRepository:
         self.db.add(seguimiento)
         self.db.commit()
         self.db.refresh(seguimiento)
-        return seguimiento
+        return self.get_by_id(seguimiento.id)
 
     def get_by_id(self, seguimiento_id: UUID) -> Optional[SeguimientoModel]:
         """Obtener seguimiento por ID con empresa relacionada"""
+        from models.sqlalchemy.empresa import EmpresaModel
+        
         stmt = (
             select(SeguimientoModel)
-            .options(joinedload(SeguimientoModel.empresa))
+            .options(
+                joinedload(SeguimientoModel.empresa).joinedload(EmpresaModel.pais),
+                joinedload(SeguimientoModel.empresa).joinedload(EmpresaModel.sector)
+            )
             .where(SeguimientoModel.id == seguimiento_id)
         )
         result = self.db.execute(stmt)
@@ -41,7 +46,12 @@ class SeguimientoRepository:
         estado: Optional[str] = None,
     ) -> list[SeguimientoModel]:
         """Obtener lista de seguimientos con filtros"""
-        stmt = select(SeguimientoModel).options(joinedload(SeguimientoModel.empresa))
+        from models.sqlalchemy.empresa import EmpresaModel
+        
+        stmt = select(SeguimientoModel).options(
+            joinedload(SeguimientoModel.empresa).joinedload(EmpresaModel.pais),
+            joinedload(SeguimientoModel.empresa).joinedload(EmpresaModel.sector)
+        )
 
         if empresa_id:
             stmt = stmt.where(SeguimientoModel.empresa_id == empresa_id)
@@ -90,7 +100,7 @@ class SeguimientoRepository:
 
         self.db.commit()
         self.db.refresh(seguimiento)
-        return seguimiento
+        return self.get_by_id(seguimiento_id)
 
     def delete(self, seguimiento_id: UUID) -> bool:
         """Eliminar seguimiento"""

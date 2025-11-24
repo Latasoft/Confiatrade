@@ -14,6 +14,7 @@ class EventoModel(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     nombre = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)
+    ubicacion = Column(String(150), nullable=True)
     pais_sede = Column(String(100), nullable=True)
     ciudad_sede = Column(String(100), nullable=True)
     fecha_inicio = Column(Date, nullable=False, index=True)
@@ -27,3 +28,10 @@ class EventoModel(Base):
 
     empresas = relationship("EmpresaEventoModel", back_populates="evento")
     bloques_horarios = relationship("BloqueHorarioModel", back_populates="evento")
+
+    @property
+    def empresas_inscritas(self) -> int:
+        """Retorna el número de empresas inscritas (aprobadas) en el evento"""
+        if not self.empresas:
+            return 0
+        return sum(1 for inscripcion in self.empresas if inscripcion.aprobada)

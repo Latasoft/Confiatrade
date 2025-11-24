@@ -52,7 +52,7 @@ class EmpresaEventoDetailResponse(EmpresaEventoResponse):
 class EmpresaEventoListResponse(BaseModel):
     """Schema para lista de inscripciones con metadata"""
 
-    inscripciones: list[EmpresaEventoResponse]
+    inscripciones: list[EmpresaEventoDetailResponse]
     total: int
     aprobadas: int
     pendientes: int

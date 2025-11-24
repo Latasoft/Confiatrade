@@ -34,7 +34,7 @@ router = APIRouter()
 
 @router.post(
     "/",
-    response_model=ReunionResponse,
+    response_model=ReunionDetailResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Crear reunión",
     description="Crear una nueva reunión con validaciones completas",
@@ -62,7 +62,34 @@ async def crear_reunion(
             sala=reunion_data.sala,
             resultado=reunion_data.resultado,
         )
-        return reunion
+        # Construir response detallado con campos planos calculados
+        return ReunionDetailResponse(
+            id=reunion.id,
+            bloque_id=reunion.bloque_id,
+            empresa_a_id=reunion.empresa_a_id,
+            empresa_b_id=reunion.empresa_b_id,
+            estado=reunion.estado,
+            notas=reunion.notas,
+            requiere_interprete=reunion.requiere_interprete,
+            sala=reunion.sala,
+            resultado=reunion.resultado,
+            created_at=reunion.created_at,
+            updated_at=reunion.updated_at,
+            empresa_a_nombre=(reunion.empresa_a.nombre if reunion.empresa_a else None),
+            empresa_b_nombre=(reunion.empresa_b.nombre if reunion.empresa_b else None),
+            bloque_fecha=(str(reunion.bloque.fecha) if reunion.bloque else None),
+            bloque_hora_inicio=(
+                str(reunion.bloque.hora_inicio) if reunion.bloque else None
+            ),
+            bloque_hora_fin=(str(reunion.bloque.hora_fin) if reunion.bloque else None),
+            bloque_ubicacion=(reunion.bloque.ubicacion if reunion.bloque else None),
+            evento_id=(reunion.bloque.evento_id if reunion.bloque else None),
+            evento_nombre=(
+                reunion.bloque.evento.nombre
+                if reunion.bloque and reunion.bloque.evento
+                else None
+            ),
+        )
     except NotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.to_dict())
     except ValidationException as e:
@@ -70,6 +97,14 @@ async def crear_reunion(
     except BusinessLogicException as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.to_dict()
+        )
+    except Exception as e:
+        import traceback
+        print(f"Error creating reunion: {e}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno al crear reunión", "error": str(e)}
         )
 
 
@@ -149,7 +184,7 @@ async def obtener_reunion(
 
 @router.put(
     "/{reunion_id}",
-    response_model=ReunionResponse,
+    response_model=ReunionDetailResponse,
     summary="Actualizar reunión",
     description="Actualizar datos de una reunión existente",
 )
@@ -168,7 +203,34 @@ async def actualizar_reunion(
             sala=reunion_data.sala,
             resultado=reunion_data.resultado,
         )
-        return reunion
+        # Construir response detallado con campos planos calculados
+        return ReunionDetailResponse(
+            id=reunion.id,
+            bloque_id=reunion.bloque_id,
+            empresa_a_id=reunion.empresa_a_id,
+            empresa_b_id=reunion.empresa_b_id,
+            estado=reunion.estado,
+            notas=reunion.notas,
+            requiere_interprete=reunion.requiere_interprete,
+            sala=reunion.sala,
+            resultado=reunion.resultado,
+            created_at=reunion.created_at,
+            updated_at=reunion.updated_at,
+            empresa_a_nombre=(reunion.empresa_a.nombre if reunion.empresa_a else None),
+            empresa_b_nombre=(reunion.empresa_b.nombre if reunion.empresa_b else None),
+            bloque_fecha=(str(reunion.bloque.fecha) if reunion.bloque else None),
+            bloque_hora_inicio=(
+                str(reunion.bloque.hora_inicio) if reunion.bloque else None
+            ),
+            bloque_hora_fin=(str(reunion.bloque.hora_fin) if reunion.bloque else None),
+            bloque_ubicacion=(reunion.bloque.ubicacion if reunion.bloque else None),
+            evento_id=(reunion.bloque.evento_id if reunion.bloque else None),
+            evento_nombre=(
+                reunion.bloque.evento.nombre
+                if reunion.bloque and reunion.bloque.evento
+                else None
+            ),
+        )
     except NotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.to_dict())
 
@@ -189,3 +251,11 @@ async def eliminar_reunion(
         return result
     except NotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.to_dict())
+    except Exception as e:
+        import traceback
+        print(f"Error deleting reunion: {e}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno al eliminar reunión", "error": str(e)}
+        )

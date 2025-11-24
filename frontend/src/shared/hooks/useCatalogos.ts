@@ -4,12 +4,15 @@ import { apiClient } from '@/shared/api/client';
 export interface Pais {
   id: number;
   nombre: string;
-  codigo: string;
+  codigo_iso: string;
+  activo?: boolean;
 }
 
 export interface Sector {
   id: number;
   nombre: string;
+  descripcion?: string | null;
+  activo?: boolean;
 }
 
 const catalogosApi = {

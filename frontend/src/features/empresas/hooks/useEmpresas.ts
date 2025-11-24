@@ -73,3 +73,33 @@ export function useRechazarEmpresa() {
     },
   });
 }
+
+export function useUploadPresentacion() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) => 
+      empresasApi.uploadPresentacion(id, file),
+    onSuccess: (_, variables) => {
+      // Invalidar todas las queries de empresas
+      queryClient.invalidateQueries({ queryKey: ['empresas'] });
+      queryClient.invalidateQueries({ queryKey: ['empresas', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['empresas', 'aprobadas'] });
+      // Invalidar perfil para actualizar empresa en contexto de usuario
+      queryClient.invalidateQueries({ queryKey: ['perfil'] });
+    },
+  });
+}
+
+export function useUpdateEmpresa() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<EmpresaCreate> }) =>
+      empresasApi.updateEmpresa(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['empresas'] });
+      queryClient.invalidateQueries({ queryKey: ['empresas', variables.id] });
+    },
+  });
+}

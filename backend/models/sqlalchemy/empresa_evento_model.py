@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 from database import Base
+
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -34,3 +35,13 @@ class EmpresaEventoModel(Base):
 
     empresa = relationship("EmpresaModel", back_populates="eventos")
     evento = relationship("EventoModel", back_populates="empresas")
+
+    @property
+    def empresa_nombre(self) -> str | None:
+        """Obtener nombre de la empresa"""
+        return self.empresa.nombre if self.empresa else None
+
+    @property
+    def evento_nombre(self) -> str | None:
+        """Obtener nombre del evento"""
+        return self.evento.nombre if self.evento else None

@@ -31,11 +31,6 @@ class DeleteEventoUseCase:
         if not evento:
             raise NotFoundException(f"Evento con ID {evento_id} no encontrado")
 
-        # Validar que no tenga empresas inscritas
-        empresas_count = len(evento.empresas) if evento.empresas else 0
-        if empresas_count > 0:
-            raise BusinessLogicException(
-                f"No se puede eliminar el evento porque tiene {empresas_count} empresas inscritas"
-            )
-
+        # Soft delete: solo marcar como inactivo (permitir eliminar eventos con inscripciones)
+        # Las inscripciones se mantienen en la base de datos para auditoría
         return self.repository.delete(evento_id)

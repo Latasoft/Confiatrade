@@ -123,30 +123,36 @@ async def registro_empresa(datos: EmpresaRegistro, db: Session = Depends(get_db)
 @router.get("/perfil", response_model=PerfilUsuario)
 async def get_perfil(current_user: UsuarioModel = Depends(get_current_user)):
     """Obtiene el perfil del usuario actual"""
-    perfil_data = {
-        "id": current_user.id,
-        "email": current_user.email,
-        "nombre_completo": current_user.nombre_completo,
-        "rol": current_user.rol,
-        "activo": current_user.activo,
-        "created_at": current_user.created_at,
-        "empresa": None,
-    }
-
-    # Si es usuario de empresa, incluir datos de la empresa
+    from api.schemas.auth import EmpresaPerfilResponse
+    
+    # Construir empresa_data si el usuario es de empresa
+    empresa_data = None
     if current_user.rol == "empresa" and current_user.empresa:
-        perfil_data["empresa"] = {
-            "id": str(current_user.empresa.id),
-            "nombre": current_user.empresa.nombre,
-            "email": current_user.empresa.email,
-            "telefono": current_user.empresa.telefono,
-            "sitio_web": current_user.empresa.sitio_web,
-            "aprobada": current_user.empresa.aprobada,
-            "pais_id": current_user.empresa.pais_id,
-            "sector_id": current_user.empresa.sector_id,
-        }
+        empresa_data = EmpresaPerfilResponse(
+            id=current_user.empresa.id,
+            nombre=current_user.empresa.nombre,
+            email=current_user.empresa.email,
+            telefono=current_user.empresa.telefono,
+            sitio_web=current_user.empresa.sitio_web,
+            aprobada=current_user.empresa.aprobada,
+            pais_id=current_user.empresa.pais_id,
+            sector_id=current_user.empresa.sector_id,
+            presentacion_url=current_user.empresa.presentacion_url,
+            descripcion=current_user.empresa.descripcion,
+            direccion=current_user.empresa.direccion,
+            pais_nombre=current_user.empresa.pais_nombre,
+            sector_nombre=current_user.empresa.sector_nombre,
+        )
 
-    return PerfilUsuario(**perfil_data)
+    return PerfilUsuario(
+        id=current_user.id,
+        email=current_user.email,
+        nombre_completo=current_user.nombre_completo,
+        rol=current_user.rol,
+        activo=current_user.activo,
+        created_at=current_user.created_at,
+        empresa=empresa_data,
+    )
 
 
 @router.post("/cambiar-password")

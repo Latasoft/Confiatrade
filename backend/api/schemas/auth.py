@@ -74,6 +74,26 @@ class EmpresaRegistro(BaseModel):
         return v
 
 
+class EmpresaPerfilResponse(BaseModel):
+    """Datos de empresa para incluir en perfil de usuario"""
+
+    id: UUID
+    nombre: str
+    email: Optional[str] = None
+    telefono: Optional[str] = None
+    sitio_web: Optional[str] = None
+    aprobada: bool
+    pais_id: int
+    sector_id: int
+    presentacion_url: Optional[str] = None
+    descripcion: Optional[str] = None
+    direccion: Optional[str] = None
+    pais_nombre: Optional[str] = None
+    sector_nombre: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
 class PerfilUsuario(BaseModel):
     """Perfil completo del usuario con datos de empresa si aplica"""
 
@@ -83,10 +103,9 @@ class PerfilUsuario(BaseModel):
     rol: str
     activo: bool
     created_at: datetime
-    empresa: Optional[dict] = None  # Incluye datos de empresa si es rol empresa
+    empresa: Optional[EmpresaPerfilResponse] = None  # Datos tipados de empresa si es rol empresa
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class CambiarPassword(BaseModel):

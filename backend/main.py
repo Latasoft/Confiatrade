@@ -1,9 +1,12 @@
+import os
+
 from api.v1.router import api_router
 from config import settings
 from exceptions.base import ConfiaTradError
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from middleware.error_handler import (
     confiatrade_exception_handler,
     general_exception_handler,
@@ -19,11 +22,14 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_PREFIX}/openapi.json",
 )
 
+# Configurar CORS - En producción usar settings.cors_origins_list
+allowed_origins = (
+    ["*"] if settings.ENVIRONMENT == "development" else settings.cors_origins_list
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"]
-    if settings.ENVIRONMENT == "development"
-    else settings.cors_origins_list,
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,6 +43,12 @@ app.add_exception_handler(SQLAlchemyError, sqlalchemy_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+
+# Crear directorio de uploads si no existe y montar como archivos estáticos
+# IMPORTANTE: Debe ir después de los routers para no interferir con rutas de API
+uploads_dir = "uploads"
+os.makedirs(uploads_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 
 @app.get("/")

@@ -38,7 +38,9 @@ class ReunionRepository:
         self.db.add(reunion)
         self.db.commit()
         self.db.refresh(reunion)
-        return reunion
+        
+        # Recargar con relaciones para evitar errores de serialización
+        return self.get_by_id(reunion.id)
 
     def get_by_id(self, reunion_id: UUID) -> Optional[ReunionModel]:
         """Obtener reunión por ID con relaciones cargadas"""
@@ -146,7 +148,9 @@ class ReunionRepository:
 
         self.db.commit()
         self.db.refresh(reunion)
-        return reunion
+        
+        # Recargar con relaciones para evitar errores de serialización
+        return self.get_by_id(reunion_id)
 
     def delete(self, reunion_id: UUID) -> bool:
         """Eliminar reunión (hard delete)"""

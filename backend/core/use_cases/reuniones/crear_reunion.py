@@ -130,7 +130,13 @@ class CrearReunionUseCase:
                     },
                 )
 
-        # 6. Crear reunión
+        # 6. Marcar bloque como no disponible ANTES de crear la reunión
+        self.bloque_repository.update(
+            bloque_id=bloque_id,
+            disponible=False
+        )
+
+        # 7. Crear reunión
         reunion = self.reunion_repository.create(
             bloque_id=bloque_id,
             empresa_a_id=empresa_a_id,
@@ -141,9 +147,5 @@ class CrearReunionUseCase:
             sala=sala,
             resultado=resultado,
         )
-
-        # 7. Marcar bloque como no disponible
-        bloque.disponible = False
-        self.bloque_repository.update(bloque)
 
         return reunion

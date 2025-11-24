@@ -1,12 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useEmpresas } from '../hooks/useEmpresas';
 import { EmpresaCard } from '../components/EmpresaCard';
+import { EmpresaDetailsModal } from '../components/EmpresaDetailsModal';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { Building2 } from 'lucide-react';
+import type { Empresa } from '@/shared/types';
 
 export function EmpresasPage() {
   const { data: empresas, isLoading, error } = useEmpresas();
+  const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null);
 
   useEffect(() => {
     if (import.meta.env.DEV) {
@@ -44,7 +47,11 @@ export function EmpresasPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {empresas?.map((empresa) => (
-            <EmpresaCard key={empresa.id} empresa={empresa} />
+            <EmpresaCard
+              key={empresa.id}
+              empresa={empresa}
+              onSelect={(emp) => setSelectedEmpresa(emp)}
+            />
           ))}
         </div>
 
@@ -56,6 +63,13 @@ export function EmpresasPage() {
           />
         )}
       </div>
+
+      {selectedEmpresa && (
+        <EmpresaDetailsModal
+          empresa={selectedEmpresa}
+          onClose={() => setSelectedEmpresa(null)}
+        />
+      )}
     </div>
   );
 }

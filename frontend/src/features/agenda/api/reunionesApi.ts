@@ -1,54 +1,56 @@
 import { apiClient } from '@/shared/api/client';
 
 // Interfaces
-export interface Reunion {
+export interface ReunionBase {
   id: string;
-  bloque_id: string;
+  bloque_id: number;
   empresa_a_id: string;
   empresa_b_id: string;
   sala?: string;
   notas?: string;
+  requiere_interprete?: boolean;
+  resultado?: string;
   estado: 'programada' | 'confirmada' | 'realizada' | 'cancelada';
   created_at: string;
   updated_at: string;
-  // Relaciones
-  bloque?: {
-    id: string;
-    fecha: string;
-    hora_inicio: string;
-    hora_fin: string;
-    label: string;
-  };
-  empresa_a?: {
-    id: string;
-    nombre: string;
-    pais?: string;
-  };
-  empresa_b?: {
-    id: string;
-    nombre: string;
-    pais?: string;
-  };
 }
 
+export interface ReunionDetallada extends ReunionBase {
+  // Campos planos calculados del backend (GET /reuniones/, GET /reuniones/{id})
+  empresa_a_nombre?: string;
+  empresa_b_nombre?: string;
+  bloque_fecha?: string;
+  bloque_hora_inicio?: string;
+  bloque_hora_fin?: string;
+  bloque_ubicacion?: string;
+  evento_id?: string;
+  evento_nombre?: string;
+}
+
+// Alias para compatibilidad con código existente
+export type Reunion = ReunionDetallada;
+
 export interface CreateReunionData {
-  bloque_id: string;
+  bloque_id: number;
   empresa_a_id: string;
   empresa_b_id: string;
   sala?: string;
   notas?: string;
+  requiere_interprete?: boolean;
   estado?: 'programada' | 'confirmada' | 'realizada' | 'cancelada';
 }
 
 export interface UpdateReunionData {
   sala?: string;
   notas?: string;
+  requiere_interprete?: boolean;
+  resultado?: string;
   estado?: 'programada' | 'confirmada' | 'realizada' | 'cancelada';
 }
 
 export interface ReunionListParams {
   empresa_id?: string;
-  bloque_id?: string;
+  bloque_id?: number;
   sala?: string;
   estado?: string;
   fecha?: string;

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useRegistroEmpresa } from '../hooks/useAuth';
 import { usePaises, useSectores } from '@/shared/hooks/useCatalogos';
+import { empresasApi } from '@/features/empresas/api/empresasApi';
 import {
   Building2,
   Mail,
@@ -14,20 +15,39 @@ import {
   FileText,
   AlertCircle,
   CheckCircle,
+  Upload,
+  X,
 } from 'lucide-react';
 import type { RegistroEmpresaData } from '../api/authApi';
 
 export default function RegistroPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
+  const [presentacionFile, setPresentacionFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
   
   const { register, handleSubmit, formState: { errors }, watch } = useForm<RegistroEmpresaData>();
   const registroMutation = useRegistroEmpresa();
   const { data: paises = [], isLoading: loadingPaises } = usePaises();
   const { data: sectores = [], isLoading: loadingSectores } = useSectores();
 
-  const onSubmit = (data: RegistroEmpresaData) => {
-    registroMutation.mutate(data);
+  const onSubmit = async (data: RegistroEmpresaData) => {
+    try {
+      const response = await registroMutation.mutateAsync(data);
+      
+      // Si hay un PDF, subirlo después del registro exitoso
+      if (presentacionFile && response.user.empresa_id) {
+        try {
+          await empresasApi.uploadPresentacion(response.user.empresa_id, presentacionFile);
+        } catch (error) {
+          console.error('Error al subir presentación:', error);
+          // No bloqueamos el registro si falla la subida del PDF
+        }
+      }
+    } catch (error) {
+      console.error('Error en registro:', error);
+    }
   };
 
   const Step1 = () => (
@@ -117,7 +137,7 @@ export default function RegistroPage() {
             setStep(2);
           }
         }}
-        className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg font-semibold"
+        className="w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold"
       >
         Siguiente: Datos de Empresa
       </button>
@@ -258,6 +278,66 @@ export default function RegistroPage() {
         </div>
       </div>
 
+      <div>
+        <label className="block text-sm font-semibold text-slate-700 mb-2">
+          Presentación de la Empresa (PDF) <span className="text-slate-500 font-normal">(Opcional)</span>
+        </label>
+        <div className="space-y-3">
+          {presentacionFile ? (
+            <div className="flex items-center justify-between p-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                <FileText className="text-blue-600" size={24} />
+                <div>
+                  <p className="font-medium text-slate-700">{presentacionFile.name}</p>
+                  <p className="text-sm text-slate-500">
+                    {(presentacionFile.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPresentacionFile(null)}
+                className="p-1 hover:bg-red-100 rounded-lg transition-colors"
+              >
+                <X className="text-red-600" size={20} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            >
+              <Upload className="text-slate-400" size={20} />
+              <span className="text-slate-600 font-medium">Subir presentación PDF</span>
+            </button>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                if (file.type !== 'application/pdf') {
+                  alert('Solo se permiten archivos PDF');
+                  return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                  alert('El archivo no debe superar los 5MB');
+                  return;
+                }
+                setPresentacionFile(file);
+              }
+            }}
+          />
+          <p className="text-xs text-slate-500">
+            Puedes subir un PDF con información sobre tu empresa (máximo 5MB)
+          </p>
+        </div>
+      </div>
+
       <div className="flex gap-3">
         <button
           type="button"
@@ -269,7 +349,7 @@ export default function RegistroPage() {
         <button
           type="submit"
           disabled={registroMutation.isPending}
-          className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg font-semibold"
+          className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
         >
           {registroMutation.isPending ? (
             <>

@@ -118,6 +118,7 @@ class BloqueHorarioRepository:
         duracion_minutos: Optional[int] = None,
         ubicacion: Optional[str] = None,
         label: Optional[str] = None,
+        disponible: Optional[bool] = None,
         activo: Optional[bool] = None,
     ) -> Optional[BloqueHorarioModel]:
         """Actualizar bloque horario"""
@@ -137,6 +138,8 @@ class BloqueHorarioRepository:
             bloque.ubicacion = ubicacion
         if label is not None:
             bloque.label = label
+        if disponible is not None:
+            bloque.disponible = disponible
         if activo is not None:
             bloque.activo = activo
 

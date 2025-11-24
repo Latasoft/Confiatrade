@@ -279,20 +279,24 @@ export default function AgendaPage() {
                       <div className="mb-3">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-semibold text-gray-900">
-                            {reunion.empresa_a?.nombre}
+                            {reunion.empresa_a_nombre || 'N/A'}
                           </span>
                           <span className="text-gray-400">↔</span>
                           <span className="font-semibold text-gray-900">
-                            {reunion.empresa_b?.nombre}
+                            {reunion.empresa_b_nombre || 'N/A'}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Clock size={14} />
                           <span>
-                            {reunion.bloque?.hora_inicio} - {reunion.bloque?.hora_fin}
+                            {reunion.bloque_hora_inicio} - {reunion.bloque_hora_fin}
                           </span>
-                          <span className="text-gray-400">|</span>
-                          <span>{reunion.bloque?.label}</span>
+                          {reunion.bloque_ubicacion && (
+                            <>
+                              <span className="text-gray-400">|</span>
+                              <span>{reunion.bloque_ubicacion}</span>
+                            </>
+                          )}
                         </div>
                       </div>
 

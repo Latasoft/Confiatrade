@@ -78,10 +78,16 @@ export const useDeleteCuraduria = () => {
   });
 };
 
-export const useMatches = (empresaId: string, minScore: number = 0) => {
+export const useMatches = (empresaId: string | undefined, minScore: number = 0) => {
   return useQuery({
     queryKey: ['matches', empresaId, minScore],
-    queryFn: () => curaduriaApi.calculateMatches(empresaId, minScore),
-    enabled: !!empresaId,
+    queryFn: () => {
+      if (!empresaId) {
+        throw new Error('EmpresaId es requerido');
+      }
+      return curaduriaApi.calculateMatches(empresaId, minScore);
+    },
+    enabled: !!empresaId && empresaId.length > 0,
+    retry: false,
   });
 };

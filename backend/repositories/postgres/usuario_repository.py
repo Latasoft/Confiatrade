@@ -4,6 +4,7 @@ from typing import Optional
 from uuid import UUID
 
 from core.security import get_password_hash
+from models.sqlalchemy.empresa import EmpresaModel
 from models.sqlalchemy.usuario_model import UsuarioModel
 from sqlalchemy.orm import Session, joinedload
 
@@ -38,7 +39,10 @@ class UsuarioRepository:
         """Obtiene un usuario por ID con su empresa"""
         return (
             self.db.query(UsuarioModel)
-            .options(joinedload(UsuarioModel.empresa))
+            .options(
+                joinedload(UsuarioModel.empresa).joinedload(EmpresaModel.pais),
+                joinedload(UsuarioModel.empresa).joinedload(EmpresaModel.sector),
+            )
             .filter(UsuarioModel.id == usuario_id)
             .first()
         )
@@ -47,7 +51,10 @@ class UsuarioRepository:
         """Obtiene un usuario por email con su empresa"""
         return (
             self.db.query(UsuarioModel)
-            .options(joinedload(UsuarioModel.empresa))
+            .options(
+                joinedload(UsuarioModel.empresa).joinedload(EmpresaModel.pais),
+                joinedload(UsuarioModel.empresa).joinedload(EmpresaModel.sector),
+            )
             .filter(UsuarioModel.email == email)
             .first()
         )

@@ -1,8 +1,10 @@
 """Endpoints para gestión de eventos"""
 
-from typing import Optional
+from datetime import datetime
+from typing import List, Optional
 from uuid import UUID
 
+from api.dependencies.auth import get_current_user
 from api.schemas.evento import (
     EventoCreate,
     EventoListResponse,
@@ -26,7 +28,13 @@ from core.use_cases.eventos.delete_evento import DeleteEventoUseCase
 from core.use_cases.eventos.get_all_eventos import GetAllEventosUseCase
 from core.use_cases.eventos.get_evento_by_id import GetEventoByIdUseCase
 from core.use_cases.eventos.update_evento import UpdateEventoUseCase
-from fastapi import APIRouter, Depends, HTTPException, status
+from database import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from models.sqlalchemy.empresa_evento_model import EmpresaEventoModel
+from models.sqlalchemy.evento_model import EventoModel
+from models.sqlalchemy.usuario_model import UsuarioModel
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -80,6 +88,125 @@ def list_eventos(
         activos=stats["activos"],
         finalizados=stats["finalizados"],
     )
+
+
+# ==================== ENDPOINTS ESPECÍFICOS (DEBEN IR ANTES DE /{evento_id}) ====================
+
+
+class InscripcionResponse(BaseModel):
+    """Response para inscripción"""
+
+    id: UUID
+    evento_id: UUID
+    empresa_id: UUID
+    aprobada: bool
+    fecha_inscripcion: datetime
+    evento: EventoResponse
+
+    class Config:
+        from_attributes = True
+
+
+@router.get("/disponibles", response_model=List[EventoResponse])
+def get_eventos_disponibles(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    pais_sede: Optional[str] = None,
+    current_user: UsuarioModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Obtener eventos disponibles para inscripción (solo para empresas)
+
+    Filtra eventos con:
+    - estado = 'inscripcion_abierta'
+    - activo = True
+    - La empresa NO está inscrita aún
+    """
+    if current_user.rol != "empresa":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo empresas pueden acceder a eventos disponibles",
+        )
+
+    if not current_user.empresa_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuario no tiene empresa asociada",
+        )
+
+    # Query base: eventos activos con inscripciones abiertas
+    query = db.query(EventoModel).filter(
+        EventoModel.activo == True, EventoModel.estado == "inscripcion_abierta"
+    )
+
+    # Filtro opcional por país
+    if pais_sede:
+        query = query.filter(EventoModel.pais_sede == pais_sede)
+
+    # Obtener IDs de eventos en los que ya está inscrita
+    inscripciones_existentes = (
+        db.query(EmpresaEventoModel.evento_id)
+        .filter(EmpresaEventoModel.empresa_id == current_user.empresa_id)
+        .all()
+    )
+    eventos_inscritos_ids = [insc[0] for insc in inscripciones_existentes]
+
+    # Excluir eventos ya inscritos
+    if eventos_inscritos_ids:
+        query = query.filter(~EventoModel.id.in_(eventos_inscritos_ids))
+
+    eventos = query.offset(skip).limit(limit).all()
+
+    return [EventoResponse.model_validate(evento) for evento in eventos]
+
+
+@router.get("/mis-inscripciones", response_model=List[InscripcionResponse])
+def get_mis_inscripciones(
+    current_user: UsuarioModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Obtener inscripciones de la empresa actual
+
+    Devuelve eventos inscritos con estado de aprobación
+    """
+    if current_user.rol != "empresa":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo empresas pueden ver sus inscripciones",
+        )
+
+    if not current_user.empresa_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuario no tiene empresa asociada",
+        )
+
+    inscripciones = (
+        db.query(EmpresaEventoModel)
+        .filter(EmpresaEventoModel.empresa_id == current_user.empresa_id)
+        .all()
+    )
+
+    # Cargar relación con eventos
+    for inscripcion in inscripciones:
+        db.refresh(inscripcion, ["evento"])
+
+    return [
+        InscripcionResponse(
+            id=insc.id,
+            evento_id=insc.evento_id,
+            empresa_id=insc.empresa_id,
+            aprobada=insc.aprobada,
+            fecha_inscripcion=insc.fecha_inscripcion,
+            evento=EventoResponse.model_validate(insc.evento),
+        )
+        for insc in inscripciones
+    ]
+
+
+# ==================== ENDPOINTS CON PARÁMETROS ====================
 
 
 @router.get("/{evento_id}", response_model=EventoResponse)
@@ -136,3 +263,348 @@ def delete_evento(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
         )
+
+
+# ==================== ENDPOINTS PARA EMPRESAS ====================
+
+
+class InscripcionResponse(BaseModel):
+    """Response para inscripción"""
+
+    id: UUID
+    evento_id: UUID
+    empresa_id: UUID
+    aprobada: bool
+    fecha_inscripcion: datetime
+    evento: EventoResponse
+
+    class Config:
+        from_attributes = True
+
+
+@router.get("/disponibles", response_model=List[EventoResponse])
+def get_eventos_disponibles(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    pais_sede: Optional[str] = None,
+    current_user: UsuarioModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Obtener eventos disponibles para inscripción (solo para empresas)
+
+    Filtra eventos con:
+    - estado = 'inscripcion_abierta'
+    - activo = True
+    - La empresa NO está inscrita aún
+    """
+    if current_user.rol != "empresa":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo empresas pueden acceder a eventos disponibles",
+        )
+
+    if not current_user.empresa_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuario no tiene empresa asociada",
+        )
+
+    # Query base: eventos activos con inscripciones abiertas
+    query = db.query(EventoModel).filter(
+        EventoModel.activo == True, EventoModel.estado == "inscripcion_abierta"
+    )
+
+    # Filtro opcional por país
+    if pais_sede:
+        query = query.filter(EventoModel.pais_sede == pais_sede)
+
+    # Obtener IDs de eventos en los que ya está inscrita
+    inscripciones_existentes = (
+        db.query(EmpresaEventoModel.evento_id)
+        .filter(EmpresaEventoModel.empresa_id == current_user.empresa_id)
+        .all()
+    )
+    eventos_inscritos_ids = [insc[0] for insc in inscripciones_existentes]
+
+    # Excluir eventos ya inscritos
+    if eventos_inscritos_ids:
+        query = query.filter(~EventoModel.id.in_(eventos_inscritos_ids))
+
+    eventos = query.offset(skip).limit(limit).all()
+
+    return [EventoResponse.model_validate(evento) for evento in eventos]
+
+
+@router.get("/mis-inscripciones", response_model=List[InscripcionResponse])
+def get_mis_inscripciones(
+    current_user: UsuarioModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Obtener inscripciones de la empresa actual
+
+    Devuelve eventos inscritos con estado de aprobación
+    """
+    if current_user.rol != "empresa":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo empresas pueden ver sus inscripciones",
+        )
+
+    if not current_user.empresa_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuario no tiene empresa asociada",
+        )
+
+    inscripciones = (
+        db.query(EmpresaEventoModel)
+        .filter(EmpresaEventoModel.empresa_id == current_user.empresa_id)
+        .all()
+    )
+
+    # Cargar relación con eventos
+    for inscripcion in inscripciones:
+        db.refresh(inscripcion, ["evento"])
+
+    return [
+        InscripcionResponse(
+            id=insc.id,
+            evento_id=insc.evento_id,
+            empresa_id=insc.empresa_id,
+            aprobada=insc.aprobada,
+            fecha_inscripcion=insc.fecha_inscripcion,
+            evento=EventoResponse.model_validate(insc.evento),
+        )
+        for insc in inscripciones
+    ]
+
+
+# ==================== ENDPOINTS CON {evento_id} ====================
+
+
+@router.post(
+    "/{evento_id}/inscribirse",
+    response_model=InscripcionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def inscribirse_evento(
+    evento_id: UUID,
+    current_user: UsuarioModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Inscribirse a un evento (solo para empresas aprobadas)
+
+    Crea registro en empresas_eventos con aprobada=False (pendiente aprobación admin)
+    """
+    if current_user.rol != "empresa":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo empresas pueden inscribirse a eventos",
+        )
+
+    if not current_user.empresa_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuario no tiene empresa asociada",
+        )
+
+    # Verificar que la empresa esté aprobada
+    if not current_user.empresa or not current_user.empresa.aprobada:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo empresas aprobadas pueden inscribirse a eventos",
+        )
+
+    # Verificar que el evento existe y está activo
+    evento = db.query(EventoModel).filter(EventoModel.id == evento_id).first()
+    if not evento:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Evento no encontrado"
+        )
+
+    if not evento.activo:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="El evento no está activo"
+        )
+
+    if evento.estado != "inscripcion_abierta":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"El evento no acepta inscripciones (estado: {evento.estado})",
+        )
+
+    # Verificar que no esté inscrito previamente
+    inscripcion_existente = (
+        db.query(EmpresaEventoModel)
+        .filter(
+            EmpresaEventoModel.empresa_id == current_user.empresa_id,
+            EmpresaEventoModel.evento_id == evento_id,
+        )
+        .first()
+    )
+
+    if inscripcion_existente:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ya estás inscrito en este evento",
+        )
+
+    # Verificar capacidad disponible
+    if evento.capacidad_empresas:
+        inscripciones_aprobadas = (
+            db.query(EmpresaEventoModel)
+            .filter(
+                EmpresaEventoModel.evento_id == evento_id,
+                EmpresaEventoModel.aprobada == True,
+            )
+            .count()
+        )
+
+        if inscripciones_aprobadas >= evento.capacidad_empresas:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El evento ha alcanzado su capacidad máxima",
+            )
+
+    # Crear inscripción (pendiente de aprobación)
+    nueva_inscripcion = EmpresaEventoModel(
+        empresa_id=current_user.empresa_id,
+        evento_id=evento_id,
+        aprobada=False,
+        fecha_inscripcion=datetime.utcnow(),
+    )
+
+    db.add(nueva_inscripcion)
+    db.commit()
+    db.refresh(nueva_inscripcion)
+
+    # Cargar relación con evento para response
+    db.refresh(nueva_inscripcion, ["evento"])
+
+    return InscripcionResponse(
+        id=nueva_inscripcion.id,
+        evento_id=nueva_inscripcion.evento_id,
+        empresa_id=nueva_inscripcion.empresa_id,
+        aprobada=nueva_inscripcion.aprobada,
+        fecha_inscripcion=nueva_inscripcion.fecha_inscripcion,
+        evento=EventoResponse.model_validate(nueva_inscripcion.evento),
+    )
+
+
+# ==================== ENDPOINTS ADMIN PARA INSCRIPCIONES ====================
+
+
+@router.patch(
+    "/{evento_id}/inscripciones/{inscripcion_id}/aprobar",
+    status_code=status.HTTP_200_OK,
+)
+def aprobar_inscripcion(
+    evento_id: UUID,
+    inscripcion_id: UUID,
+    current_user: UsuarioModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Aprobar inscripción de una empresa a un evento (solo admin)
+    """
+    if current_user.rol != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo administradores pueden aprobar inscripciones",
+        )
+
+    # Buscar inscripción
+    inscripcion = (
+        db.query(EmpresaEventoModel)
+        .filter(
+            EmpresaEventoModel.id == inscripcion_id,
+            EmpresaEventoModel.evento_id == evento_id,
+        )
+        .first()
+    )
+
+    if not inscripcion:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Inscripción no encontrada"
+        )
+
+    if inscripcion.aprobada:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La inscripción ya está aprobada",
+        )
+
+    # Verificar capacidad
+    evento = db.query(EventoModel).filter(EventoModel.id == evento_id).first()
+    if evento and evento.capacidad_empresas:
+        inscripciones_aprobadas = (
+            db.query(EmpresaEventoModel)
+            .filter(
+                EmpresaEventoModel.evento_id == evento_id,
+                EmpresaEventoModel.aprobada == True,
+            )
+            .count()
+        )
+
+        if inscripciones_aprobadas >= evento.capacidad_empresas:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El evento ha alcanzado su capacidad máxima",
+            )
+
+    # Aprobar inscripción
+    inscripcion.aprobada = True
+    db.commit()
+    db.refresh(inscripcion)
+
+    return {
+        "message": "Inscripción aprobada exitosamente",
+        "inscripcion_id": str(inscripcion.id),
+    }
+
+
+@router.patch(
+    "/{evento_id}/inscripciones/{inscripcion_id}/rechazar",
+    status_code=status.HTTP_200_OK,
+)
+def rechazar_inscripcion(
+    evento_id: UUID,
+    inscripcion_id: UUID,
+    current_user: UsuarioModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Rechazar/eliminar inscripción de una empresa a un evento (solo admin)
+    """
+    if current_user.rol != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo administradores pueden rechazar inscripciones",
+        )
+
+    # Buscar inscripción
+    inscripcion = (
+        db.query(EmpresaEventoModel)
+        .filter(
+            EmpresaEventoModel.id == inscripcion_id,
+            EmpresaEventoModel.evento_id == evento_id,
+        )
+        .first()
+    )
+
+    if not inscripcion:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Inscripción no encontrada"
+        )
+
+    # Eliminar inscripción (hard delete)
+    db.delete(inscripcion)
+    db.commit()
+
+    return {
+        "message": "Inscripción rechazada y eliminada exitosamente",
+        "inscripcion_id": str(inscripcion_id),
+    }

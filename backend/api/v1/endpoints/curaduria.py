@@ -36,7 +36,7 @@ router = APIRouter(prefix="/curaduria", tags=["Curaduría"])
 
 @router.post(
     "/",
-    response_model=CuraduriaResponse,
+    response_model=CuraduriaDetailResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Crear curaduría",
     description="Crear curaduría para una empresa (1:1 relationship)",
@@ -107,7 +107,7 @@ def obtener_curaduria(
 
 @router.put(
     "/{curaduria_id}",
-    response_model=CuraduriaResponse,
+    response_model=CuraduriaDetailResponse,
     summary="Actualizar curaduría",
     description="Actualizar campos de curaduría existente",
 )

@@ -41,4 +41,25 @@ export const empresasApi = {
     const { data } = await apiClient.patch(`/empresas/${id}/rechazar`);
     return data;
   },
+
+  uploadPresentacion: async (id: string, file: File): Promise<Empresa> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await apiClient.post(`/empresas/${id}/presentacion`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  },
+
+  updateEmpresa: async (id: string, empresaData: Partial<Empresa>): Promise<Empresa> => {
+    const { data } = await apiClient.put(`/empresas/${id}`, empresaData);
+    return data;
+  },
+
+  getEmpresaDetails: async (id: string): Promise<Empresa> => {
+    const { data } = await apiClient.get(`/empresas/${id}`);
+    return data;
+  },
 };

@@ -1,7 +1,7 @@
 import { Empresa } from '@/shared/types';
 import { formatDate } from '@/shared/utils/format';
 import { useAprobarEmpresa, useRechazarEmpresa } from '../hooks/useEmpresas';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, FileText, ExternalLink } from 'lucide-react';
 
 interface EmpresaCardProps {
   empresa: Empresa;
@@ -31,11 +31,11 @@ export function EmpresaCard({ empresa, onSelect }: EmpresaCardProps) {
         </div>
         {empresa.aprobada ? (
           <span className="px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg border-2 border-emerald-400 ml-4 whitespace-nowrap">
-            ✓ Aprobada
+            Aprobada
           </span>
         ) : (
           <span className="px-3 py-1.5 bg-amber-100 text-amber-800 text-xs font-bold rounded-lg border-2 border-amber-400 ml-4 whitespace-nowrap">
-            ⏱ Pendiente
+            Pendiente
           </span>
         )}
       </div>
@@ -58,6 +58,28 @@ export function EmpresaCard({ empresa, onSelect }: EmpresaCardProps) {
           <span className="text-slate-700">{formatDate(empresa.fecha_registro)}</span>
         </div>
       </div>
+
+      {/* Presentación PDF */}
+      {empresa.presentacion_url && (
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileText className="text-blue-600" size={18} />
+              <span className="text-sm font-bold text-blue-900">Presentación disponible</span>
+            </div>
+            <a
+              href={empresa.presentacion_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="px-3 py-1 bg-blue-500 text-white text-xs font-bold rounded hover:bg-blue-600 transition flex items-center gap-1"
+            >
+              <ExternalLink size={14} />
+              Ver PDF
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Botones de aprobación/rechazo */}
       <div className="flex gap-2 pt-4 border-t-2 border-slate-300">
