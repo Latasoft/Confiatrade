@@ -227,18 +227,6 @@ export default function KPIsPage() {
           </div>
         </div>
       )}
-
-      {/* Visual Chart Placeholder */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Evolución de Reuniones
-        </h2>
-        <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
-          <p className="text-gray-500">
-            Gráfico de evolución (integrar Chart.js o Recharts)
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

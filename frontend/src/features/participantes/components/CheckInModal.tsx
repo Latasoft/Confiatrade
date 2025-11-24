@@ -102,7 +102,7 @@ export function CheckInModal({ isOpen, onClose, participante }: CheckInModalProp
             <div className="flex justify-between">
               <span className="text-sm font-medium text-slate-600">Empresa:</span>
               <span className="text-sm font-bold text-slate-900">
-                {participante.empresa?.nombre || 'N/A'}
+                {participante.empresa_nombre || 'N/A'}
               </span>
             </div>
             <div className="flex justify-between">

@@ -15,6 +15,14 @@ export interface Empresa {
   updated_at: string;
   pais_nombre?: string;
   sector_nombre?: string;
+  pais?: { id: number; nombre: string };
+  sector?: { id: number; nombre: string };
+  participantes?: Array<{
+    id: string;
+    nombre_completo: string;
+    email: string;
+    cargo?: string;
+  }>;
 }
 
 export interface EmpresaCreate {

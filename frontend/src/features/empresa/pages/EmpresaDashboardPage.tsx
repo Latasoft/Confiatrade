@@ -23,8 +23,7 @@ import {
   Edit2,
   Save,
   X,
-  Target,
-  TrendingUp
+  Target
 } from 'lucide-react';
 
 export default function EmpresaDashboardPage() {
@@ -40,7 +39,7 @@ export default function EmpresaDashboardPage() {
   const uploadPresentacion = useUploadPresentacion();
   const updateEmpresa = useUpdateEmpresa();
   
-  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+  const { register, handleSubmit, reset } = useForm();
 
   if (isLoading) {
     return (
@@ -286,7 +285,7 @@ export default function EmpresaDashboardPage() {
                   <label className="block text-sm font-bold text-slate-700 mb-2">Teléfono</label>
                   <input
                     {...register('telefono')}
-                    defaultValue={empresa?.telefono}
+                    defaultValue={empresa?.telefono || ''}
                     className="w-full px-3 py-2 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -294,7 +293,7 @@ export default function EmpresaDashboardPage() {
                   <label className="block text-sm font-bold text-slate-700 mb-2">Sitio Web</label>
                   <input
                     {...register('sitio_web')}
-                    defaultValue={empresa?.sitio_web}
+                    defaultValue={empresa?.sitio_web || ''}
                     className="w-full px-3 py-2 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -303,7 +302,7 @@ export default function EmpresaDashboardPage() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">Descripción</label>
                 <textarea
                   {...register('descripcion')}
-                  defaultValue={empresa?.descripcion}
+                  defaultValue={empresa?.descripcion || ''}
                   rows={3}
                   className="w-full px-3 py-2 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
@@ -312,7 +311,7 @@ export default function EmpresaDashboardPage() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">Dirección</label>
                 <textarea
                   {...register('direccion')}
-                  defaultValue={empresa?.direccion}
+                  defaultValue={empresa?.direccion || ''}
                   rows={2}
                   className="w-full px-3 py-2 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
