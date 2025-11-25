@@ -293,7 +293,7 @@ export default function ParticipantesPage() {
                   title={participante.check_in_realizado ? 'Check-in ya realizado' : 'Realizar check-in'}
                 >
                   <UserCheck size={16} />
-                  {participante.check_in_realizado ? 'Check-in ✓' : 'Check-in'}
+                  {participante.check_in_realizado ? 'Check-in' : 'Check-in'}
                 </button>
                 <button
                   onClick={() => handleEdit(participante)}

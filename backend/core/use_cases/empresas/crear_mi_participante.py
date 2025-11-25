@@ -22,7 +22,6 @@ class CrearMiParticipanteUseCase:
         telefono: str | None = None,
         idioma: str = "ES",
         requiere_interprete: bool = False,
-        foto_url: str | None = None,
     ):
         """
         Crear participante para la empresa autenticada
@@ -71,7 +70,6 @@ class CrearMiParticipanteUseCase:
             telefono=telefono,
             idioma=idioma,
             requiere_interprete=requiere_interprete,
-            foto_url=foto_url,
             qr_data=None,  # Temporal
         )
 
@@ -84,7 +82,8 @@ class CrearMiParticipanteUseCase:
         )
 
         # Actualizar con el qr_data correcto
-        participante.qr_data = qr_data_json
-        self.participante_repository.update(participante.id, {"qr_data": qr_data_json})
+        participante = self.participante_repository.update(
+            participante.id, qr_data=qr_data_json
+        )
 
         return participante

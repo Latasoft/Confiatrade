@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X, QrCode, Upload } from 'lucide-react';
+import { useEffect } from 'react';
+import { X, QrCode } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import {
   useCreateMiParticipante,
@@ -18,7 +18,6 @@ interface FormData {
   email: string;
   telefono?: string;
   cargo?: string;
-  foto_url?: string;
   idioma: string;
   requiere_interprete: boolean;
 }
@@ -28,10 +27,6 @@ export function EmpresaParticipanteFormModal({
   onClose,
   participante,
 }: EmpresaParticipanteFormModalProps) {
-  const [photoPreview, setPhotoPreview] = useState<string | undefined>(
-    participante?.foto_url
-  );
-
   const createMutation = useCreateMiParticipante();
   const updateMutation = useUpdateMiParticipante();
 
@@ -47,7 +42,6 @@ export function EmpresaParticipanteFormModal({
           email: participante.email,
           telefono: participante.telefono || '',
           cargo: participante.cargo || '',
-          foto_url: participante.foto_url || '',
           idioma: participante.idioma,
           requiere_interprete: participante.requiere_interprete,
         }
@@ -64,33 +58,16 @@ export function EmpresaParticipanteFormModal({
         email: participante.email,
         telefono: participante.telefono || '',
         cargo: participante.cargo || '',
-        foto_url: participante.foto_url || '',
         idioma: participante.idioma,
         requiere_interprete: participante.requiere_interprete,
       });
-      setPhotoPreview(participante.foto_url);
     } else {
       reset({ idioma: 'ES', requiere_interprete: false });
-      setPhotoPreview(undefined);
     }
   }, [participante, reset]);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const onSubmit = async (data: FormData) => {
     try {
-      if (photoPreview && photoPreview !== participante?.foto_url) {
-        data.foto_url = photoPreview;
-      }
 
       if (participante) {
         await updateMutation.mutateAsync({
@@ -108,7 +85,6 @@ export function EmpresaParticipanteFormModal({
 
   const handleClose = () => {
     reset();
-    setPhotoPreview(undefined);
     onClose();
   };
 
@@ -142,44 +118,6 @@ export function EmpresaParticipanteFormModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-          {/* Photo Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Foto del Participante
-            </label>
-            <div className="flex items-center gap-4">
-              {photoPreview ? (
-                <img
-                  src={photoPreview}
-                  alt="Preview"
-                  className="w-24 h-24 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
-                  <Upload size={32} className="text-gray-400" />
-                </div>
-              )}
-              <div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                  id="photo-upload"
-                />
-                <label
-                  htmlFor="photo-upload"
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition cursor-pointer inline-block"
-                >
-                  Seleccionar Foto
-                </label>
-                <p className="text-xs text-gray-500 mt-1">
-                  JPG, PNG o GIF (máx. 2MB)
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* Nombre */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

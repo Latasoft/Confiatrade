@@ -222,7 +222,7 @@ export function InscripcionesEventoModal({ eventoId, eventoNombre, isOpen, onClo
                               inscripcion.aprobada
                             )}`}
                           >
-                            {inscripcion.aprobada ? '✓ Aprobada' : '⏱ Pendiente'}
+                            {inscripcion.aprobada ? 'Aprobada' : 'Pendiente'}
                           </span>
                         </div>
                         <p className="text-sm text-slate-600">

@@ -73,7 +73,7 @@ export function EmpresaDetailsModal({ empresa, onClose }: EmpresaDetailsModalPro
                 </span>
               ) : (
                 <span className="px-4 py-2 bg-amber-100 text-amber-800 font-bold rounded-lg border-2 border-amber-400">
-                  ⏱ Pendiente
+                  Pendiente
                 </span>
               )}
             </div>

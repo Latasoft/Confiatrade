@@ -140,7 +140,7 @@ def generar_credencial_participante(
     # Generar PDF profesional con QR
     pdf_generator = PDFCredencialGenerator()
     pdf_buffer = pdf_generator.generar_badge_participante(
-        participante_nombre=participante.nombre,
+        participante_nombre=participante.nombre_completo,
         participante_cargo=participante.cargo or "Participante",
         participante_email=participante.email,
         empresa_nombre=participante.empresa.nombre if participante.empresa else "N/A",
@@ -171,7 +171,7 @@ def generar_credencial_participante(
         pdf_buffer,
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f"attachment; filename=credencial_{participante.nombre.replace(' ', '_')}.pdf"
+            "Content-Disposition": f"attachment; filename=credencial_{participante.nombre_completo.replace(' ', '_')}.pdf"
         },
     )
 
@@ -330,7 +330,7 @@ def obtener_historial_credenciales(
         elif cred.tipo == "participante" and cred.participante:
             entidad_info = EntidadInfo(
                 id=cred.participante.id,
-                nombre=cred.participante.nombre,
+                nombre=cred.participante.nombre_completo,
                 email=cred.participante.email,
                 empresa=cred.participante.empresa.nombre
                 if cred.participante.empresa
@@ -429,7 +429,7 @@ def validar_qr(
             entity_id=participante.id,
             evento_id=evento_id,
             timestamp=timestamp,
-            nombre=participante.nombre,
+            nombre=participante.nombre_completo,
             email=participante.email,
             empresa_nombre=participante.empresa.nombre
             if participante.empresa
@@ -491,7 +491,7 @@ def check_in_desde_qr(
             success=False,
             message=f"La empresa '{empresa_nombre}' no está aprobada",
             participante_id=participante.id,
-            participante_nombre=participante.nombre,
+            participante_nombre=participante.nombre_completo,
             empresa_nombre=empresa_nombre,
         )
 
@@ -507,9 +507,9 @@ def check_in_desde_qr(
 
         return QRCheckInResponse(
             success=True,
-            message=f"✅ Check-in exitoso para {participante.nombre}",
+            message=f"✅ Check-in exitoso para {participante.nombre_completo}",
             participante_id=participante.id,
-            participante_nombre=participante.nombre,
+            participante_nombre=participante.nombre_completo,
             empresa_nombre=participante.empresa.nombre,
             ya_registrado=False,
             fecha_check_in=participante.fecha_check_in,
@@ -518,9 +518,9 @@ def check_in_desde_qr(
         # Ya tenía check-in, retornar info
         return QRCheckInResponse(
             success=True,
-            message=f"ℹ️ {participante.nombre} ya tiene check-in registrado",
+            message=f"ℹ️ {participante.nombre_completo} ya tiene check-in registrado",
             participante_id=participante.id,
-            participante_nombre=participante.nombre,
+            participante_nombre=participante.nombre_completo,
             empresa_nombre=participante.empresa.nombre,
             ya_registrado=True,
             fecha_check_in=participante.fecha_check_in,

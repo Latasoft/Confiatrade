@@ -23,7 +23,6 @@ class ParticipanteRepository:
         telefono: Optional[str] = None,
         idioma: str = "ES",
         requiere_interprete: bool = False,
-        foto_url: Optional[str] = None,
         qr_data: Optional[str] = None,
     ) -> ParticipanteModel:
         """Crear un nuevo participante"""
@@ -35,7 +34,6 @@ class ParticipanteRepository:
             telefono=telefono,
             idioma=idioma,
             requiere_interprete=requiere_interprete,
-            foto_url=foto_url,
             qr_data=qr_data,
         )
         self.db.add(participante)
@@ -101,7 +99,7 @@ class ParticipanteRepository:
         telefono: Optional[str] = None,
         idioma: Optional[str] = None,
         requiere_interprete: Optional[bool] = None,
-        foto_url: Optional[str] = None,
+        qr_data: Optional[str] = None,
         check_in_realizado: Optional[bool] = None,
         fecha_check_in=None,
     ) -> Optional[ParticipanteModel]:
@@ -122,8 +120,8 @@ class ParticipanteRepository:
             participante.idioma = idioma
         if requiere_interprete is not None:
             participante.requiere_interprete = requiere_interprete
-        if foto_url is not None:
-            participante.foto_url = foto_url
+        if qr_data is not None:
+            participante.qr_data = qr_data
         if check_in_realizado is not None:
             participante.check_in_realizado = check_in_realizado
         if fecha_check_in is not None:

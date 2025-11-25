@@ -72,10 +72,28 @@ export default function ValidarQRPage() {
   const startCamera = async () => {
     try {
       setCameraError(null);
+      setScanning(true); // Cambiar estado primero para renderizar el div
       
-      if (!html5QrCodeRef.current) {
-        html5QrCodeRef.current = new Html5Qrcode(qrReaderDivId);
+      // Esperar un momento para que el DOM se actualice
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Verificar que el elemento existe
+      const element = document.getElementById(qrReaderDivId);
+      if (!element) {
+        throw new Error('Elemento de lector QR no encontrado');
       }
+      
+      // Si ya existe una instancia, detenerla primero
+      if (html5QrCodeRef.current) {
+        try {
+          await html5QrCodeRef.current.stop();
+        } catch (e) {
+          // Ignorar errores al detener
+        }
+      }
+      
+      // Crear nueva instancia
+      html5QrCodeRef.current = new Html5Qrcode(qrReaderDivId);
 
       await html5QrCodeRef.current.start(
         { facingMode: 'environment' }, // Cámara trasera en móviles
@@ -88,7 +106,6 @@ export default function ValidarQRPage() {
         undefined // onScanError - ignoramos errores de escaneo
       );
       
-      setScanning(true);
     } catch (error: any) {
       console.error('Error al acceder a la cámara:', error);
       setCameraError(error?.message || 'No se pudo acceder a la cámara');
@@ -110,11 +127,15 @@ export default function ValidarQRPage() {
     }
   };
 
-  // Limpiar al desmontar o cambiar modo
+  // Limpiar al desmontar
   useEffect(() => {
     return () => {
-      if (html5QrCodeRef.current && scanning) {
-        html5QrCodeRef.current.stop().catch(() => {});
+      if (html5QrCodeRef.current) {
+        try {
+          html5QrCodeRef.current.stop().catch(() => {});
+        } catch (e) {
+          // Ignorar errores al limpiar
+        }
       }
     };
   }, []);
@@ -227,7 +248,7 @@ export default function ValidarQRPage() {
             <h3 className={`text-xl font-bold mb-2 ${
               result.valido ? 'text-green-900' : 'text-red-900'
             }`}>
-              {result.valido ? '✓ QR Válido' : '✗ QR Inválido'}
+              {result.valido ? 'QR Válido' : 'QR Inválido'}
             </h3>
             
             {result.razon && (
@@ -291,7 +312,7 @@ export default function ValidarQRPage() {
                       ? 'bg-green-100 text-green-800 border border-green-300'
                       : 'bg-amber-100 text-amber-800 border border-amber-300'
                   }`}>
-                    {result.aprobada ? '✓ Aprobada' : '⚠️ Pendiente de aprobación'}
+                    {result.aprobada ? 'Aprobada' : 'Pendiente de aprobación'}
                   </div>
                 )}
               </div>
@@ -443,48 +464,46 @@ export default function ValidarQRPage() {
       )}
 
       {/* Instrucciones */}
-      <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border-2 border-purple-300 p-6">
-        <h3 className="text-lg font-bold text-purple-900 mb-3 flex items-center gap-2">
-          <Scan size={24} />
-          Cómo usar el validador
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 p-6">
+        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <Scan size={24} className="text-blue-600" />
+          Instrucciones de uso
         </h3>
-        <ol className="space-y-2 text-purple-800">
-          <li className="flex items-start gap-2">
-            <span className="font-bold">1.</span>
-            <span>Selecciona el modo: <strong>Validar</strong> (solo verificar) o <strong>Check-in</strong> (registrar asistencia)</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="font-bold">2.</span>
-            <span><strong>Opción A:</strong> Activa la cámara y apunta al código QR (recomendado)</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="font-bold">3.</span>
-            <span><strong>Opción B:</strong> Pega manualmente el JSON del QR en el campo de texto</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="font-bold">4.</span>
-            <span>Revisa el resultado con los datos de la empresa o participante</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="font-bold">5.</span>
-            <span>En modo Check-in: la asistencia se registra automáticamente</span>
-          </li>
-        </ol>
-        
-        <div className="mt-4 p-4 bg-white rounded-lg border border-purple-200">
-          <p className="text-sm font-bold text-purple-900 mb-2">Formato del QR:</p>
-          <code className="text-xs text-purple-700 block bg-purple-50 p-2 rounded break-all">
-            {`{"tipo":"participante","id":"uuid...","evento_id":null,"timestamp":"2025-11-25T...","hash":"..."}`}
-          </code>
-          <p className="text-xs text-purple-600 mt-2">
-            El QR incluye tipo (empresa/participante), ID único, timestamp y hash de verificación
-          </p>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3 bg-white p-3 rounded-lg border border-blue-100">
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-700 font-bold">
+              1
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">Elige el modo</p>
+              <p className="text-sm text-gray-600">Selecciona si solo quieres validar o registrar asistencia</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3 bg-white p-3 rounded-lg border border-blue-100">
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-700 font-bold">
+              2
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">Activa la cámara</p>
+              <p className="text-sm text-gray-600">Presiona "Activar Cámara" y apunta al código QR de la credencial</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3 bg-white p-3 rounded-lg border border-blue-100">
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-700 font-bold">
+              3
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">Escanea automáticamente</p>
+              <p className="text-sm text-gray-600">El sistema detectará y validará el QR al instante</p>
+            </div>
+          </div>
         </div>
         
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm font-bold text-blue-900 mb-1">Seguridad:</p>
-          <p className="text-xs text-blue-700">
-            Cada QR incluye un hash SHA256 que garantiza su autenticidad y previene falsificaciones
+        <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+          <p className="text-sm text-green-800">
+            <strong>Tip:</strong> En modo Check-in, la asistencia se registra automáticamente sin pasos adicionales.
           </p>
         </div>
       </div>

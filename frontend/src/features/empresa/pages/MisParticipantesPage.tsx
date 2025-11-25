@@ -137,19 +137,11 @@ export default function MisParticipantesPage() {
               key={participante.id}
               className="bg-white border-2 border-gray-200 rounded-lg p-6 hover:shadow-lg transition"
             >
-              {/* Foto y Nombre */}
+              {/* Avatar y Nombre */}
               <div className="flex items-start gap-4 mb-4">
-                {participante.foto_url ? (
-                  <img
-                    src={participante.foto_url}
-                    alt={participante.nombre_completo}
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-                    <Users size={24} className="text-gray-400" />
-                  </div>
-                )}
+                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                  <Users size={24} className="text-gray-400" />
+                </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 truncate">
                     {participante.nombre_completo}
@@ -185,10 +177,10 @@ export default function MisParticipantesPage() {
 
               {/* QR Badge */}
               {participante.qr_data && (
-                <div className="mb-4 p-2 bg-gray-50 rounded border border-gray-200">
-                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                <div className="mb-4 p-2 bg-blue-50 rounded border border-blue-200">
+                  <div className="flex items-center gap-2 text-xs text-blue-700">
                     <QrCode size={14} />
-                    <span className="font-mono truncate">{participante.qr_data.slice(0, 20)}...</span>
+                    <span className="font-medium">QR generado</span>
                   </div>
                 </div>
               )}
@@ -197,7 +189,7 @@ export default function MisParticipantesPage() {
               {participante.check_in_realizado ? (
                 <div className="mb-4 p-2 bg-green-50 border border-green-200 rounded">
                   <p className="text-xs text-green-700 font-medium">
-                    ✓ Check-in realizado
+                    Check-in realizado
                   </p>
                   {participante.fecha_check_in && (
                     <p className="text-xs text-green-600">

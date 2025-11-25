@@ -26,7 +26,6 @@ class ActualizarMiParticipanteUseCase:
         telefono: str | None = None,
         idioma: str | None = None,
         requiere_interprete: bool | None = None,
-        foto_url: str | None = None,
     ):
         """
         Actualizar participante validando que pertenezca a la empresa
@@ -87,7 +86,6 @@ class ActualizarMiParticipanteUseCase:
             telefono=telefono,
             idioma=idioma,
             requiere_interprete=requiere_interprete,
-            foto_url=foto_url,
         )
 
         return participante_actualizado

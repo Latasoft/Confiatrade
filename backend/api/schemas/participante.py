@@ -11,12 +11,11 @@ class ParticipanteBase(BaseModel):
     """Schema base para Participante"""
 
     nombre_completo: str = Field(..., min_length=1, max_length=255)
-    cargo: Optional[str] = Field(None, max_length=150)
+    cargo: Optional[str] = Field(default=None, max_length=150)
     email: EmailStr
-    telefono: Optional[str] = Field(None, max_length=50)
+    telefono: Optional[str] = Field(default=None, max_length=50)
     idioma: str = Field(default="ES", max_length=2)
     requiere_interprete: bool = Field(default=False)
-    foto_url: Optional[str] = Field(None, max_length=500)
 
 
 class ParticipanteCreate(ParticipanteBase):
@@ -67,3 +66,22 @@ class ParticipanteListResponse(BaseModel):
     total: int
 
     model_config = {"from_attributes": True}
+
+
+class MiParticipanteListResponse(BaseModel):
+    """Schema para lista de participantes de empresa (con paginación)"""
+
+    total: int
+    skip: int
+    limit: int
+    items: list[ParticipanteDetailResponse]
+
+    model_config = {"from_attributes": True}
+
+
+class MiParticipanteCreate(ParticipanteBase):
+    """Schema para crear participante por empresa (sin empresa_id, viene del token)"""
+
+    # Hereda todos los campos de ParticipanteBase
+    # No incluye empresa_id porque viene del JWT
+    pass

@@ -9,7 +9,6 @@ export interface MiParticipante {
   telefono?: string;
   idioma: string;
   requiere_interprete: boolean;
-  foto_url?: string;
   qr_data?: string;
   check_in_realizado: boolean;
   fecha_check_in?: string;
@@ -32,7 +31,6 @@ export interface CreateMiParticipanteData {
   telefono?: string;
   idioma?: string;
   requiere_interprete?: boolean;
-  foto_url?: string;
 }
 
 export interface UpdateMiParticipanteData {
@@ -42,7 +40,6 @@ export interface UpdateMiParticipanteData {
   telefono?: string;
   idioma?: string;
   requiere_interprete?: boolean;
-  foto_url?: string;
 }
 
 export const empresaParticipantesApi = {

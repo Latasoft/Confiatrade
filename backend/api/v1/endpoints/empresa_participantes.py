@@ -5,8 +5,9 @@ from uuid import UUID
 
 from api.dependencies.auth import get_current_empresa_id
 from api.schemas.participante import (
+    MiParticipanteCreate,
+    MiParticipanteListResponse,
     ParticipanteDetailResponse,
-    ParticipanteListResponse,
     ParticipanteUpdate,
 )
 from api.v1.dependencies import (
@@ -33,26 +34,13 @@ from core.use_cases.empresas.get_mi_participante_by_id import (
 )
 from core.use_cases.empresas.get_mis_participantes import GetMisParticipantesUseCase
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, EmailStr, Field
 
 router = APIRouter()
 
 
-class MiParticipanteCreate(BaseModel):
-    """Schema para crear participante (sin empresa_id, viene del token)"""
-
-    nombre_completo: str = Field(..., min_length=1, max_length=255)
-    cargo: str | None = Field(None, max_length=150)
-    email: EmailStr
-    telefono: str | None = Field(None, max_length=50)
-    idioma: str = Field(default="ES", max_length=2)
-    requiere_interprete: bool = Field(default=False)
-    foto_url: str | None = Field(None, max_length=500)
-
-
 @router.get(
     "/",
-    response_model=ParticipanteListResponse,
+    response_model=MiParticipanteListResponse,
     summary="Listar mis participantes",
     description="Obtener lista de participantes de la empresa autenticada",
 )
@@ -67,8 +55,18 @@ async def listar_mis_participantes(
     """
     Listar participantes de la empresa autenticada con paginación
     """
+    print("=" * 80)
+    print("DEBUG LISTAR PARTICIPANTES")
+    print("=" * 80)
+    print(f"Empresa ID: {empresa_id}")
+    print(f"Skip: {skip}, Limit: {limit}")
+    print("=" * 80)
+
     try:
         participantes = use_case.execute(empresa_id=empresa_id, skip=skip, limit=limit)
+        print(f"✅ Participantes encontrados: {len(participantes)}")
+        for p in participantes:
+            print(f"  - {p.nombre_completo} ({p.email}) - ID: {p.id}")
 
         # Construir response con empresa_nombre
         items = []
@@ -83,7 +81,6 @@ async def listar_mis_participantes(
                     telefono=p.telefono,
                     idioma=p.idioma,
                     requiere_interprete=p.requiere_interprete,
-                    foto_url=p.foto_url,
                     qr_data=p.qr_data,
                     check_in_realizado=p.check_in_realizado,
                     fecha_check_in=p.fecha_check_in,
@@ -93,7 +90,7 @@ async def listar_mis_participantes(
                 )
             )
 
-        return ParticipanteListResponse(
+        return MiParticipanteListResponse(
             total=len(items), skip=skip, limit=limit, items=items
         )
 
@@ -121,7 +118,15 @@ async def crear_mi_participante(
     """
     Crear participante para la empresa autenticada
     """
+    print("=" * 80)
+    print("DEBUG CREAR PARTICIPANTE")
+    print("=" * 80)
+    print(f"Datos recibidos: {participante_data.model_dump()}")
+    print(f"Empresa ID: {empresa_id}")
+    print("=" * 80)
+
     try:
+        print("Llamando a use_case.execute...")
         participante = use_case.execute(
             empresa_id=empresa_id,
             nombre_completo=participante_data.nombre_completo,
@@ -130,8 +135,8 @@ async def crear_mi_participante(
             telefono=participante_data.telefono,
             idioma=participante_data.idioma,
             requiere_interprete=participante_data.requiere_interprete,
-            foto_url=participante_data.foto_url,
         )
+        print(f"Participante creado exitosamente: {participante.id}")
 
         return ParticipanteDetailResponse(
             id=participante.id,
@@ -142,7 +147,6 @@ async def crear_mi_participante(
             telefono=participante.telefono,
             idioma=participante.idioma,
             requiere_interprete=participante.requiere_interprete,
-            foto_url=participante.foto_url,
             qr_data=participante.qr_data,
             check_in_realizado=participante.check_in_realizado,
             fecha_check_in=participante.fecha_check_in,
@@ -154,16 +158,23 @@ async def crear_mi_participante(
         )
 
     except BusinessLogicException as e:
+        print(f"❌ BusinessLogicException: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=e.message,
         )
     except ValidationException as e:
+        print(f"❌ ValidationException: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=e.message,
         )
     except Exception as e:
+        print(f"❌ Exception genérica: {type(e).__name__}")
+        print(f"❌ Mensaje: {str(e)}")
+        import traceback
+
+        print(f"❌ Traceback:\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al crear participante: {str(e)}",
@@ -200,7 +211,6 @@ async def obtener_mi_participante(
             telefono=participante.telefono,
             idioma=participante.idioma,
             requiere_interprete=participante.requiere_interprete,
-            foto_url=participante.foto_url,
             qr_data=participante.qr_data,
             check_in_realizado=participante.check_in_realizado,
             fecha_check_in=participante.fecha_check_in,
@@ -250,7 +260,6 @@ async def actualizar_mi_participante(
             telefono=participante_data.telefono,
             idioma=participante_data.idioma,
             requiere_interprete=participante_data.requiere_interprete,
-            foto_url=participante_data.foto_url,
         )
 
         return ParticipanteDetailResponse(
@@ -262,7 +271,6 @@ async def actualizar_mi_participante(
             telefono=participante.telefono,
             idioma=participante.idioma,
             requiere_interprete=participante.requiere_interprete,
-            foto_url=participante.foto_url,
             qr_data=participante.qr_data,
             check_in_realizado=participante.check_in_realizado,
             fecha_check_in=participante.fecha_check_in,
