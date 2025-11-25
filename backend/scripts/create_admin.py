@@ -28,7 +28,7 @@ def create_admin_user(
         )
 
         if existing_admin:
-            print(f"❌ Admin user with email {email} already exists")
+            print(f"Admin user with email {email} already exists")
             return False
 
         # Create admin user
@@ -45,18 +45,18 @@ def create_admin_user(
         db.commit()
         db.refresh(admin_user)
 
-        print("✅ Admin user created successfully!")
+        print("Admin user created successfully!")
         print(f"   Email: {email}")
         print(f"   Password: {password}")
         print(f"   ID: {admin_user.id}")
         print(f"   Rol: {admin_user.rol}")
-        print("\n⚠️  Please change the password after first login!")
+        print("\n Please change the password after first login!")
 
         return True
 
     except Exception as e:
         db.rollback()
-        print(f"❌ Error creating admin user: {e}")
+        print(f"Error creating admin user: {e}")
         return False
 
     finally:

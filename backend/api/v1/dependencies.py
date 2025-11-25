@@ -23,9 +23,20 @@ from core.use_cases.curaduria.crear_curaduria import CrearCuraduriaUseCase
 from core.use_cases.curaduria.eliminar_curaduria import EliminarCuraduriaUseCase
 from core.use_cases.curaduria.listar_curaduria import ListarCuraduriasUseCase
 from core.use_cases.curaduria.obtener_curaduria import ObtenerCuraduriaUseCase
+from core.use_cases.empresas.actualizar_mi_participante import (
+    ActualizarMiParticipanteUseCase,
+)
+from core.use_cases.empresas.crear_mi_participante import CrearMiParticipanteUseCase
 from core.use_cases.empresas.create_empresa import CreateEmpresa
+from core.use_cases.empresas.eliminar_mi_participante import (
+    EliminarMiParticipanteUseCase,
+)
 from core.use_cases.empresas.get_empresa import GetEmpresa
 from core.use_cases.empresas.get_empresas import GetEmpresas
+from core.use_cases.empresas.get_mi_participante_by_id import (
+    GetMiParticipanteByIdUseCase,
+)
+from core.use_cases.empresas.get_mis_participantes import GetMisParticipantesUseCase
 from core.use_cases.empresas_eventos.aprobar_inscripcion import (
     AprobarInscripcionUseCase,
 )
@@ -221,6 +232,37 @@ def eliminar_participante_use_case(
     repository: ParticipanteRepository = Depends(get_participante_repository),
 ) -> EliminarParticipanteUseCase:
     return EliminarParticipanteUseCase(repository)
+
+
+# Dependencies para empresa_participantes
+def get_mis_participantes_use_case(
+    repository: ParticipanteRepository = Depends(get_participante_repository),
+) -> GetMisParticipantesUseCase:
+    return GetMisParticipantesUseCase(repository)
+
+
+def crear_mi_participante_use_case(
+    repository: ParticipanteRepository = Depends(get_participante_repository),
+) -> CrearMiParticipanteUseCase:
+    return CrearMiParticipanteUseCase(repository)
+
+
+def get_mi_participante_by_id_use_case(
+    repository: ParticipanteRepository = Depends(get_participante_repository),
+) -> GetMiParticipanteByIdUseCase:
+    return GetMiParticipanteByIdUseCase(repository)
+
+
+def actualizar_mi_participante_use_case(
+    repository: ParticipanteRepository = Depends(get_participante_repository),
+) -> ActualizarMiParticipanteUseCase:
+    return ActualizarMiParticipanteUseCase(repository)
+
+
+def eliminar_mi_participante_use_case(
+    repository: ParticipanteRepository = Depends(get_participante_repository),
+) -> EliminarMiParticipanteUseCase:
+    return EliminarMiParticipanteUseCase(repository)
 
 
 def realizar_check_in_use_case(

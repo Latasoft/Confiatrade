@@ -20,7 +20,7 @@ class EmpresaEventoRepository:
         self.db.add(inscripcion)
         self.db.commit()
         self.db.refresh(inscripcion)
-        
+
         # Recargar con relaciones para evitar errores de serialización
         return self.get_by_id(inscripcion.id)
 
@@ -120,7 +120,7 @@ class EmpresaEventoRepository:
 
         self.db.commit()
         self.db.refresh(inscripcion)
-        
+
         # Recargar con relaciones para evitar errores de serialización
         return self.get_by_id(inscripcion_id)
 

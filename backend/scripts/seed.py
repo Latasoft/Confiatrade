@@ -156,7 +156,7 @@ def seed_usuario_admin(db: Session):
 def main():
     """Ejecutar todos los seeds"""
     print("=" * 60)
-    print("🌱 SEED DATA - CONFIATRADE")
+    print(" SEED DATA - CONFIATRADE")
     print("=" * 60)
 
     db = SessionLocal()
@@ -168,7 +168,7 @@ def main():
         seed_usuario_admin(db)
 
         print("\n" + "=" * 60)
-        print("✅ SEED DATA COMPLETADO EXITOSAMENTE")
+        print(" SEED DATA COMPLETADO EXITOSAMENTE")
         print("=" * 60)
 
         # Mostrar resumen
@@ -177,7 +177,7 @@ def main():
         kpis_count = db.query(KPIModel).count()
         usuarios_count = db.query(UsuarioModel).count()
 
-        print("\n📈 Resumen:")
+        print("\n Resumen:")
         print(f"  • Países: {paises_count}")
         print(f"  • Sectores: {sectores_count}")
         print(f"  • KPIs: {kpis_count}")
@@ -185,7 +185,7 @@ def main():
         print()
 
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n Error: {e}")
         db.rollback()
         raise
     finally:

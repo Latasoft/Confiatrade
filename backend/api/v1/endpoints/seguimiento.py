@@ -7,7 +7,6 @@ from api.schemas.seguimiento import (
     SeguimientoCreate,
     SeguimientoDetailResponse,
     SeguimientoListResponse,
-    SeguimientoResponse,
     SeguimientoUpdate,
 )
 from database import get_db
@@ -50,7 +49,9 @@ async def crear_seguimiento(
             "notas": seguimiento.notas,
             "created_at": seguimiento.created_at,
             "updated_at": seguimiento.updated_at,
-            "empresa_nombre": seguimiento.empresa.nombre if seguimiento.empresa else None,
+            "empresa_nombre": seguimiento.empresa.nombre
+            if seguimiento.empresa
+            else None,
             "empresa_pais": seguimiento.empresa.pais.nombre
             if seguimiento.empresa and seguimiento.empresa.pais
             else None,

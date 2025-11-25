@@ -100,6 +100,7 @@ export function useUpdateEmpresa() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['empresas'] });
       queryClient.invalidateQueries({ queryKey: ['empresas', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['perfil'] });
     },
   });
 }

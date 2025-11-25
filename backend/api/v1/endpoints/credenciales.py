@@ -13,6 +13,12 @@ from api.schemas.credencial import (
     CredencialHistorialResponse,
     EntidadInfo,
 )
+from api.schemas.qr_validation import (
+    QRCheckInRequest,
+    QRCheckInResponse,
+    QRDataRequest,
+    QRValidacionResponse,
+)
 from database import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -21,7 +27,7 @@ from models.sqlalchemy.empresa import EmpresaModel
 from models.sqlalchemy.participante import ParticipanteModel
 from models.sqlalchemy.usuario_model import UsuarioModel
 from services.pdf_generator import PDFCredencialGenerator
-from services.qr_service import generate_unique_qr
+from services.qr_service import generate_unique_qr, validate_qr_data
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -110,6 +116,18 @@ def generar_credencial_participante(
 
     if not participante:
         raise HTTPException(status_code=404, detail="Participante no encontrado")
+
+    # Validar acceso: admin puede todo, empresa solo sus participantes
+    if current_user.rol == "empresa":
+        if not current_user.empresa_id:
+            raise HTTPException(
+                status_code=403, detail="Usuario empresa sin empresa asociada"
+            )
+        if participante.empresa_id != current_user.empresa_id:
+            raise HTTPException(
+                status_code=403,
+                detail="No tienes permiso para descargar credenciales de participantes de otras empresas",
+            )
 
     # Generar QR único para el participante
     _, qr_data_json = generate_unique_qr(
@@ -330,3 +348,180 @@ def obtener_historial_credenciales(
         items.append(item)
 
     return CredencialHistorialResponse(total=total, skip=skip, limit=limit, items=items)
+
+
+@router.post("/validar", response_model=QRValidacionResponse)
+def validar_qr(
+    request: QRDataRequest,
+    db: Session = Depends(get_db),
+    current_user: UsuarioModel = Depends(get_current_user),
+):
+    """
+    Validar un código QR escaneado.
+
+    Verifica:
+    - Hash del QR (autenticidad)
+    - Existencia de empresa/participante
+    - Estado de aprobación
+    - Datos de la entidad
+    """
+    # Validar estructura y hash del QR
+    qr_data = validate_qr_data(request.qr_json)
+
+    if not qr_data:
+        return QRValidacionResponse(
+            valido=False, razon="QR inválido o corrupto. El hash no coincide."
+        )
+
+    tipo = qr_data.get("tipo")
+    entity_id = qr_data.get("id")
+    evento_id = qr_data.get("evento_id")
+    timestamp = qr_data.get("timestamp")
+
+    # Validar empresa
+    if tipo == "empresa":
+        empresa = db.query(EmpresaModel).filter(EmpresaModel.id == entity_id).first()
+
+        if not empresa:
+            return QRValidacionResponse(
+                valido=False,
+                razon=f"Empresa con ID {entity_id} no encontrada en el sistema.",
+                tipo=tipo,
+                entity_id=entity_id,
+            )
+
+        return QRValidacionResponse(
+            valido=True,
+            tipo=tipo,
+            entity_id=empresa.id,
+            evento_id=evento_id,
+            timestamp=timestamp,
+            nombre=empresa.nombre,
+            email=empresa.email,
+            aprobada=empresa.aprobada,
+            telefono=empresa.telefono,
+            pais_nombre=empresa.pais.nombre if empresa.pais else None,
+            sector_nombre=empresa.sector.nombre if empresa.sector else None,
+        )
+
+    # Validar participante
+    elif tipo == "participante":
+        participante = (
+            db.query(ParticipanteModel)
+            .filter(ParticipanteModel.id == entity_id)
+            .first()
+        )
+
+        if not participante:
+            return QRValidacionResponse(
+                valido=False,
+                razon=f"Participante con ID {entity_id} no encontrado en el sistema.",
+                tipo=tipo,
+                entity_id=entity_id,
+            )
+
+        # Verificar que la empresa esté aprobada
+        empresa_aprobada = participante.empresa and participante.empresa.aprobada
+
+        return QRValidacionResponse(
+            valido=True,
+            tipo=tipo,
+            entity_id=participante.id,
+            evento_id=evento_id,
+            timestamp=timestamp,
+            nombre=participante.nombre,
+            email=participante.email,
+            empresa_nombre=participante.empresa.nombre
+            if participante.empresa
+            else None,
+            aprobada=empresa_aprobada,
+            telefono=participante.telefono,
+        )
+
+    return QRValidacionResponse(valido=False, razon=f"Tipo de QR desconocido: {tipo}")
+
+
+@router.post("/check-in", response_model=QRCheckInResponse)
+def check_in_desde_qr(
+    request: QRCheckInRequest,
+    db: Session = Depends(get_db),
+    current_user: UsuarioModel = Depends(get_current_user),
+):
+    """
+    Registrar check-in escaneando QR de participante.
+
+    Flujo:
+    1. Validar QR
+    2. Verificar que sea participante (no empresa)
+    3. Verificar que empresa esté aprobada
+    4. Registrar o actualizar check-in
+    """
+    # Validar QR primero
+    qr_data = validate_qr_data(request.qr_json)
+
+    if not qr_data:
+        return QRCheckInResponse(success=False, message="QR inválido o corrupto")
+
+    tipo = qr_data.get("tipo")
+    entity_id = qr_data.get("id")
+
+    # Solo se puede hacer check-in de participantes
+    if tipo != "participante":
+        return QRCheckInResponse(
+            success=False,
+            message=f"Este QR es de tipo '{tipo}'. Solo se puede hacer check-in de participantes.",
+        )
+
+    # Buscar participante
+    participante = (
+        db.query(ParticipanteModel).filter(ParticipanteModel.id == entity_id).first()
+    )
+
+    if not participante:
+        return QRCheckInResponse(
+            success=False, message=f"Participante no encontrado (ID: {entity_id})"
+        )
+
+    # Verificar empresa aprobada
+    if not participante.empresa or not participante.empresa.aprobada:
+        empresa_nombre = (
+            participante.empresa.nombre if participante.empresa else "Sin empresa"
+        )
+        return QRCheckInResponse(
+            success=False,
+            message=f"La empresa '{empresa_nombre}' no está aprobada",
+            participante_id=participante.id,
+            participante_nombre=participante.nombre,
+            empresa_nombre=empresa_nombre,
+        )
+
+    # Verificar si ya tiene check-in
+    ya_registrado = participante.check_in_realizado
+
+    # Registrar check-in
+    if not ya_registrado:
+        participante.check_in_realizado = True
+        participante.fecha_check_in = datetime.utcnow()
+        db.commit()
+        db.refresh(participante)
+
+        return QRCheckInResponse(
+            success=True,
+            message=f"✅ Check-in exitoso para {participante.nombre}",
+            participante_id=participante.id,
+            participante_nombre=participante.nombre,
+            empresa_nombre=participante.empresa.nombre,
+            ya_registrado=False,
+            fecha_check_in=participante.fecha_check_in,
+        )
+    else:
+        # Ya tenía check-in, retornar info
+        return QRCheckInResponse(
+            success=True,
+            message=f"ℹ️ {participante.nombre} ya tiene check-in registrado",
+            participante_id=participante.id,
+            participante_nombre=participante.nombre,
+            empresa_nombre=participante.empresa.nombre,
+            ya_registrado=True,
+            fecha_check_in=participante.fecha_check_in,
+        )

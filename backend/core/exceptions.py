@@ -13,13 +13,10 @@ class AppException(Exception):
         self.status_code = status_code
         self.details = details
         super().__init__(self.message)
-    
+
     def to_dict(self):
         """Convertir excepción a diccionario para respuestas HTTP"""
-        return {
-            "message": self.message,
-            "details": self.details
-        }
+        return {"message": self.message, "details": self.details}
 
 
 class ValidationException(AppException):

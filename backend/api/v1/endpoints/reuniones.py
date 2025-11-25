@@ -7,7 +7,6 @@ from api.schemas.reunion import (
     ReunionCreate,
     ReunionDetailResponse,
     ReunionListResponse,
-    ReunionResponse,
     ReunionUpdate,
 )
 from api.v1.dependencies import (
@@ -100,11 +99,12 @@ async def crear_reunion(
         )
     except Exception as e:
         import traceback
+
         print(f"Error creating reunion: {e}")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"message": "Error interno al crear reunión", "error": str(e)}
+            detail={"message": "Error interno al crear reunión", "error": str(e)},
         )
 
 
@@ -253,9 +253,10 @@ async def eliminar_reunion(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.to_dict())
     except Exception as e:
         import traceback
+
         print(f"Error deleting reunion: {e}")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"message": "Error interno al eliminar reunión", "error": str(e)}
+            detail={"message": "Error interno al eliminar reunión", "error": str(e)},
         )

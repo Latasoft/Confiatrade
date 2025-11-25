@@ -82,3 +82,10 @@ async def get_current_empresa_user(
             detail="Usuario no tiene empresa asociada",
         )
     return current_user
+
+
+def get_current_empresa_id(
+    current_user: UsuarioModel = Depends(get_current_empresa_user),
+) -> UUID:
+    """Obtiene el empresa_id del usuario empresa autenticado"""
+    return current_user.empresa_id

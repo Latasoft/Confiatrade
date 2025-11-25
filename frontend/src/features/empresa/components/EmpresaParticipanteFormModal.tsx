@@ -1,0 +1,305 @@
+import { useState, useEffect } from 'react';
+import { X, QrCode, Upload } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import {
+  useCreateMiParticipante,
+  useUpdateMiParticipante,
+} from '../hooks/useEmpresaParticipantes';
+import type { MiParticipante } from '../api/empresaParticipantesApi';
+
+interface EmpresaParticipanteFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  participante?: MiParticipante;
+}
+
+interface FormData {
+  nombre_completo: string;
+  email: string;
+  telefono?: string;
+  cargo?: string;
+  foto_url?: string;
+  idioma: string;
+  requiere_interprete: boolean;
+}
+
+export function EmpresaParticipanteFormModal({
+  isOpen,
+  onClose,
+  participante,
+}: EmpresaParticipanteFormModalProps) {
+  const [photoPreview, setPhotoPreview] = useState<string | undefined>(
+    participante?.foto_url
+  );
+
+  const createMutation = useCreateMiParticipante();
+  const updateMutation = useUpdateMiParticipante();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: participante
+      ? {
+          nombre_completo: participante.nombre_completo,
+          email: participante.email,
+          telefono: participante.telefono || '',
+          cargo: participante.cargo || '',
+          foto_url: participante.foto_url || '',
+          idioma: participante.idioma,
+          requiere_interprete: participante.requiere_interprete,
+        }
+      : {
+          idioma: 'ES',
+          requiere_interprete: false,
+        },
+  });
+
+  useEffect(() => {
+    if (participante) {
+      reset({
+        nombre_completo: participante.nombre_completo,
+        email: participante.email,
+        telefono: participante.telefono || '',
+        cargo: participante.cargo || '',
+        foto_url: participante.foto_url || '',
+        idioma: participante.idioma,
+        requiere_interprete: participante.requiere_interprete,
+      });
+      setPhotoPreview(participante.foto_url);
+    } else {
+      reset({ idioma: 'ES', requiere_interprete: false });
+      setPhotoPreview(undefined);
+    }
+  }, [participante, reset]);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      if (photoPreview && photoPreview !== participante?.foto_url) {
+        data.foto_url = photoPreview;
+      }
+
+      if (participante) {
+        await updateMutation.mutateAsync({
+          id: participante.id,
+          data,
+        });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+      handleClose();
+    } catch (error) {
+      console.error('Error al guardar participante:', error);
+    }
+  };
+
+  const handleClose = () => {
+    reset();
+    setPhotoPreview(undefined);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg border-2 border-gray-300 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {participante ? 'Editar Participante' : 'Nuevo Participante'}
+            </h2>
+            {!participante && (
+              <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
+                <QrCode size={16} />
+                El código QR se generará automáticamente
+              </p>
+            )}
+          </div>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600 transition"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+          {/* Photo Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Foto del Participante
+            </label>
+            <div className="flex items-center gap-4">
+              {photoPreview ? (
+                <img
+                  src={photoPreview}
+                  alt="Preview"
+                  className="w-24 h-24 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                  <Upload size={32} className="text-gray-400" />
+                </div>
+              )}
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                  id="photo-upload"
+                />
+                <label
+                  htmlFor="photo-upload"
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition cursor-pointer inline-block"
+                >
+                  Seleccionar Foto
+                </label>
+                <p className="text-xs text-gray-500 mt-1">
+                  JPG, PNG o GIF (máx. 2MB)
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Nombre */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nombre Completo <span className="text-red-500">*</span>
+            </label>
+            <input
+              {...register('nombre_completo', { required: 'Nombre requerido' })}
+              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Juan Pérez García"
+            />
+            {errors.nombre_completo && (
+              <p className="mt-1 text-sm text-red-600">{errors.nombre_completo.message}</p>
+            )}
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              {...register('email', {
+                required: 'Email requerido',
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: 'Email inválido',
+                },
+              })}
+              type="email"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="juan.perez@empresa.com"
+            />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+            )}
+          </div>
+
+          {/* Cargo y Teléfono */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cargo
+              </label>
+              <input
+                {...register('cargo')}
+                type="text"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Director Comercial"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Teléfono
+              </label>
+              <input
+                {...register('telefono')}
+                type="tel"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="+56912345678"
+              />
+            </div>
+          </div>
+
+          {/* Idioma */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Idioma Principal
+            </label>
+            <select
+              {...register('idioma')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="ES">Español</option>
+              <option value="EN">Inglés</option>
+              <option value="PT">Portugués</option>
+              <option value="FR">Francés</option>
+            </select>
+          </div>
+
+          {/* Requiere Intérprete */}
+          <div className="flex items-center gap-3">
+            <input
+              {...register('requiere_interprete')}
+              type="checkbox"
+              id="requiere_interprete"
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="requiere_interprete" className="text-sm font-medium text-gray-700">
+              Requiere intérprete en el evento
+            </label>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isLoading}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 flex items-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                  <span>Guardando...</span>
+                </>
+              ) : (
+                <span>{participante ? 'Actualizar' : 'Crear'} Participante</span>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

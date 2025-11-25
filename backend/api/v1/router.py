@@ -4,6 +4,7 @@ from api.v1.endpoints import (
     catalogos,
     credenciales,
     curaduria,
+    empresa_participantes,
     empresas,
     empresas_eventos,
     eventos,
@@ -37,6 +38,11 @@ api_router.include_router(
 )
 api_router.include_router(
     participantes.router, prefix="/participantes", tags=["participantes"]
+)
+api_router.include_router(
+    empresa_participantes.router,
+    prefix="/empresa/participantes",
+    tags=["empresa-participantes"],
 )
 api_router.include_router(
     bloques_horarios.router, prefix="/bloques-horarios", tags=["bloques-horarios"]

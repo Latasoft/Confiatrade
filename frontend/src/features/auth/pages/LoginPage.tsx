@@ -14,13 +14,6 @@ export default function LoginPage() {
     loginMutation.mutate(data);
   };
 
-  // Reset error cuando el usuario empieza a escribir de nuevo
-  const handleInputChange = () => {
-    if (loginMutation.isError) {
-      loginMutation.reset();
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-blue-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
@@ -65,7 +58,6 @@ export default function LoginPage() {
                   type="email"
                   className="w-full pl-10 pr-4 py-3 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
                   placeholder="tu@email.com"
-                  onChange={handleInputChange}
                 />
               </div>
               {errors.email && (
@@ -86,7 +78,6 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   className="w-full pl-10 pr-4 py-3 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
                   placeholder="••••••••"
-                  onChange={handleInputChange}
                 />
                 <button
                   type="button"

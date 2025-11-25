@@ -41,7 +41,7 @@ class ParticipanteRepository:
         self.db.add(participante)
         self.db.commit()
         self.db.refresh(participante)
-        
+
         # Recargar con relaciones para evitar errores de serialización
         return self.get_by_id(participante.id)
 
@@ -131,12 +131,12 @@ class ParticipanteRepository:
 
         self.db.commit()
         self.db.refresh(participante)
-        
+
         # Asegurar que la relación empresa esté cargada
         if participante.empresa is None:
             # Solo recargar si no está cargada
             participante = self.get_by_id(participante_id)
-        
+
         return participante
 
     def delete(self, participante_id: UUID) -> bool:

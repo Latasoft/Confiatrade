@@ -6,7 +6,6 @@ from api.schemas.curaduria import (
     CuraduriaCreate,
     CuraduriaDetailResponse,
     CuraduriaListResponse,
-    CuraduriaResponse,
     CuraduriaUpdate,
     MatchListResponse,
 )

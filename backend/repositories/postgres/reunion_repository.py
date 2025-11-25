@@ -38,7 +38,7 @@ class ReunionRepository:
         self.db.add(reunion)
         self.db.commit()
         self.db.refresh(reunion)
-        
+
         # Recargar con relaciones para evitar errores de serialización
         return self.get_by_id(reunion.id)
 
@@ -148,7 +148,7 @@ class ReunionRepository:
 
         self.db.commit()
         self.db.refresh(reunion)
-        
+
         # Recargar con relaciones para evitar errores de serialización
         return self.get_by_id(reunion_id)
 

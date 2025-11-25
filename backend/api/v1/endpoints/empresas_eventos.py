@@ -7,7 +7,6 @@ from api.schemas.empresa_evento import (
     EmpresaEventoCreate,
     EmpresaEventoDetailResponse,
     EmpresaEventoListResponse,
-    EmpresaEventoResponse,
     EmpresaEventoUpdate,
 )
 from api.v1.dependencies import (
@@ -60,10 +59,10 @@ def inscribir_empresa(
     - El evento no debe haber alcanzado su capacidad máxima
     """
     from api.schemas.empresa_evento import EmpresaEventoDetailResponse
-    
+
     try:
         inscripcion = use_case.execute(inscripcion_data)
-        
+
         # Construir response detallado con campos calculados
         return EmpresaEventoDetailResponse(
             id=inscripcion.id,
@@ -162,10 +161,10 @@ def aprobar_inscripcion(
     - **aprobada**: true para aprobar, false para rechazar
     """
     from api.schemas.empresa_evento import EmpresaEventoDetailResponse
-    
+
     try:
         inscripcion = use_case.execute(inscripcion_id, update_data)
-        
+
         # Construir response detallado con campos calculados
         return EmpresaEventoDetailResponse(
             id=inscripcion.id,

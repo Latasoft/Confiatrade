@@ -62,6 +62,28 @@ export function useGenerarCredencialesBatch() {
   });
 }
 
+// Hook para generar credencial de participante
+export function useGenerarCredencialParticipante() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (participanteId: string) =>
+      credencialesApi.generarCredencialParticipante(participanteId),
+    onSuccess: (blob, participanteId) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `credencial_participante_${participanteId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      queryClient.invalidateQueries({ queryKey: credencialesKeys.stats() });
+    },
+  });
+}
+
 // Hook para obtener historial de credenciales
 export function useCredencialesHistorial(params?: {
   skip?: number;

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePerfil, useLogout } from '../../auth/hooks/useAuth';
 import { useEmpresasAprobadas, useUploadPresentacion, useUpdateEmpresa } from '@/features/empresas/hooks/useEmpresas';
 import { useMisInscripciones } from '@/features/eventos/hooks/useEventosEmpresa';
+import { useGenerarCredencialEmpresa } from '@/features/credenciales/hooks/useCredenciales';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { 
@@ -23,7 +24,9 @@ import {
   Edit2,
   Save,
   X,
-  Target
+  Target,
+  MapPin,
+  QrCode
 } from 'lucide-react';
 
 export default function EmpresaDashboardPage() {
@@ -38,6 +41,7 @@ export default function EmpresaDashboardPage() {
   const logout = useLogout();
   const uploadPresentacion = useUploadPresentacion();
   const updateEmpresa = useUpdateEmpresa();
+  const generarCredencial = useGenerarCredencialEmpresa();
   
   const { register, handleSubmit, reset } = useForm();
 
@@ -54,6 +58,18 @@ export default function EmpresaDashboardPage() {
   
   // Usar datos del perfil o de empresaCompleta (el que tenga datos más recientes)
   const presentacionUrl = empresaCompleta?.presentacion_url || empresa?.presentacion_url;
+
+  const handleDescargarCredencial = async () => {
+    if (!empresa?.id) return;
+    
+    try {
+      await generarCredencial.mutateAsync(empresa.id);
+    } catch (error: any) {
+      console.error('Error al generar credencial:', error);
+      setUploadMessage(error?.response?.data?.detail || 'Error al generar credencial');
+      setTimeout(() => setUploadMessage(null), 3000);
+    }
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -243,6 +259,56 @@ export default function EmpresaDashboardPage() {
           />
         </div>
 
+        {/* Mi Credencial */}
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border-2 border-purple-300 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <QrCode className="text-purple-600" size={32} />
+              <h2 className="text-2xl font-bold text-slate-900">Mi Credencial</h2>
+            </div>
+          </div>
+
+          {empresa?.aprobada ? (
+            <div className="bg-white p-6 rounded-lg border-2 border-purple-200">
+              <div className="flex items-start gap-4 mb-4">
+                <QrCode className="text-purple-600 flex-shrink-0" size={48} />
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">Credencial Digital</h3>
+                  <p className="text-slate-600 mb-1">
+                    Descarga tu credencial oficial con código QR único para el evento.
+                  </p>
+                  <p className="text-sm text-slate-500">
+                    La credencial incluye: nombre de empresa, datos de contacto y código QR verificable.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleDescargarCredencial}
+                disabled={generarCredencial.isPending}
+                className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                <Download size={20} />
+                {generarCredencial.isPending ? 'Generando credencial...' : 'Descargar Credencial (PDF)'}
+              </button>
+            </div>
+          ) : (
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="text-amber-600 flex-shrink-0 mt-1" size={24} />
+                <div>
+                  <h3 className="text-lg font-bold text-amber-900 mb-2">
+                    Credencial no disponible
+                  </h3>
+                  <p className="text-amber-800">
+                    Tu empresa debe estar aprobada para poder descargar la credencial oficial.
+                    Un administrador revisará tu solicitud pronto.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Información de la Empresa */}
         <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border-2 border-slate-300 p-6">
           <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-slate-300">
@@ -366,6 +432,13 @@ export default function EmpresaDashboardPage() {
                       >
                         {empresa.sitio_web}
                       </a>
+                    </div>
+                  )}
+                  
+                  {empresa?.direccion && (
+                    <div className="flex items-start gap-3">
+                      <MapPin className="text-slate-500 mt-1" size={20} />
+                      <span className="text-slate-700">{empresa.direccion}</span>
                     </div>
                   )}
                 </div>

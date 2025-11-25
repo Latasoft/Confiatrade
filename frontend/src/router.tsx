@@ -12,9 +12,11 @@ import KPIsPage from './features/kpis/pages/KPIsPage';
 import SeguimientoPage from './features/seguimiento/pages/SeguimientoPage';
 import CredencialesPage from './features/credenciales/pages/CredencialesPage';
 import CredencialesHistorialPage from './features/credenciales/pages/CredencialesHistorialPage';
+import ValidarQRPage from './features/credenciales/pages/ValidarQRPage';
 import LoginPage from './features/auth/pages/LoginPage';
 import RegistroPage from './features/auth/pages/RegistroPage';
 import EmpresaDashboardPage from './features/empresa/pages/EmpresaDashboardPage';
+import MisParticipantesPage from './features/empresa/pages/MisParticipantesPage';
 import { EventosDisponiblesPage } from './features/empresa/pages/EventosDisponiblesPage';
 import { ProtectedRoute, PublicRoute } from './features/auth/components/ProtectedRoute';
 
@@ -45,6 +47,10 @@ export const router = createBrowserRouter([
           {
             path: 'dashboard',
             element: <EmpresaDashboardPage />,
+          },
+          {
+            path: 'participantes',
+            element: <MisParticipantesPage />,
           },
           {
             path: 'eventos',
@@ -106,6 +112,10 @@ export const router = createBrowserRouter([
           {
             path: 'credenciales/historial',
             element: <CredencialesHistorialPage />,
+          },
+          {
+            path: 'validar-qr',
+            element: <ValidarQRPage />,
           },
           {
             path: 'kpis',

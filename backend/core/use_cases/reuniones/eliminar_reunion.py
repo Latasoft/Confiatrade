@@ -43,9 +43,6 @@ class EliminarReunionUseCase:
         if eliminado and len(otras_reuniones_sin_actual) == 0:
             bloque = self.bloque_repository.get_by_id(bloque_id)
             if bloque:
-                self.bloque_repository.update(
-                    bloque_id=bloque_id,
-                    disponible=True
-                )
+                self.bloque_repository.update(bloque_id=bloque_id, disponible=True)
 
         return {"success": eliminado, "message": "Reunión eliminada exitosamente"}

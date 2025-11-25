@@ -124,7 +124,7 @@ async def registro_empresa(datos: EmpresaRegistro, db: Session = Depends(get_db)
 async def get_perfil(current_user: UsuarioModel = Depends(get_current_user)):
     """Obtiene el perfil del usuario actual"""
     from api.schemas.auth import EmpresaPerfilResponse
-    
+
     # Construir empresa_data si el usuario es de empresa
     empresa_data = None
     if current_user.rol == "empresa" and current_user.empresa:

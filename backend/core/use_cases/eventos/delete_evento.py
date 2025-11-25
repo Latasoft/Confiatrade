@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from core.exceptions import BusinessLogicException, NotFoundException
+from core.exceptions import NotFoundException
 from repositories.postgres.evento_repository import EventoRepository
 
 

@@ -4,7 +4,6 @@ import re
 from typing import Optional, Set
 from uuid import UUID
 
-from core.exceptions import NotFoundException
 from repositories.postgres.curaduria_repository import CuraduriaRepository
 
 

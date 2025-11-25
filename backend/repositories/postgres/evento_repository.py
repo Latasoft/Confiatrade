@@ -21,7 +21,7 @@ class EventoRepository:
         self.db.add(evento)
         self.db.commit()
         self.db.refresh(evento)
-        
+
         # Recargar con relaciones para calcular empresas_inscritas
         return self.get_by_id(evento.id)
 
@@ -94,7 +94,7 @@ class EventoRepository:
 
         self.db.commit()
         self.db.refresh(evento)
-        
+
         # Recargar con relaciones para calcular empresas_inscritas
         return self.get_by_id(evento_id)
 

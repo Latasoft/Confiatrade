@@ -7,7 +7,6 @@ from api.schemas.participante import (
     ParticipanteCreate,
     ParticipanteDetailResponse,
     ParticipanteListResponse,
-    ParticipanteResponse,
     ParticipanteUpdate,
 )
 from api.v1.dependencies import (
@@ -37,7 +36,7 @@ from core.use_cases.participantes.get_participante_by_id import (
     GetParticipanteByIdUseCase,
 )
 from core.use_cases.participantes.realizar_check_in import RealizarCheckInUseCase
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -94,7 +93,9 @@ async def crear_participante(
             fecha_check_in=participante.fecha_check_in,
             created_at=participante.created_at,
             updated_at=participante.updated_at,
-            empresa_nombre=participante.empresa.nombre if participante.empresa else None,
+            empresa_nombre=participante.empresa.nombre
+            if participante.empresa
+            else None,
         )
     except NotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.to_dict())
@@ -206,7 +207,9 @@ async def actualizar_participante(
             fecha_check_in=participante.fecha_check_in,
             created_at=participante.created_at,
             updated_at=participante.updated_at,
-            empresa_nombre=participante.empresa.nombre if participante.empresa else None,
+            empresa_nombre=participante.empresa.nombre
+            if participante.empresa
+            else None,
         )
     except NotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.to_dict())
@@ -259,14 +262,14 @@ async def realizar_check_in(
     # Si no se proporciona body, usar valores por defecto
     if check_in_data is None:
         check_in_data = CheckInRequest()
-    
-    print(f"\n{'='*80}")
-    print(f"[CHECK-IN ENDPOINT] Iniciando check-in")
+
+    print(f"\n{'=' * 80}")
+    print("[CHECK-IN ENDPOINT] Iniciando check-in")
     print(f"  Participante ID: {participante_id}")
     print(f"  QR Data recibido: {check_in_data.qr_data}")
     print(f"  Force: {check_in_data.force}")
-    print(f"{'='*80}\n")
-    
+    print(f"{'=' * 80}\n")
+
     try:
         participante = use_case.execute(
             participante_id=participante_id,
@@ -289,9 +292,11 @@ async def realizar_check_in(
             fecha_check_in=participante.fecha_check_in,
             created_at=participante.created_at,
             updated_at=participante.updated_at,
-            empresa_nombre=participante.empresa.nombre if participante.empresa else None,
+            empresa_nombre=participante.empresa.nombre
+            if participante.empresa
+            else None,
         )
-        print(f"[CHECK-IN ENDPOINT] ✓ Check-in exitoso\n")
+        print("[CHECK-IN ENDPOINT] ✓ Check-in exitoso\n")
         return result
     except NotFoundException as e:
         print(f"[CHECK-IN ENDPOINT] ✗ ERROR 404 - {e.message}\n")
@@ -307,5 +312,6 @@ async def realizar_check_in(
     except Exception as e:
         print(f"[CHECK-IN ENDPOINT] ✗ ERROR 500 - {type(e).__name__}: {e}\n")
         import traceback
+
         traceback.print_exc()
         raise

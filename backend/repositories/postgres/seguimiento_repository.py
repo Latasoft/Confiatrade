@@ -25,12 +25,12 @@ class SeguimientoRepository:
     def get_by_id(self, seguimiento_id: UUID) -> Optional[SeguimientoModel]:
         """Obtener seguimiento por ID con empresa relacionada"""
         from models.sqlalchemy.empresa import EmpresaModel
-        
+
         stmt = (
             select(SeguimientoModel)
             .options(
                 joinedload(SeguimientoModel.empresa).joinedload(EmpresaModel.pais),
-                joinedload(SeguimientoModel.empresa).joinedload(EmpresaModel.sector)
+                joinedload(SeguimientoModel.empresa).joinedload(EmpresaModel.sector),
             )
             .where(SeguimientoModel.id == seguimiento_id)
         )
@@ -47,10 +47,10 @@ class SeguimientoRepository:
     ) -> list[SeguimientoModel]:
         """Obtener lista de seguimientos con filtros"""
         from models.sqlalchemy.empresa import EmpresaModel
-        
+
         stmt = select(SeguimientoModel).options(
             joinedload(SeguimientoModel.empresa).joinedload(EmpresaModel.pais),
-            joinedload(SeguimientoModel.empresa).joinedload(EmpresaModel.sector)
+            joinedload(SeguimientoModel.empresa).joinedload(EmpresaModel.sector),
         )
 
         if empresa_id:

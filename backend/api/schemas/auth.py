@@ -103,7 +103,9 @@ class PerfilUsuario(BaseModel):
     rol: str
     activo: bool
     created_at: datetime
-    empresa: Optional[EmpresaPerfilResponse] = None  # Datos tipados de empresa si es rol empresa
+    empresa: Optional[EmpresaPerfilResponse] = (
+        None  # Datos tipados de empresa si es rol empresa
+    )
 
     model_config = {"from_attributes": True}
 
