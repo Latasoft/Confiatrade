@@ -233,15 +233,15 @@ export default function RegistroPage() {
       <div className="grid md:grid-cols-2 gap-5">
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">
-            Sitio Web
+            Sitio Web <span className="text-slate-500 text-xs">(opcional)</span>
           </label>
           <div className="relative">
             <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
             <input
               {...register('sitio_web')}
-              type="url"
+              type="text"
               className="w-full pl-10 pr-4 py-3 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
-              placeholder="https://www.empresa.com"
+              placeholder="www.empresa.cl o https://www.empresa.cl"
             />
           </div>
         </div>

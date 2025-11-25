@@ -3,6 +3,7 @@ import { Calendar, Clock, MapPin, Filter, Plus } from 'lucide-react';
 import { useReuniones, useDeleteReunion } from '../hooks/useReuniones';
 import { useBloquesHorarios } from '../hooks/useBloquesHorarios';
 import { useEmpresasAprobadas } from '@/features/empresas/hooks/useEmpresas';
+import { usePerfil } from '@/features/auth/hooks/useAuth';
 import { ReunionModal } from '../components/ReunionModal';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
@@ -21,9 +22,13 @@ export default function AgendaPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reunionToDelete, setReunionToDelete] = useState<string | null>(null);
 
+  const { data: perfil } = usePerfil();
+  const isEmpresa = perfil?.rol === 'empresa';
+  const empresaId = isEmpresa ? perfil?.empresa?.id : undefined;
+
   const { data: reunionesData, isLoading: loadingReuniones } = useReuniones({
     fecha: selectedDate,
-    empresa_id: selectedEmpresa || undefined,
+    empresa_id: isEmpresa ? (selectedEmpresa || empresaId) : (selectedEmpresa || undefined),
     sala: selectedSala || undefined,
   });
 
@@ -169,24 +174,26 @@ export default function AgendaPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Empresa
-              </label>
-              <select
-                value={selectedEmpresa}
-                onChange={(e) => setSelectedEmpresa(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                disabled={loadingEmpresas}
-              >
-                <option value="">Todas las empresas</option>
-                {empresas?.map((empresa) => (
-                  <option key={empresa.id} value={empresa.id}>
-                    {empresa.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!isEmpresa && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Empresa
+                </label>
+                <select
+                  value={selectedEmpresa}
+                  onChange={(e) => setSelectedEmpresa(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={loadingEmpresas}
+                >
+                  <option value="">Todas las empresas</option>
+                  {empresas?.map((empresa) => (
+                    <option key={empresa.id} value={empresa.id}>
+                      {empresa.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
