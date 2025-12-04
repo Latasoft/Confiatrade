@@ -123,11 +123,15 @@ async def listar_participantes(
     idioma: str | None = Query(None, description="Filtrar por idioma (ES, EN, PT, FR)"),
 ):
     """Listar participantes con paginación y filtros"""
-    print(f"🔍 Filtros recibidos - empresa_id: {empresa_id}, idioma: {idioma}, skip: {skip}, limit: {limit}")
+    print(
+        f"🔍 Filtros recibidos - empresa_id: {empresa_id}, idioma: {idioma}, skip: {skip}, limit: {limit}"
+    )
     result = use_case.execute(
         skip=skip, limit=limit, empresa_id=empresa_id, idioma=idioma
     )
-    print(f"📊 Resultados - Total: {result.get('total', 0)}, Participantes: {len(result.get('participantes', []))}")
+    print(
+        f"📊 Resultados - Total: {result.get('total', 0)}, Participantes: {len(result.get('participantes', []))}"
+    )
     return result
 
 

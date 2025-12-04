@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { CreditCard, Download, Printer, Search, Filter, History } from 'lucide-react';
 import { useEmpresasAprobadas } from '@/features/empresas/hooks/useEmpresas';
 import { useEventos } from '@/features/eventos/hooks/useEventos';
+import { inscripcionesApi } from '@/features/inscripciones/api/inscripcionesApi';
+import { useQuery } from '@tanstack/react-query';
 import { useCredencialesStats, useGenerarCredencialEmpresa, useGenerarCredencialesBatch, useCredencialesHistorial } from '../hooks/useCredenciales';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { Link } from 'react-router-dom';
@@ -10,14 +12,37 @@ export default function CredencialesPage() {
   const [selectedEvento, setSelectedEvento] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const { data: empresasData, isLoading: loadingEmpresas } = useEmpresasAprobadas();
-  const { data: eventosData } = useEventos();
+  const { data: eventosData } = useEventos({ activo: true }); // Solo eventos activos
   const { data: stats, isLoading: loadingStats } = useCredencialesStats();
   const { data: historialData } = useCredencialesHistorial({ tipo: 'empresa', limit: 1000 });
+  
+  // Obtener inscripciones aprobadas del evento seleccionado
+  const { data: inscripcionesData, isLoading: loadingInscripciones } = useQuery({
+    queryKey: ['inscripciones-evento', selectedEvento],
+    queryFn: () => inscripcionesApi.listarPorEvento(selectedEvento, true),
+    enabled: !!selectedEvento,
+  });
+  
   const generarCredencial = useGenerarCredencialEmpresa();
   const generarBatch = useGenerarCredencialesBatch();
 
   const empresas = empresasData || [];
   const eventos = eventosData?.eventos || [];
+  
+  // Filtrar empresas por evento si hay uno seleccionado
+  const empresasPorEvento = useMemo(() => {
+    if (!selectedEvento) return empresas;
+    
+    if (!inscripcionesData?.inscripciones) return [];
+    
+    // Obtener IDs de empresas inscritas en el evento
+    const empresaIdsEvento = new Set(
+      inscripcionesData.inscripciones.map(i => i.empresa_id)
+    );
+    
+    // Filtrar empresas que estén inscritas
+    return empresas.filter(e => empresaIdsEvento.has(e.id));
+  }, [selectedEvento, empresas, inscripcionesData]);
 
   // Crear mapa de empresas con credencial generada
   const empresasConCredencial = useMemo(() => {
@@ -25,7 +50,7 @@ export default function CredencialesPage() {
     return new Set(historialData.items.map(item => item.entidad?.id).filter(Boolean));
   }, [historialData]);
 
-  const filteredEmpresas = empresas.filter(empresa =>
+  const filteredEmpresas = empresasPorEvento.filter(empresa =>
     empresa.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     empresa.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -40,13 +65,13 @@ export default function CredencialesPage() {
   };
 
   const handleImprimirTodas = async () => {
-    if (empresas.length === 0) {
-      alert('No hay empresas para generar credenciales');
+    if (filteredEmpresas.length === 0) {
+      alert('No hay empresas para generar credenciales con los filtros actuales');
       return;
     }
     
     try {
-      const empresaIds = empresas.map(e => e.id);
+      const empresaIds = filteredEmpresas.map(e => e.id);
       await generarBatch.mutateAsync(empresaIds);
     } catch (error) {
       console.error('Error generando credenciales batch:', error);
@@ -78,7 +103,7 @@ export default function CredencialesPage() {
               </Link>
               <button
                 onClick={handleImprimirTodas}
-                disabled={generarBatch.isPending || loadingEmpresas || empresas.length === 0}
+                disabled={generarBatch.isPending || loadingEmpresas || loadingInscripciones || filteredEmpresas.length === 0}
                 className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {generarBatch.isPending ? (
@@ -141,8 +166,10 @@ export default function CredencialesPage() {
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border-2 border-blue-300 shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-bold text-blue-800 mb-1">Total Empresas</p>
-                <p className="text-3xl font-bold text-blue-900">{empresas.length}</p>
+                <p className="text-sm font-bold text-blue-800 mb-1">
+                  {selectedEvento ? 'Empresas en Evento' : 'Total Empresas'}
+                </p>
+                <p className="text-3xl font-bold text-blue-900">{empresasPorEvento.length}</p>
               </div>
               <CreditCard className="text-blue-600" size={40} />
             </div>

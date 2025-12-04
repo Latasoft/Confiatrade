@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { credencialesApi } from '../api/credencialesApi';
+import { useNotificationStore } from '@/shared/store/notificationStore';
 
 export const credencialesKeys = {
   all: ['credenciales'] as const,
@@ -43,6 +44,7 @@ export function useGenerarCredencialEmpresa() {
 // Hook para generar credenciales en batch
 export function useGenerarCredencialesBatch() {
   const queryClient = useQueryClient();
+  const notify = useNotificationStore((state) => state.add);
 
   return useMutation({
     mutationFn: (empresaIds: string[]) => 
@@ -51,13 +53,27 @@ export function useGenerarCredencialesBatch() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `credenciales_batch.pdf`;
+      link.download = `credenciales_batch.zip`; // ZIP, no PDF
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
       queryClient.invalidateQueries({ queryKey: credencialesKeys.stats() });
+      queryClient.invalidateQueries({ queryKey: credencialesKeys.historial() });
+      
+      notify({
+        type: 'success',
+        message: 'Credenciales generadas exitosamente',
+      });
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.detail || error?.message || 'Error al generar credenciales';
+      notify({
+        type: 'error',
+        message: errorMessage,
+        title: 'Error al generar credenciales',
+      });
     },
   });
 }

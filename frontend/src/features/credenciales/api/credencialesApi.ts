@@ -56,8 +56,13 @@ export const credencialesApi = {
   async generarCredencialesBatch(empresaIds: string[]): Promise<Blob> {
     const response = await apiClient.post<Blob>(
       '/credenciales/batch/empresas',
-      empresaIds,
-      { responseType: 'blob' }
+      empresaIds,  // FastAPI espera directamente el array en el body
+      { 
+        responseType: 'blob',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
     return response.data;
   },

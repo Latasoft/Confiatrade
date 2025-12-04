@@ -235,9 +235,7 @@ def generar_credenciales_empresas_batch(
             db.add(credencial)
 
             # Agregar PDF al ZIP
-            filename = (
-                f"credencial_{empresa.nombre.replace(' ', '_')}_{empresa.id[:8]}.pdf"
-            )
+            filename = f"credencial_{empresa.nombre.replace(' ', '_')}_{str(empresa.id)[:8]}.pdf"
             zip_file.writestr(filename, pdf_content)
 
     db.commit()
@@ -288,7 +286,7 @@ def obtener_estadisticas_credenciales(db: Session = Depends(get_db)):
         credenciales_generadas=total_generadas,
         credenciales_empresas=credenciales_empresas,
         credenciales_participantes=credenciales_participantes,
-        pendientes=total_empresas - credenciales_empresas,
+        pendientes=max(0, total_empresas - credenciales_empresas),  # Nunca negativo
         ultima_generacion=ultima_credencial.fecha_generacion
         if ultima_credencial
         else None,
