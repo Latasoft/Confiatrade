@@ -71,6 +71,13 @@ async def registro_empresa(datos: EmpresaRegistro, db: Session = Depends(get_db)
         )
 
     try:
+        # Validar que pais_id y sector_id sean válidos
+        if not datos.pais_id or not datos.sector_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="País y sector son requeridos",
+            )
+
         # Crear empresa directamente con el modelo
         empresa_model = EmpresaModel(
             id=uuid4(),
@@ -100,8 +107,14 @@ async def registro_empresa(datos: EmpresaRegistro, db: Session = Depends(get_db)
         )
 
         db.commit()
-        db.refresh(usuario)
-        db.refresh(empresa_model)
+
+        # Recargar usuario con todas sus relaciones para evitar lazy loading issues
+        usuario = usuario_repo.get_by_id(usuario.id)
+        if not usuario:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al verificar usuario creado",
+            )
 
         # Crear token
         access_token = create_access_token(
@@ -112,11 +125,32 @@ async def registro_empresa(datos: EmpresaRegistro, db: Session = Depends(get_db)
             access_token=access_token, user=UsuarioResponse.model_validate(usuario)
         )
 
+    except HTTPException:
+        # Re-raise HTTPException para que se maneje correctamente
+        raise
     except Exception as e:
         db.rollback()
+        # Log del error para debugging
+        import traceback
+
+        print(f"Error al crear empresa: {str(e)}")
+        traceback.print_exc()
+
+        # Verificar si es un error de foreign key
+        error_msg = str(e).lower()
+        if "foreign key" in error_msg or "violates foreign key constraint" in error_msg:
+            if "pais_id" in error_msg:
+                detail = "El país seleccionado no es válido"
+            elif "sector_id" in error_msg:
+                detail = "El sector seleccionado no es válido"
+            else:
+                detail = "Error de integridad en los datos"
+        else:
+            detail = f"Error al crear empresa: {str(e)}"
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al crear empresa: {str(e)}",
+            detail=detail,
         )
 
 

@@ -6,14 +6,8 @@ import { CheckInModal } from '../components/CheckInModal';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { useEmpresasAprobadas } from '@/features/empresas/hooks/useEmpresas';
 import type { Participante } from '../api/participantesApi';
-
-// Mock empresas para filtro (reemplazar con API real)
-const EMPRESAS_MOCK = [
-  { id: 'a77f7089-420a-4e06-a970-f2670c00d325', nombre: 'Transportes Chile SPA' },
-  { id: '2bd2ef0d-3f47-47d4-ae4e-c500940eb08b', nombre: 'Tech Solutions Brasil' },
-  { id: 'bc50b7f3-f66d-4b18-8203-099ec81ee4e4', nombre: 'Energia Renovable ARG' },
-];
 
 const IDIOMAS = [
   { value: 'ES', label: 'Español' },
@@ -39,10 +33,12 @@ export default function ParticipantesPage() {
     search: searchTerm || undefined,
   });
 
+  const { data: empresasData, isLoading: isLoadingEmpresas } = useEmpresasAprobadas();
   const deleteMutation = useDeleteParticipante();
 
   const participantes = participantesData?.participantes || [];
   const total = participantesData?.total || 0;
+  const empresas = empresasData || [];
 
   // Filtrar por búsqueda local (adicional al backend)
   const filteredParticipantes = participantes.filter((p) => {
@@ -160,10 +156,13 @@ export default function ParticipantesPage() {
               <select
                 value={selectedEmpresa}
                 onChange={(e) => setSelectedEmpresa(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isLoadingEmpresas}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="">Todas las empresas</option>
-                {EMPRESAS_MOCK.map((empresa) => (
+                <option value="">
+                  {isLoadingEmpresas ? 'Cargando empresas...' : 'Todas las empresas'}
+                </option>
+                {empresas.map((empresa) => (
                   <option key={empresa.id} value={empresa.id}>
                     {empresa.nombre}
                   </option>

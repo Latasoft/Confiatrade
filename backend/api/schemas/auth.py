@@ -59,8 +59,8 @@ class EmpresaRegistro(BaseModel):
 
     # Datos de empresa
     nombre_empresa: str = Field(..., min_length=2)
-    pais_id: int
-    sector_id: int
+    pais_id: int = Field(..., gt=0, description="ID del país (debe ser mayor a 0)")
+    sector_id: int = Field(..., gt=0, description="ID del sector (debe ser mayor a 0)")
     descripcion: Optional[str] = None
     sitio_web: Optional[str] = None
     telefono: Optional[str] = None

@@ -2,14 +2,8 @@ import { useState, useEffect } from 'react';
 import { X, QrCode, Upload } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useCreateParticipante, useUpdateParticipante } from '../hooks/useParticipantes';
+import { useEmpresasAprobadas } from '@/features/empresas/hooks/useEmpresas';
 import type { Participante, CreateParticipanteData } from '../api/participantesApi';
-
-// Mock empresas (reemplazar con API real)
-const EMPRESAS_MOCK = [
-  { id: 'a77f7089-420a-4e06-a970-f2670c00d325', nombre: 'Transportes Chile SPA' },
-  { id: '2bd2ef0d-3f47-47d4-ae4e-c500940eb08b', nombre: 'Tech Solutions Brasil' },
-  { id: 'bc50b7f3-f66d-4b18-8203-099ec81ee4e4', nombre: 'Energia Renovable ARG' },
-];
 
 interface ParticipanteFormModalProps {
   isOpen: boolean;
@@ -26,8 +20,11 @@ export function ParticipanteFormModal({
     participante?.foto_url
   );
 
+  const { data: empresasData } = useEmpresasAprobadas();
   const createMutation = useCreateParticipante();
   const updateMutation = useUpdateParticipante();
+  
+  const empresas = empresasData || [];
 
   const {
     register,
@@ -47,6 +44,7 @@ export function ParticipanteFormModal({
         }
       : {
           idioma: 'ES',
+          empresa_id: empresas[0]?.id || '',
         },
   });
 
@@ -63,10 +61,13 @@ export function ParticipanteFormModal({
       });
       setPhotoPreview(participante.foto_url);
     } else {
-      reset({ idioma: 'ES' });
+      reset({ 
+        idioma: 'ES',
+        empresa_id: empresas[0]?.id || '',
+      });
       setPhotoPreview(undefined);
     }
-  }, [participante, reset]);
+  }, [participante, reset, empresas]);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -188,11 +189,13 @@ export function ParticipanteFormModal({
             </label>
             <select
               {...register('empresa_id', { required: 'Empresa requerida' })}
-              disabled={!!participante}
+              disabled={!!participante || empresas.length === 0}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
             >
-              <option value="">Selecciona una empresa</option>
-              {EMPRESAS_MOCK.map((empresa) => (
+              <option value="">
+                {empresas.length === 0 ? 'No hay empresas aprobadas' : 'Selecciona una empresa'}
+              </option>
+              {empresas.map((empresa) => (
                 <option key={empresa.id} value={empresa.id}>
                   {empresa.nombre}
                 </option>
@@ -200,6 +203,11 @@ export function ParticipanteFormModal({
             </select>
             {errors.empresa_id && (
               <p className="text-sm text-red-600 mt-1">{errors.empresa_id.message}</p>
+            )}
+            {empresas.length === 0 && (
+              <p className="text-sm text-amber-600 mt-1">
+                No hay empresas aprobadas. Aprueba empresas primero desde el módulo de Empresas.
+              </p>
             )}
           </div>
 

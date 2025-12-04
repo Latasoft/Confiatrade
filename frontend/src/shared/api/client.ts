@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { useNotificationStore } from '../store/notificationStore';
+import { useAuthStore } from '@/features/auth/store/authStore';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
@@ -45,9 +46,28 @@ apiClient.interceptors.response.use(
       let message = data?.message || 'Ha ocurrido un error';
       
       if (status === 401) {
-        message = 'Sesión expirada';
-        localStorage.removeItem('token');
-        window.location.href = '/login';
+        message = 'Sesión expirada. Redirigiendo al login...';
+        
+        // Limpiar el store de Zustand inmediatamente
+        useAuthStore.getState().clearAuth();
+        
+        // Limpiar también el localStorage por si acaso
+        localStorage.removeItem('confiatrade-auth');
+        
+        // Notificar al usuario
+        notify({
+          type: 'error',
+          message,
+          title: 'Sesión Expirada',
+        });
+        
+        // Redirigir al login después de un pequeño delay para que se vea la notificación
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1000);
+        
+        // No mostrar notificación duplicada
+        return Promise.reject(error);
       } else if (status === 403) {
         message = 'No tienes permisos';
       } else if (status === 404) {

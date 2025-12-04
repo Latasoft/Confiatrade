@@ -26,7 +26,7 @@ export default function RegistroPage() {
   const [presentacionFile, setPresentacionFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<RegistroEmpresaData>();
+  const { register, handleSubmit, formState: { errors }, watch, trigger } = useForm<RegistroEmpresaData>();
   const registroMutation = useRegistroEmpresa();
   const { data: paises = [], isLoading: loadingPaises } = usePaises();
   const { data: sectores = [], isLoading: loadingSectores } = useSectores();
@@ -128,11 +128,10 @@ export default function RegistroPage() {
 
       <button
         type="button"
-        onClick={() => {
-          const nombre = watch('nombre_completo');
-          const email = watch('email');
-          const password = watch('password');
-          if (nombre && email && password) {
+        onClick={async () => {
+          // Validar campos del paso 1 antes de continuar
+          const isValid = await trigger(['nombre_completo', 'email', 'password']);
+          if (isValid) {
             setStep(2);
           }
         }}
@@ -173,7 +172,7 @@ export default function RegistroPage() {
           <select
             {...register('pais_id', {
               required: 'El país es requerido',
-              valueAsNumber: true
+              setValueAs: (v) => v === '' ? undefined : Number(v)
             })}
             className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
             disabled={loadingPaises}
@@ -197,7 +196,7 @@ export default function RegistroPage() {
           <select
             {...register('sector_id', {
               required: 'El sector es requerido',
-              valueAsNumber: true
+              setValueAs: (v) => v === '' ? undefined : Number(v)
             })}
             className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
             disabled={loadingSectores}
