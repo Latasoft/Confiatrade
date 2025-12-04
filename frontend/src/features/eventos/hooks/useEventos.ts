@@ -39,6 +39,16 @@ export const useCreateEvento = () => {
         message: 'Evento creado exitosamente',
       });
     },
+    onError: (error: any) => {
+      // Solo mostrar error si el interceptor no lo manejó
+      const errorMessage = error?.response?.data?.detail || error?.message;
+      if (errorMessage && !error?.response?.status) {
+        notify({
+          type: 'error',
+          message: errorMessage,
+        });
+      }
+    },
   });
 };
 
@@ -56,6 +66,16 @@ export const useUpdateEvento = () => {
         type: 'success',
         message: 'Evento actualizado exitosamente',
       });
+    },
+    onError: (error: any) => {
+      // Solo mostrar error si el interceptor no lo manejó
+      const errorMessage = error?.response?.data?.detail || error?.message;
+      if (errorMessage && !error?.response?.status) {
+        notify({
+          type: 'error',
+          message: errorMessage,
+        });
+      }
     },
   });
 };

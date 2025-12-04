@@ -55,14 +55,25 @@ export function EventoFormModal({ isOpen, onClose, evento }: EventoFormModalProp
 
   const onSubmit = async (data: CreateEventoData) => {
     try {
+      // Asegurar que las fechas estén en formato correcto YYYY-MM-DD
+      const eventoData = {
+        ...data,
+        fecha_inicio: data.fecha_inicio,
+        fecha_fin: data.fecha_fin,
+        // Asegurar que capacidad_empresas sea un número
+        capacidad_empresas: data.capacidad_empresas || 50,
+      };
+
       if (evento) {
-        await updateEvento.mutateAsync({ id: evento.id, data });
+        await updateEvento.mutateAsync({ id: evento.id, data: eventoData });
       } else {
-        await createEvento.mutateAsync(data);
+        await createEvento.mutateAsync(eventoData);
       }
+      reset();
       onClose();
     } catch (error) {
-      console.error('Error:', error);
+      // El error ya es manejado por el hook (onError)
+      console.error('Error al guardar evento:', error);
     }
   };
 
