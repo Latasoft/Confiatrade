@@ -30,7 +30,7 @@ class EmpresaEventoResponse(EmpresaEventoBase):
     """Schema de respuesta para inscripción"""
 
     id: UUID
-    aprobada: bool
+    aprobada: Optional[bool] = None  # None=Pendiente, True=Aprobada, False=Rechazada
     fecha_inscripcion: datetime
     created_at: datetime
     updated_at: datetime

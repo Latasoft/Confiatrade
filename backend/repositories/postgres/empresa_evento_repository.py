@@ -155,9 +155,9 @@ class EmpresaEventoRepository:
         return query.scalar() or 0
 
     def count_pendientes(self, evento_id: Optional[UUID] = None) -> int:
-        """Contar inscripciones pendientes"""
+        """Contar inscripciones pendientes (aprobada IS NULL)"""
         query = self.db.query(func.count(EmpresaEventoModel.id)).filter(
-            EmpresaEventoModel.aprobada == False
+            EmpresaEventoModel.aprobada.is_(None)
         )
 
         if evento_id is not None:

@@ -4,7 +4,7 @@ export interface EmpresaEvento {
   id: string;
   empresa_id: string;
   evento_id: string;
-  aprobada: boolean;
+  aprobada: boolean | null;  // null=Pendiente, true=Aprobada, false=Rechazada
   fecha_inscripcion: string;
   created_at: string;
   updated_at: string;

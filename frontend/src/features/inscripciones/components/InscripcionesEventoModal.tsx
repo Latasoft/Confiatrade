@@ -71,10 +71,20 @@ export function InscripcionesEventoModal({ eventoId, eventoNombre, isOpen, onClo
     }
   };
 
-  const getEstadoBadge = (aprobada: boolean) => {
-    return aprobada
-      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-      : 'bg-amber-100 text-amber-800 border-amber-300';
+  const getEstadoBadge = (aprobada: boolean | null) => {
+    if (aprobada === true) {
+      return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+    } else if (aprobada === false) {
+      return 'bg-red-100 text-red-800 border-red-300';
+    } else {
+      return 'bg-amber-100 text-amber-800 border-amber-300';
+    }
+  };
+
+  const getEstadoTexto = (aprobada: boolean | null) => {
+    if (aprobada === true) return 'Aprobada';
+    if (aprobada === false) return 'Rechazada';
+    return 'Pendiente';
   };
 
   if (!isOpen) return null;
@@ -222,7 +232,7 @@ export function InscripcionesEventoModal({ eventoId, eventoNombre, isOpen, onClo
                               inscripcion.aprobada
                             )}`}
                           >
-                            {inscripcion.aprobada ? 'Aprobada' : 'Pendiente'}
+                            {getEstadoTexto(inscripcion.aprobada)}
                           </span>
                         </div>
                         <p className="text-sm text-slate-600">
@@ -237,7 +247,7 @@ export function InscripcionesEventoModal({ eventoId, eventoNombre, isOpen, onClo
                       </div>
 
                       <div className="flex items-center gap-3">
-                        {!inscripcion.aprobada && (
+                        {inscripcion.aprobada === null && (
                           <>
                             <button
                               onClick={() => handleAprobarClick(inscripcion)}
@@ -258,13 +268,25 @@ export function InscripcionesEventoModal({ eventoId, eventoNombre, isOpen, onClo
                           </>
                         )}
 
-                        {inscripcion.aprobada && (
+                        {inscripcion.aprobada === true && (
                           <button
                             onClick={() => handleRechazarClick(inscripcion)}
                             disabled={rechazarMutation.isPending}
-                            className="px-5 py-2.5 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                            className="px-5 py-2.5 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md hover:shadow-lg"
                           >
-                            Desaprobar
+                            <XCircle size={18} />
+                            Revocar
+                          </button>
+                        )}
+
+                        {inscripcion.aprobada === false && (
+                          <button
+                            onClick={() => handleAprobarClick(inscripcion)}
+                            disabled={aprobarMutation.isPending}
+                            className="px-5 py-2.5 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md hover:shadow-lg"
+                          >
+                            <CheckCircle size={18} />
+                            Aprobar
                           </button>
                         )}
                       </div>
