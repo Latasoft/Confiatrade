@@ -518,7 +518,7 @@ def check_in_desde_qr(
         # Ya tenía check-in, retornar info
         return QRCheckInResponse(
             success=True,
-            message=f"ℹ️ {participante.nombre_completo} ya tiene check-in registrado",
+            message=f"{participante.nombre_completo} ya tiene check-in registrado",
             participante_id=participante.id,
             participante_nombre=participante.nombre_completo,
             empresa_nombre=participante.empresa.nombre,

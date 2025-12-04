@@ -16,6 +16,8 @@ export function useReuniones(params?: ReunionListParams) {
   return useQuery({
     queryKey: reunionKeys.list(params),
     queryFn: () => reunionesApi.list(params),
+    staleTime: 30000, // Datos frescos por 30 segundos
+    gcTime: 300000, // Cache por 5 minutos
   });
 }
 

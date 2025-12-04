@@ -293,7 +293,7 @@ export default function ValidarQRPage() {
                   )}
                   {result.ya_registrado && (
                     <div className="mt-3 px-3 py-2 bg-blue-100 border border-blue-300 rounded-lg text-sm text-blue-800">
-                      ℹ️ Check-in previamente registrado
+                      Check-in previamente registrado
                     </div>
                   )}
                 </div>
