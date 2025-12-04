@@ -43,6 +43,28 @@ export function useCreateReunion() {
         message: 'Reunión creada exitosamente',
       });
     },
+    onError: (error: any) => {
+      const status = error?.response?.status;
+      const detail = error?.response?.data?.detail;
+      
+      let message = 'Error al crear la reunión';
+      
+      if (status === 409 || (detail && detail.includes('ya tiene una reunión'))) {
+        message = detail || 'Una o ambas empresas ya tienen reunión en este bloque';
+      } else if (status === 422) {
+        message = detail || 'Datos inválidos';
+      } else if (status === 404) {
+        message = detail || 'Recurso no encontrado';
+      } else if (detail) {
+        message = detail;
+      }
+      
+      addNotification({
+        type: 'error',
+        message,
+        title: 'Error al crear reunión',
+      });
+    },
   });
 }
 

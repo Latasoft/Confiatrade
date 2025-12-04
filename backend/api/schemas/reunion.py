@@ -29,6 +29,7 @@ class ReunionCreate(ReunionBase):
 class ReunionUpdate(BaseModel):
     """Schema para actualizar Reunión"""
 
+    bloque_id: Optional[int] = None
     estado: Optional[str] = Field(None, max_length=50)
     notas: Optional[str] = None
     requiere_interprete: Optional[bool] = None

@@ -18,10 +18,14 @@ export const bloqueKeys = {
 };
 
 // Queries
-export function useBloquesHorarios(params?: BloqueListParams) {
+export function useBloquesHorarios(
+  params?: BloqueListParams,
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: bloqueKeys.list(params),
     queryFn: () => bloquesHorariosApi.list(params),
+    enabled: options?.enabled !== false,
   });
 }
 

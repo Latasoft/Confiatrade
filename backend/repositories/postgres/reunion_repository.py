@@ -107,23 +107,29 @@ class ReunionRepository:
         )
 
     def check_empresa_disponible_en_bloque(
-        self, bloque_id: int, empresa_id: UUID
+        self,
+        bloque_id: int,
+        empresa_id: UUID,
+        exclude_reunion_id: Optional[UUID] = None,
     ) -> bool:
         """Verificar si una empresa está disponible en un bloque (no tiene reunión)"""
-        reunion_existente = (
-            self.db.query(ReunionModel)
-            .filter(
-                ReunionModel.bloque_id == bloque_id,
-                (ReunionModel.empresa_a_id == empresa_id)
-                | (ReunionModel.empresa_b_id == empresa_id),
-            )
-            .first()
+        query = self.db.query(ReunionModel).filter(
+            ReunionModel.bloque_id == bloque_id,
+            (ReunionModel.empresa_a_id == empresa_id)
+            | (ReunionModel.empresa_b_id == empresa_id),
         )
+
+        # Excluir la reunión actual si se proporciona (para edición)
+        if exclude_reunion_id is not None:
+            query = query.filter(ReunionModel.id != exclude_reunion_id)
+
+        reunion_existente = query.first()
         return reunion_existente is None
 
     def update(
         self,
         reunion_id: UUID,
+        bloque_id: Optional[int] = None,
         estado: Optional[str] = None,
         notas: Optional[str] = None,
         requiere_interprete: Optional[bool] = None,
@@ -135,6 +141,8 @@ class ReunionRepository:
         if not reunion:
             return None
 
+        if bloque_id is not None:
+            reunion.bloque_id = bloque_id
         if estado is not None:
             reunion.estado = estado
         if notas is not None:

@@ -41,6 +41,7 @@ export interface CreateReunionData {
 }
 
 export interface UpdateReunionData {
+  bloque_id?: number;
   sala?: string;
   notas?: string;
   requiere_interprete?: boolean;

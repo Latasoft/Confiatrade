@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { useCreateReunion, useUpdateReunion } from '../hooks/useReuniones';
+import { useCreateReunion, useUpdateReunion, useReuniones } from '../hooks/useReuniones';
 import { useBloquesHorarios } from '../hooks/useBloquesHorarios';
 import { useEmpresasAprobadas } from '@/features/empresas/hooks/useEmpresas';
 import type { Reunion, CreateReunionData } from '../api/reunionesApi';
@@ -19,12 +19,22 @@ interface ReunionModalProps {
 
 export function ReunionModal({ isOpen, onClose, reunion, fecha, preselectedEmpresas }: ReunionModalProps) {
   const [selectedFecha, setSelectedFecha] = useState<string>(
-    fecha || new Date().toISOString().split('T')[0]
+    fecha || reunion?.bloque_fecha || new Date().toISOString().split('T')[0]
   );
 
-  const { data: bloquesData } = useBloquesHorarios({
+  const { data: bloquesData, isLoading: loadingBloques } = useBloquesHorarios(
+    {
+      fecha: selectedFecha,
+      activo: true,
+    },
+    {
+      enabled: !!selectedFecha,
+    }
+  );
+
+  // Obtener reuniones de la fecha seleccionada para filtrar bloques ocupados
+  const { data: reunionesData } = useReuniones({
     fecha: selectedFecha,
-    activo: true,
   });
 
   const { data: empresasData } = useEmpresasAprobadas();
@@ -32,6 +42,24 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha, preselectedEmpre
 
   const createMutation = useCreateReunion();
   const updateMutation = useUpdateReunion();
+  
+  // Filtrar bloques disponibles (sin reuniones o solo con la reunión actual si estamos editando)
+  const bloquesDisponibles = useMemo(() => {
+    const bloques = bloquesData?.bloques || [];
+    const reuniones = reunionesData?.reuniones || [];
+    
+    // Crear un Set de IDs de bloques ocupados (excluyendo la reunión actual si estamos editando)
+    const bloquesOcupados = new Set(
+      reuniones
+        .filter(r => !reunion || r.id !== reunion.id) // Excluir reunión actual
+        .map(r => r.bloque_id)
+    );
+    
+    // Retornar bloques que no están ocupados, o incluir el bloque actual si estamos editando
+    return bloques.filter(b => 
+      !bloquesOcupados.has(b.id) || (reunion && b.id === reunion.bloque_id)
+    );
+  }, [bloquesData, reunionesData, reunion]);
 
   const {
     register,
@@ -87,6 +115,7 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha, preselectedEmpre
         await updateMutation.mutateAsync({
           id: reunion.id,
           data: {
+            bloque_id: data.bloque_id, // Permitir cambiar bloque
             sala: data.sala,
             notas: data.notas,
             estado: data.estado,
@@ -99,6 +128,7 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha, preselectedEmpre
       onClose();
     } catch (error) {
       console.error('Error al guardar reunión:', error);
+      // El error ya se muestra por el hook
     }
   };
 
@@ -109,7 +139,6 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha, preselectedEmpre
 
   if (!isOpen) return null;
 
-  const bloques = bloquesData?.bloques || [];
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
@@ -130,36 +159,46 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha, preselectedEmpre
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-          {/* Fecha selector (solo en crear) */}
-          {!reunion && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                value={selectedFecha}
-                onChange={(e) => setSelectedFecha(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                Selecciona la fecha para ver bloques disponibles
-              </p>
-            </div>
-          )}
+          {/* Fecha selector */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Fecha <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={selectedFecha}
+              onChange={(e) => setSelectedFecha(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="text-sm text-gray-500 mt-1">
+              {reunion 
+                ? 'Cambia la fecha para ver bloques de otros días'
+                : 'Selecciona la fecha para ver bloques disponibles'
+              }
+            </p>
+          </div>
 
           {/* Bloque Horario */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Bloque Horario <span className="text-red-500">*</span>
             </label>
+            {loadingBloques ? (
+              <div className="text-sm text-gray-500">Cargando bloques...</div>
+            ) : bloquesDisponibles.length === 0 ? (
+              <div className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                No hay bloques horarios disponibles para la fecha seleccionada.
+                {!reunion && ' Cambia la fecha o crea bloques primero.'}
+                {reunion && ' Todos los bloques de esta fecha están ocupados.'}
+              </div>
+            ) : null}
             <select
               {...register('bloque_id', { required: 'Bloque horario requerido' })}
-              disabled={!!reunion}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              disabled={bloquesDisponibles.length === 0}
             >
               <option value="">Selecciona un bloque horario</option>
-              {bloques.map((bloque) => (
+              {bloquesDisponibles.map((bloque) => (
                 <option key={bloque.id} value={bloque.id}>
                   {bloque.label} ({bloque.hora_inicio} - {bloque.hora_fin})
                 </option>

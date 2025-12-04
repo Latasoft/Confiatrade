@@ -35,6 +35,8 @@ export default function AgendaPage() {
   const { data: _bloquesData, isLoading: _loadingBloques } = useBloquesHorarios({
     fecha: selectedDate,
     activo: true,
+  }, {
+    enabled: !!selectedDate, // Solo ejecutar si hay fecha
   });
 
   const deleteMutation = useDeleteReunion();

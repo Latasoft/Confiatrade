@@ -359,8 +359,9 @@ def get_reunion_by_id_use_case(
 
 def actualizar_reunion_use_case(
     repository: ReunionRepository = Depends(get_reunion_repository),
+    bloque_repository: BloqueHorarioRepository = Depends(get_bloque_horario_repository),
 ) -> ActualizarReunionUseCase:
-    return ActualizarReunionUseCase(repository)
+    return ActualizarReunionUseCase(repository, bloque_repository)
 
 
 def eliminar_reunion_use_case(

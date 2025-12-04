@@ -193,10 +193,11 @@ async def actualizar_reunion(
     reunion_data: ReunionUpdate,
     use_case: Annotated[ActualizarReunionUseCase, Depends(actualizar_reunion_use_case)],
 ):
-    """Actualizar reunión (no se permiten cambios en empresas o bloque)"""
+    """Actualizar reunión (empresas no se pueden cambiar, pero bloque sí)"""
     try:
         reunion = use_case.execute(
             reunion_id=reunion_id,
+            bloque_id=reunion_data.bloque_id,
             estado=reunion_data.estado,
             notas=reunion_data.notas,
             requiere_interprete=reunion_data.requiere_interprete,
