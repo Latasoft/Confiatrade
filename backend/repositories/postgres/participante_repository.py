@@ -23,6 +23,7 @@ class ParticipanteRepository:
         telefono: Optional[str] = None,
         idioma: str = "ES",
         requiere_interprete: bool = False,
+        foto_url: Optional[str] = None,
         qr_data: Optional[str] = None,
     ) -> ParticipanteModel:
         """Crear un nuevo participante"""
@@ -34,6 +35,7 @@ class ParticipanteRepository:
             telefono=telefono,
             idioma=idioma,
             requiere_interprete=requiere_interprete,
+            foto_url=foto_url,
             qr_data=qr_data,
         )
         self.db.add(participante)
@@ -70,6 +72,7 @@ class ParticipanteRepository:
         skip: int = 0,
         limit: int = 100,
         empresa_id: Optional[UUID] = None,
+        idioma: Optional[str] = None,
     ) -> list[ParticipanteModel]:
         """Obtener todos los participantes con filtros opcionales"""
         query = self.db.query(ParticipanteModel).options(
@@ -78,6 +81,9 @@ class ParticipanteRepository:
 
         if empresa_id is not None:
             query = query.filter(ParticipanteModel.empresa_id == empresa_id)
+
+        if idioma is not None:
+            query = query.filter(ParticipanteModel.idioma == idioma)
 
         return query.offset(skip).limit(limit).all()
 
@@ -99,6 +105,7 @@ class ParticipanteRepository:
         telefono: Optional[str] = None,
         idioma: Optional[str] = None,
         requiere_interprete: Optional[bool] = None,
+        foto_url: Optional[str] = None,
         qr_data: Optional[str] = None,
         check_in_realizado: Optional[bool] = None,
         fecha_check_in=None,
@@ -120,6 +127,8 @@ class ParticipanteRepository:
             participante.idioma = idioma
         if requiere_interprete is not None:
             participante.requiere_interprete = requiere_interprete
+        if foto_url is not None:
+            participante.foto_url = foto_url
         if qr_data is not None:
             participante.qr_data = qr_data
         if check_in_realizado is not None:
@@ -147,12 +156,17 @@ class ParticipanteRepository:
         self.db.commit()
         return True
 
-    def count_total(self, empresa_id: Optional[UUID] = None) -> int:
+    def count_total(
+        self, empresa_id: Optional[UUID] = None, idioma: Optional[str] = None
+    ) -> int:
         """Contar total de participantes"""
         query = self.db.query(func.count(ParticipanteModel.id))
 
         if empresa_id is not None:
             query = query.filter(ParticipanteModel.empresa_id == empresa_id)
+
+        if idioma is not None:
+            query = query.filter(ParticipanteModel.idioma == idioma)
 
         return query.scalar() or 0
 

@@ -16,6 +16,7 @@ class ParticipanteBase(BaseModel):
     telefono: Optional[str] = Field(default=None, max_length=50)
     idioma: str = Field(default="ES", max_length=2)
     requiere_interprete: bool = Field(default=False)
+    foto_url: Optional[str] = Field(default=None, max_length=500)
 
 
 class ParticipanteCreate(ParticipanteBase):

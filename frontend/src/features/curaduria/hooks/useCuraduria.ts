@@ -41,6 +41,14 @@ export const useCreateCuraduria = () => {
         message: 'Curaduría creada exitosamente',
       });
     },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.detail || error?.message || 'Error al crear la curaduría';
+      notify({
+        type: 'error',
+        message: errorMessage,
+        title: 'Error al crear curaduría',
+      });
+    },
   });
 };
 
@@ -59,6 +67,14 @@ export const useUpdateCuraduria = () => {
         message: 'Curaduría actualizada exitosamente',
       });
     },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.detail || error?.message || 'Error al actualizar la curaduría';
+      notify({
+        type: 'error',
+        message: errorMessage,
+        title: 'Error al actualizar curaduría',
+      });
+    },
   });
 };
 
@@ -73,6 +89,14 @@ export const useDeleteCuraduria = () => {
       notify({
         type: 'success',
         message: 'Curaduría eliminada exitosamente',
+      });
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.detail || error?.message || 'Error al eliminar la curaduría';
+      notify({
+        type: 'error',
+        message: errorMessage,
+        title: 'Error al eliminar curaduría',
       });
     },
   });

@@ -43,7 +43,8 @@ apiClient.interceptors.response.use(
       const status = error.response.status;
       const data = error.response.data;
       
-      let message = data?.message || 'Ha ocurrido un error';
+      // FastAPI envía errores en el campo 'detail', no 'message'
+      let message = data?.detail || data?.message || 'Ha ocurrido un error';
       
       if (status === 401) {
         message = 'Sesión expirada. Redirigiendo al login...';
@@ -69,15 +70,16 @@ apiClient.interceptors.response.use(
         // No mostrar notificación duplicada
         return Promise.reject(error);
       } else if (status === 403) {
-        message = 'No tienes permisos';
+        message = data?.detail || 'No tienes permisos';
       } else if (status === 404) {
-        message = 'Recurso no encontrado';
+        message = data?.detail || 'Recurso no encontrado';
       } else if (status === 422) {
-        message = data?.details?.validation_errors?.[0]?.message || 'Error de validación';
+        message = data?.detail || data?.details?.validation_errors?.[0]?.message || 'Error de validación';
       } else if (status === 409) {
-        message = data?.message || 'El registro ya existe';
+        // Conflicto: usar el mensaje específico del backend (ej: "La empresa ya tiene una curaduría")
+        message = data?.detail || 'El registro ya existe o está duplicado';
       } else if (status >= 500) {
-        message = 'Error del servidor';
+        message = data?.detail || 'Error del servidor';
       }
       
       notify({

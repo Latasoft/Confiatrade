@@ -16,14 +16,16 @@ class GetAllParticipantesUseCase:
         skip: int = 0,
         limit: int = 100,
         empresa_id: UUID | None = None,
+        idioma: str | None = None,
     ):
         """
         Obtener participantes con filtros opcionales:
         - empresa_id: Filtrar por empresa
+        - idioma: Filtrar por idioma
         - skip/limit: Paginación
         """
         participantes = self.participante_repository.get_all(
-            skip=skip, limit=limit, empresa_id=empresa_id
+            skip=skip, limit=limit, empresa_id=empresa_id, idioma=idioma
         )
 
         # Agregar nombre de empresa a cada participante
@@ -48,6 +50,8 @@ class GetAllParticipantesUseCase:
             }
             participantes_con_empresa.append(participante_dict)
 
-        total = self.participante_repository.count_total(empresa_id=empresa_id)
+        total = self.participante_repository.count_total(
+            empresa_id=empresa_id, idioma=idioma
+        )
 
         return {"participantes": participantes_con_empresa, "total": total}

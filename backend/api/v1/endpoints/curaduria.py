@@ -28,7 +28,7 @@ from core.use_cases.curaduria.crear_curaduria import CrearCuraduriaUseCase
 from core.use_cases.curaduria.eliminar_curaduria import EliminarCuraduriaUseCase
 from core.use_cases.curaduria.listar_curaduria import ListarCuraduriasUseCase
 from core.use_cases.curaduria.obtener_curaduria import ObtenerCuraduriaUseCase
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 router = APIRouter(prefix="/curaduria", tags=["Curaduría"])
 
@@ -56,11 +56,18 @@ def crear_curaduria(
         )
         return curaduria
     except NotFoundException as e:
-        raise NotFoundException(message=e.message, details=e.details)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
     except BusinessLogicException as e:
-        raise BusinessLogicException(message=e.message, details=e.details)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
+    except ValidationException as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message
+        )
     except Exception as e:
-        raise ValidationException(message=f"Error al crear curaduría: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al crear curaduría: {str(e)}",
+        )
 
 
 @router.get(
