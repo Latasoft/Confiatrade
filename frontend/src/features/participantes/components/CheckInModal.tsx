@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, CheckCircle, UserCheck, AlertCircle } from 'lucide-react';
 import { useCheckInParticipante } from '../hooks/useParticipantes';
+import { useNotificationStore } from '@/shared/store/notificationStore';
 import type { Participante } from '../api/participantesApi';
 
 interface CheckInModalProps {
@@ -14,6 +15,7 @@ export function CheckInModal({ isOpen, onClose, participante }: CheckInModalProp
   const [forceCheckIn, setForceCheckIn] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const checkInMutation = useCheckInParticipante();
+  const notify = useNotificationStore((state) => state.add);
 
   if (!isOpen || !participante) return null;
 
@@ -22,7 +24,13 @@ export function CheckInModal({ isOpen, onClose, participante }: CheckInModalProp
 
     // Validación: si ya tiene check-in y no está marcado force, bloquear
     if (participante.check_in_realizado && !forceCheckIn) {
-      setErrorMessage('El participante ya tiene check-in realizado. Activa "Forzar nuevo check-in" para continuar.');
+      const msg = 'El participante ya tiene check-in realizado. Activa "Forzar nuevo check-in" para continuar.';
+      setErrorMessage(msg);
+      notify({
+        type: 'warning',
+        message: msg,
+        title: '⚠ Check-in existente',
+      });
       return;
     }
 
@@ -37,8 +45,9 @@ export function CheckInModal({ isOpen, onClose, participante }: CheckInModalProp
       handleClose();
     } catch (error: any) {
       // Mostrar error en el modal también
-      const msg = error?.response?.data?.message || 'Error al realizar check-in';
+      const msg = error?.response?.data?.message || error?.response?.data?.detail || 'Error al realizar check-in';
       setErrorMessage(msg);
+      // No notificar aquí porque el hook ya lo hace
     }
   };
 

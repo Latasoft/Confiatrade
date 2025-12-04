@@ -27,10 +27,8 @@ def upgrade() -> None:
     """
     # Primero, establecer NULL en registros donde aprobada = FALSE
     # (todas las inscripciones existentes con False se consideran pendientes)
-    op.execute(
-        "UPDATE empresas_eventos SET aprobada = NULL WHERE aprobada = FALSE"
-    )
-    
+    op.execute("UPDATE empresas_eventos SET aprobada = NULL WHERE aprobada = FALSE")
+
     # Hacer la columna nullable
     op.alter_column(
         "empresas_eventos",
@@ -47,10 +45,8 @@ def downgrade() -> None:
     Revertir cambios: hacer NOT NULL y convertir NULL a FALSE
     """
     # Convertir NULL a FALSE antes de hacer la columna NOT NULL
-    op.execute(
-        "UPDATE empresas_eventos SET aprobada = FALSE WHERE aprobada IS NULL"
-    )
-    
+    op.execute("UPDATE empresas_eventos SET aprobada = FALSE WHERE aprobada IS NULL")
+
     # Hacer la columna NOT NULL nuevamente
     op.alter_column(
         "empresas_eventos",

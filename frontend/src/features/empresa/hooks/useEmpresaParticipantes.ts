@@ -4,6 +4,7 @@ import {
   type CreateMiParticipanteData,
   type UpdateMiParticipanteData,
 } from '../api/empresaParticipantesApi';
+import { useNotificationStore } from '@/shared/store/notificationStore';
 
 // Query Keys
 export const empresaParticipantesKeys = {
@@ -34,18 +35,28 @@ export function useMiParticipante(id: string | undefined) {
 // Mutations
 export function useCreateMiParticipante() {
   const queryClient = useQueryClient();
+  const notify = useNotificationStore((state) => state.add);
 
   return useMutation({
     mutationFn: (data: CreateMiParticipanteData) =>
       empresaParticipantesApi.createMiParticipante(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: empresaParticipantesKeys.lists() });
+      notify({
+        type: 'success',
+        message: 'Participante creado exitosamente. QR generado automáticamente.',
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error al crear participante:', error);
+      // No notificar aquí porque el interceptor ya lo hace
     },
   });
 }
 
 export function useUpdateMiParticipante() {
   const queryClient = useQueryClient();
+  const notify = useNotificationStore((state) => state.add);
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateMiParticipanteData }) =>
@@ -55,17 +66,32 @@ export function useUpdateMiParticipante() {
       queryClient.invalidateQueries({
         queryKey: empresaParticipantesKeys.detail(variables.id),
       });
+      notify({
+        type: 'success',
+        message: 'Participante actualizado exitosamente',
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error al actualizar participante:', error);
     },
   });
 }
 
 export function useDeleteMiParticipante() {
   const queryClient = useQueryClient();
+  const notify = useNotificationStore((state) => state.add);
 
   return useMutation({
     mutationFn: (id: string) => empresaParticipantesApi.deleteMiParticipante(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: empresaParticipantesKeys.lists() });
+      notify({
+        type: 'success',
+        message: 'Participante eliminado exitosamente',
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error al eliminar participante:', error);
     },
   });
 }

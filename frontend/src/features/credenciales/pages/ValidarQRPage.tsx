@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useValidarQR, useCheckInDesdeQR } from '../hooks/useQRValidation';
+import { useNotificationStore } from '@/shared/store/notificationStore';
 import { 
   QrCode, 
   Camera, 
@@ -28,6 +29,7 @@ export default function ValidarQRPage() {
   
   const validarQR = useValidarQR();
   const checkInQR = useCheckInDesdeQR();
+  const notify = useNotificationStore((state) => state.add);
   
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const qrReaderDivId = 'qr-reader';
@@ -44,9 +46,37 @@ export default function ValidarQRPage() {
       if (scanMode === 'validar') {
         const result = await validarQR.mutateAsync(decodedText);
         setLastScan(result);
+        
+        if (result.valido) {
+          notify({
+            type: 'success',
+            message: `QR válido: ${result.nombre || 'Credencial verificada'}`,
+            title: '✓ Validación exitosa',
+          });
+        } else {
+          notify({
+            type: 'error',
+            message: result.razon || 'Código QR no válido',
+            title: '✗ Validación fallida',
+          });
+        }
       } else {
         const result = await checkInQR.mutateAsync({ qrJson: decodedText });
         setLastScan(result);
+        
+        if (result.success) {
+          notify({
+            type: 'success',
+            message: `Check-in registrado: ${result.participante_nombre || 'Participante'}`,
+            title: '✓ Check-in exitoso',
+          });
+        } else {
+          notify({
+            type: 'warning',
+            message: result.message || 'No se pudo registrar el check-in',
+            title: '⚠ Atención',
+          });
+        }
       }
       
       // Sonido de éxito (opcional)
@@ -55,10 +85,18 @@ export default function ValidarQRPage() {
       
     } catch (error: any) {
       console.error('Error al procesar QR:', error);
+      const errorMsg = error?.response?.data?.detail || 'Error al procesar QR';
+      
       setLastScan({
         valido: false,
         success: false,
-        razon: error?.response?.data?.detail || 'Error al procesar QR'
+        razon: errorMsg
+      });
+      
+      notify({
+        type: 'error',
+        message: errorMsg,
+        title: '✗ Error de procesamiento',
       });
     }
     
@@ -154,17 +192,53 @@ export default function ValidarQRPage() {
       if (scanMode === 'validar') {
         const result = await validarQR.mutateAsync(manualInput);
         setLastScan(result);
+        
+        if (result.valido) {
+          notify({
+            type: 'success',
+            message: `QR válido: ${result.nombre || 'Credencial verificada'}`,
+            title: '✓ Validación exitosa',
+          });
+        } else {
+          notify({
+            type: 'error',
+            message: result.razon || 'Código QR no válido',
+            title: '✗ Validación fallida',
+          });
+        }
       } else {
         const result = await checkInQR.mutateAsync({ qrJson: manualInput });
         setLastScan(result);
+        
+        if (result.success) {
+          notify({
+            type: 'success',
+            message: `Check-in registrado: ${result.participante_nombre || 'Participante'}`,
+            title: '✓ Check-in exitoso',
+          });
+        } else {
+          notify({
+            type: 'warning',
+            message: result.message || 'No se pudo registrar el check-in',
+            title: '⚠ Atención',
+          });
+        }
       }
       setManualInput('');
     } catch (error: any) {
       console.error('Error al procesar QR:', error);
+      const errorMsg = error?.response?.data?.detail || 'Error al procesar QR';
+      
       setLastScan({
         valido: false,
         success: false,
-        razon: error?.response?.data?.detail || 'Error al procesar QR'
+        razon: errorMsg
+      });
+      
+      notify({
+        type: 'error',
+        message: errorMsg,
+        title: '✗ Error de procesamiento',
       });
     }
   };

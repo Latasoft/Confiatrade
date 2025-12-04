@@ -24,7 +24,9 @@ class EmpresaEventoModel(Base):
         nullable=False,
         index=True,
     )
-    aprobada = Column(Boolean, nullable=True, default=None, index=True)  # None=Pendiente, True=Aprobada, False=Rechazada
+    aprobada = Column(
+        Boolean, nullable=True, default=None, index=True
+    )  # None=Pendiente, True=Aprobada, False=Rechazada
     fecha_inscripcion = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

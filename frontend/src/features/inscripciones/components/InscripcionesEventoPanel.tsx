@@ -69,10 +69,20 @@ export function InscripcionesEventoPanel({ eventoId, eventoNombre }: Inscripcion
     }
   };
 
-  const getEstadoBadge = (aprobada: boolean) => {
-    return aprobada
-      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-      : 'bg-amber-100 text-amber-800 border-amber-300';
+  const getEstadoBadge = (aprobada: boolean | null) => {
+    if (aprobada === true) {
+      return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+    } else if (aprobada === false) {
+      return 'bg-red-100 text-red-800 border-red-300';
+    } else {
+      return 'bg-amber-100 text-amber-800 border-amber-300';
+    }
+  };
+
+  const getEstadoTexto = (aprobada: boolean | null) => {
+    if (aprobada === true) return 'Aprobada';
+    if (aprobada === false) return 'Rechazada';
+    return 'Pendiente';
   };
 
   return (
@@ -204,10 +214,10 @@ export function InscripcionesEventoPanel({ eventoId, eventoNombre }: Inscripcion
                       inscripcion.aprobada
                     )}`}
                   >
-                    {inscripcion.aprobada ? 'Aprobada' : 'Pendiente'}
+                    {getEstadoTexto(inscripcion.aprobada)}
                   </span>
 
-                  {!inscripcion.aprobada && (
+                  {inscripcion.aprobada === null && (
                     <div className="flex gap-1">
                       <button
                         onClick={() => handleAprobarClick(inscripcion)}
