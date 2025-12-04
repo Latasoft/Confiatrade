@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { inscripcionesApi } from '../api/inscripcionesApi';
+import { useNotificationStore } from '@/shared/store/notificationStore';
 
 /**
  * Hook para obtener inscripciones de un evento específico
@@ -27,6 +28,7 @@ export const useInscripciones = (aprobada?: boolean) => {
  */
 export const useAprobarInscripcion = () => {
   const queryClient = useQueryClient();
+  const notify = useNotificationStore((state) => state.add);
 
   return useMutation({
     mutationFn: (inscripcionId: string) => inscripcionesApi.aprobar(inscripcionId),
@@ -34,6 +36,17 @@ export const useAprobarInscripcion = () => {
       queryClient.invalidateQueries({ queryKey: ['inscripciones'] });
       queryClient.invalidateQueries({ queryKey: ['inscripciones-evento'] });
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
+      notify({
+        type: 'success',
+        message: 'Inscripción aprobada exitosamente',
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error al aprobar inscripción:', error);
+      notify({
+        type: 'error',
+        message: error?.response?.data?.detail || 'Error al aprobar la inscripción',
+      });
     },
   });
 };
@@ -43,6 +56,7 @@ export const useAprobarInscripcion = () => {
  */
 export const useRechazarInscripcion = () => {
   const queryClient = useQueryClient();
+  const notify = useNotificationStore((state) => state.add);
 
   return useMutation({
     mutationFn: (inscripcionId: string) => inscripcionesApi.rechazar(inscripcionId),
@@ -50,6 +64,17 @@ export const useRechazarInscripcion = () => {
       queryClient.invalidateQueries({ queryKey: ['inscripciones'] });
       queryClient.invalidateQueries({ queryKey: ['inscripciones-evento'] });
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
+      notify({
+        type: 'success',
+        message: 'Inscripción rechazada exitosamente',
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error al rechazar inscripción:', error);
+      notify({
+        type: 'error',
+        message: error?.response?.data?.detail || 'Error al rechazar la inscripción',
+      });
     },
   });
 };

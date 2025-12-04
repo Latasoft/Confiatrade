@@ -26,7 +26,7 @@ export default function RegistroPage() {
   const [presentacionFile, setPresentacionFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { register, handleSubmit, formState: { errors }, watch, trigger } = useForm<RegistroEmpresaData>();
+  const { register, handleSubmit, formState: { errors }, trigger } = useForm<RegistroEmpresaData>();
   const registroMutation = useRegistroEmpresa();
   const { data: paises = [], isLoading: loadingPaises } = usePaises();
   const { data: sectores = [], isLoading: loadingSectores } = useSectores();
