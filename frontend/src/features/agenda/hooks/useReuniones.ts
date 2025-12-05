@@ -47,7 +47,6 @@ export function useCreateReunion() {
       console.error('Error completo:', error);
       console.error('Response data:', error?.response?.data);
       
-      const status = error?.response?.status;
       const detail = error?.response?.data?.detail;
       
       let message = 'Error al crear la reunión';

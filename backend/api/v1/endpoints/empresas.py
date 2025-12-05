@@ -53,7 +53,12 @@ def list_empresas(
     use_case: GetEmpresas = Depends(get_empresas_use_case),
 ):
     empresas = use_case.execute(
-        skip=skip, limit=limit, pais_id=pais_id, sector_id=sector_id, aprobada=aprobada, evento_id=evento_id
+        skip=skip,
+        limit=limit,
+        pais_id=pais_id,
+        sector_id=sector_id,
+        aprobada=aprobada,
+        evento_id=evento_id,
     )
 
     return empresas
