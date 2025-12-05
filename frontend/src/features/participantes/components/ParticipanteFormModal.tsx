@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { X, QrCode } from 'lucide-react';
 // import { Upload } from 'lucide-react'; // Comentado: funcionalidad de foto deshabilitada
 import { useForm } from 'react-hook-form';
