@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X, QrCode, Upload } from 'lucide-react';
+import { X, QrCode } from 'lucide-react';
+// import { Upload } from 'lucide-react'; // Comentado: funcionalidad de foto deshabilitada
 import { useForm } from 'react-hook-form';
 import { useCreateParticipante, useUpdateParticipante } from '../hooks/useParticipantes';
 import { useEmpresasAprobadas } from '@/features/empresas/hooks/useEmpresas';
@@ -16,9 +17,9 @@ export function ParticipanteFormModal({
   onClose,
   participante,
 }: ParticipanteFormModalProps) {
-  const [photoPreview, setPhotoPreview] = useState<string | undefined>(
-    participante?.foto_url
-  );
+  // const [photoPreview, setPhotoPreview] = useState<string | undefined>(
+  //   participante?.foto_url
+  // ); // Comentado: funcionalidad de foto deshabilitada
 
   const { data: empresasData } = useEmpresasAprobadas();
   const createMutation = useCreateParticipante();
@@ -39,7 +40,7 @@ export function ParticipanteFormModal({
           email: participante.email,
           telefono: participante.telefono || '',
           cargo: participante.cargo || '',
-          foto_url: participante.foto_url || '',
+          // foto_url: participante.foto_url || '', // Comentado: funcionalidad de foto deshabilitada
           idioma: participante.idioma,
         }
       : {
@@ -56,36 +57,36 @@ export function ParticipanteFormModal({
         email: participante.email,
         telefono: participante.telefono || '',
         cargo: participante.cargo || '',
-        foto_url: participante.foto_url || '',
+        // foto_url: participante.foto_url || '', // Comentado: funcionalidad de foto deshabilitada
         idioma: participante.idioma,
       });
-      setPhotoPreview(participante.foto_url);
+      // setPhotoPreview(participante.foto_url); // Comentado: funcionalidad de foto deshabilitada
     } else {
       reset({ 
         idioma: 'ES',
         empresa_id: empresas[0]?.id || '',
       });
-      setPhotoPreview(undefined);
+      // setPhotoPreview(undefined); // Comentado: funcionalidad de foto deshabilitada
     }
   }, [participante, reset, empresas]);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      // En producción, aquí subirías la imagen a un servicio como S3 o Cloudinary
-    }
-  };
+  // const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setPhotoPreview(reader.result as string);
+  //     };
+  //     reader.readAsDataURL(file);
+  //     // En producción, aquí subirías la imagen a un servicio como S3 o Cloudinary
+  //   }
+  // }; // Comentado: funcionalidad de foto deshabilitada
 
   const onSubmit = async (data: CreateParticipanteData) => {
     try {
-      if (photoPreview && photoPreview !== participante?.foto_url) {
-        data.foto_url = photoPreview;
-      }
+      // if (photoPreview && photoPreview !== participante?.foto_url) {
+      //   data.foto_url = photoPreview;
+      // } // Comentado: funcionalidad de foto deshabilitada
 
       if (participante) {
         await updateMutation.mutateAsync({
@@ -95,7 +96,7 @@ export function ParticipanteFormModal({
             email: data.email,
             telefono: data.telefono,
             cargo: data.cargo,
-            foto_url: data.foto_url,
+            // foto_url: data.foto_url, // Comentado: funcionalidad de foto deshabilitada
             idioma: data.idioma,
           },
         });
@@ -110,7 +111,7 @@ export function ParticipanteFormModal({
 
   const handleClose = () => {
     reset();
-    setPhotoPreview(undefined);
+    // setPhotoPreview(undefined); // Comentado: funcionalidad de foto deshabilitada
     onClose();
   };
 
@@ -144,8 +145,8 @@ export function ParticipanteFormModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-          {/* Photo Upload */}
-          <div>
+          {/* Photo Upload - Comentado: funcionalidad de foto deshabilitada */}
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Foto del Participante
             </label>
@@ -180,7 +181,7 @@ export function ParticipanteFormModal({
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Empresa */}
           <div>

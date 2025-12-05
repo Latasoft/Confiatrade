@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Users, Search, Plus, QrCode, Mail, Phone, UserCheck } from 'lucide-react';
+import { Users, Search, Plus, QrCode, Mail, Phone } from 'lucide-react';
 import { useParticipantes, useDeleteParticipante } from '../hooks/useParticipantes';
 import { ParticipanteFormModal } from '../components/ParticipanteFormModal';
-import { CheckInModal } from '../components/CheckInModal';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { EmptyState } from '@/shared/components/EmptyState';
@@ -24,8 +23,6 @@ export default function ParticipantesPage() {
   const [editingParticipante, setEditingParticipante] = useState<Participante | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [participanteToDelete, setParticipanteToDelete] = useState<string | null>(null);
-  const [checkInModalOpen, setCheckInModalOpen] = useState(false);
-  const [checkInParticipante, setCheckInParticipante] = useState<Participante | null>(null);
 
   const { data: participantesData, isLoading } = useParticipantes({
     empresa_id: selectedEmpresa || undefined,
@@ -73,16 +70,6 @@ export default function ParticipantesPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingParticipante(undefined);
-  };
-
-  const handleCheckInClick = (participante: Participante) => {
-    setCheckInParticipante(participante);
-    setCheckInModalOpen(true);
-  };
-
-  const handleCloseCheckInModal = () => {
-    setCheckInModalOpen(false);
-    setCheckInParticipante(null);
   };
 
   const getIdiomaLabel = (idioma: string) => {
@@ -265,35 +252,9 @@ export default function ParticipantesPage() {
                   <span className="font-medium">Idioma:</span>{' '}
                   {getIdiomaLabel(participante.idioma)}
                 </div>
-                {participante.check_in_realizado && participante.fecha_check_in && (
-                  <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 px-2 py-1 rounded">
-                    <UserCheck size={14} />
-                    <span className="font-medium">
-                      Check-in: {new Date(participante.fecha_check_in).toLocaleString('es-CL', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                )}
               </div>
 
               <div className="flex gap-2 pt-4 border-t">
-                <button
-                  onClick={() => handleCheckInClick(participante)}
-                  disabled={participante.check_in_realizado}
-                  className={`flex-1 px-3 py-2 text-sm border rounded transition flex items-center justify-center gap-1 ${
-                    participante.check_in_realizado
-                      ? 'border-emerald-300 text-emerald-700 bg-emerald-50 cursor-not-allowed opacity-60'
-                      : 'border-blue-300 text-blue-700 hover:bg-blue-50'
-                  }`}
-                  title={participante.check_in_realizado ? 'Check-in ya realizado' : 'Realizar check-in'}
-                >
-                  <UserCheck size={16} />
-                  {participante.check_in_realizado ? 'Check-in' : 'Check-in'}
-                </button>
                 <button
                   onClick={() => handleEdit(participante)}
                   className="flex-1 px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition"
@@ -317,13 +278,6 @@ export default function ParticipantesPage() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         participante={editingParticipante}
-      />
-
-      {/* Check-in Modal */}
-      <CheckInModal
-        isOpen={checkInModalOpen}
-        onClose={handleCloseCheckInModal}
-        participante={checkInParticipante}
       />
 
       {/* Delete Confirmation Dialog */}
