@@ -20,6 +20,8 @@ class Empresa:
     aprobada: bool
     fecha_registro: datetime
     updated_at: datetime
+    pais_nombre: Optional[str] = None
+    sector_nombre: Optional[str] = None
 
     def aprobar(self) -> None:
         self.aprobada = True

@@ -41,6 +41,18 @@ export function EmpresaCard({ empresa, onSelect }: EmpresaCardProps) {
       </div>
 
       <div className="space-y-3 text-sm mb-4">
+        {(empresa.pais?.nombre || empresa.pais_nombre) && (
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-800 min-w-[80px]">País:</span>
+            <span className="text-slate-700">{empresa.pais?.nombre || empresa.pais_nombre}</span>
+          </div>
+        )}
+        {(empresa.sector?.nombre || empresa.sector_nombre) && (
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-800 min-w-[80px]">Sector:</span>
+            <span className="text-slate-700">{empresa.sector?.nombre || empresa.sector_nombre}</span>
+          </div>
+        )}
         {empresa.email && (
           <div className="flex items-center gap-2">
             <span className="font-bold text-slate-800 min-w-[80px]">Email:</span>

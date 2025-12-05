@@ -44,20 +44,39 @@ export function useCreateReunion() {
       });
     },
     onError: (error: any) => {
+      console.error('Error completo:', error);
+      console.error('Response data:', error?.response?.data);
+      
       const status = error?.response?.status;
       const detail = error?.response?.data?.detail;
       
       let message = 'Error al crear la reunión';
       
-      if (status === 409 || (detail && detail.includes('ya tiene una reunión'))) {
-        message = detail || 'Una o ambas empresas ya tienen reunión en este bloque';
-      } else if (status === 422) {
-        message = detail || 'Datos inválidos';
-      } else if (status === 404) {
-        message = detail || 'Recurso no encontrado';
-      } else if (detail) {
-        message = detail;
+      try {
+        // Procesar el error según su tipo
+        if (detail) {
+          if (typeof detail === 'object' && detail !== null) {
+            // Caso: {message: "...", details: {...}}
+            if ('message' in detail && typeof detail.message === 'string') {
+              message = detail.message;
+            } else if ('msg' in detail && typeof detail.msg === 'string') {
+              message = detail.msg;
+            } else {
+              // Caso: objeto sin estructura reconocida
+              message = JSON.stringify(detail);
+            }
+          } else if (typeof detail === 'string') {
+            // Caso: string directo
+            message = detail;
+          }
+        }
+      } catch (parseError) {
+        console.error('Error al procesar el mensaje de error:', parseError);
+        message = 'Error al crear la reunión';
       }
+      
+      // Log para debugging
+      console.error('Mensaje extraído:', message);
       
       addNotification({
         type: 'error',

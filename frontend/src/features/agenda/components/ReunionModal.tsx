@@ -11,13 +11,14 @@ interface ReunionModalProps {
   onClose: () => void;
   reunion?: Reunion;
   fecha?: string;
+  eventoId?: string;
   preselectedEmpresas?: {
     empresa_a_id: string;
     empresa_b_id: string;
   };
 }
 
-export function ReunionModal({ isOpen, onClose, reunion, fecha, preselectedEmpresas }: ReunionModalProps) {
+export function ReunionModal({ isOpen, onClose, reunion, fecha, eventoId, preselectedEmpresas }: ReunionModalProps) {
   const [selectedFecha, setSelectedFecha] = useState<string>(
     fecha || reunion?.bloque_fecha || new Date().toISOString().split('T')[0]
   );
@@ -37,7 +38,7 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha, preselectedEmpre
     fecha: selectedFecha,
   });
 
-  const { data: empresasData } = useEmpresasAprobadas();
+  const { data: empresasData } = useEmpresasAprobadas(eventoId);
   const empresas = empresasData || [];
 
   const createMutation = useCreateReunion();
@@ -115,7 +116,7 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha, preselectedEmpre
         await updateMutation.mutateAsync({
           id: reunion.id,
           data: {
-            bloque_id: data.bloque_id, // Permitir cambiar bloque
+            bloque_id: data.bloque_id,
             sala: data.sala,
             notas: data.notas,
             estado: data.estado,
@@ -124,11 +125,14 @@ export function ReunionModal({ isOpen, onClose, reunion, fecha, preselectedEmpre
       } else {
         await createMutation.mutateAsync(data);
       }
+      
+      // Solo si llegamos aquí (éxito), cerramos el modal
       reset();
       onClose();
     } catch (error) {
-      console.error('Error al guardar reunión:', error);
-      // El error ya se muestra por el hook
+      // El error ya fue manejado por el onError del mutation
+      // Solo prevenir que cierre el modal
+      console.error('Error en reunión:', error);
     }
   };
 

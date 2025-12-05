@@ -52,7 +52,10 @@ class PostgresEmpresaRepository(EmpresaRepository):
         pais_id: Optional[int] = None,
         sector_id: Optional[int] = None,
         aprobada: Optional[bool] = None,
+        evento_id: Optional[UUID] = None,
     ) -> List[Empresa]:
+        from models.sqlalchemy.empresa_evento_model import EmpresaEventoModel
+        
         query = self.db.query(EmpresaModel).options(
             joinedload(EmpresaModel.pais), joinedload(EmpresaModel.sector)
         )
@@ -63,6 +66,12 @@ class PostgresEmpresaRepository(EmpresaRepository):
             query = query.filter(EmpresaModel.sector_id == sector_id)
         if aprobada is not None:
             query = query.filter(EmpresaModel.aprobada == aprobada)
+        if evento_id:
+            # Filtrar solo empresas inscritas en el evento (aprobadas)
+            query = query.join(EmpresaEventoModel).filter(
+                EmpresaEventoModel.evento_id == evento_id,
+                EmpresaEventoModel.aprobada == True
+            ).distinct()
 
         db_empresas = query.offset(skip).limit(limit).all()
 
@@ -117,4 +126,6 @@ class PostgresEmpresaRepository(EmpresaRepository):
             aprobada=model.aprobada,
             fecha_registro=model.fecha_registro,
             updated_at=model.updated_at,
+            pais_nombre=model.pais_nombre,
+            sector_nombre=model.sector_nombre,
         )

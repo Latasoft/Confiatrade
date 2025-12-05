@@ -3,6 +3,7 @@ import { Calendar, Clock, MapPin, Filter, Plus } from 'lucide-react';
 import { useReuniones, useDeleteReunion } from '../hooks/useReuniones';
 import { useBloquesHorarios } from '../hooks/useBloquesHorarios';
 import { useEmpresasAprobadas } from '@/features/empresas/hooks/useEmpresas';
+import { useEventos } from '@/features/eventos/hooks/useEventos';
 import { usePerfil } from '@/features/auth/hooks/useAuth';
 import { ReunionModal } from '../components/ReunionModal';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -14,6 +15,7 @@ export default function AgendaPage() {
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
+  const [selectedEvento, setSelectedEvento] = useState<string>('');
   const [selectedEmpresa, setSelectedEmpresa] = useState<string>('');
   const [selectedSala, setSelectedSala] = useState<string>('');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
@@ -40,8 +42,10 @@ export default function AgendaPage() {
   });
 
   const deleteMutation = useDeleteReunion();
-  const { data: empresas, isLoading: loadingEmpresas } = useEmpresasAprobadas();
+  const { data: eventosData, isLoading: loadingEventos } = useEventos({ activo: true });
+  const { data: empresas, isLoading: loadingEmpresas } = useEmpresasAprobadas(selectedEvento || undefined);
 
+  const eventos = eventosData?.eventos || [];
   const reuniones = reunionesData?.reuniones || [];
 
   // Calcular estadísticas
@@ -164,6 +168,25 @@ export default function AgendaPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Evento <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedEvento}
+                onChange={(e) => setSelectedEvento(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={loadingEventos}
+              >
+                <option value="">Selecciona un evento</option>
+                {eventos.map((evento) => (
+                  <option key={evento.id} value={evento.id}>
+                    {evento.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Fecha
@@ -346,6 +369,7 @@ export default function AgendaPage() {
         onClose={handleCloseModal}
         reunion={editingReunion}
         fecha={selectedDate}
+        eventoId={selectedEvento}
       />
 
       {/* Delete Confirmation Dialog */}

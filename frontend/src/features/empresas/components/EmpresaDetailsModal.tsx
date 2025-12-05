@@ -98,17 +98,17 @@ export function EmpresaDetailsModal({ empresa, onClose }: EmpresaDetailsModalPro
                 </div>
               )}
 
-              {empresaDetails.pais && (
+              {(empresaDetails.pais?.nombre || empresaDetails.pais_nombre) && (
                 <div className="bg-slate-50 rounded-lg p-4 border-2 border-slate-200">
                   <label className="text-xs font-semibold text-slate-600 uppercase">País</label>
-                  <p className="text-slate-900 font-medium mt-1">{empresaDetails.pais.nombre}</p>
+                  <p className="text-slate-900 font-medium mt-1">{empresaDetails.pais?.nombre || empresaDetails.pais_nombre}</p>
                 </div>
               )}
 
-              {empresaDetails.sector && (
+              {(empresaDetails.sector?.nombre || empresaDetails.sector_nombre) && (
                 <div className="bg-slate-50 rounded-lg p-4 border-2 border-slate-200">
                   <label className="text-xs font-semibold text-slate-600 uppercase">Sector</label>
-                  <p className="text-slate-900 font-medium mt-1">{empresaDetails.sector.nombre}</p>
+                  <p className="text-slate-900 font-medium mt-1">{empresaDetails.sector?.nombre || empresaDetails.sector_nombre}</p>
                 </div>
               )}
             </div>

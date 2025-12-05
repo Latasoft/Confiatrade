@@ -2,20 +2,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { empresasApi } from '../api/empresasApi';
 import { EmpresaCreate } from '@/shared/types';
 
-export function useEmpresas(aprobada?: boolean) {
+export function useEmpresas(aprobada?: boolean, evento_id?: string) {
   return useQuery({
-    queryKey: ['empresas', aprobada],
-    queryFn: () => empresasApi.getAll(aprobada),
+    queryKey: ['empresas', aprobada, evento_id],
+    queryFn: () => empresasApi.getAll(aprobada, evento_id),
     staleTime: 5 * 60 * 1000, // 5 minutos
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
 }
 
-export function useEmpresasAprobadas() {
+export function useEmpresasAprobadas(evento_id?: string) {
   return useQuery({
-    queryKey: ['empresas', 'aprobadas'],
-    queryFn: empresasApi.getAprobadas,
+    queryKey: ['empresas', 'aprobadas', evento_id],
+    queryFn: () => empresasApi.getAprobadas(evento_id),
     staleTime: 5 * 60 * 1000, // 5 minutos
     refetchOnMount: false,
     refetchOnWindowFocus: false,

@@ -1,13 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useMatches } from '../hooks/useCuraduria';
 import { useEmpresasAprobadas } from '@/features/empresas/hooks/useEmpresas';
+import { useEventos } from '@/features/eventos/hooks/useEventos';
 import { Search, TrendingUp, Users, Award } from 'lucide-react';
 import { MatchCard } from '../components/MatchCard';
 
 export default function MatchingPage() {
-  const { data: empresas, isLoading: loadingEmpresas } = useEmpresasAprobadas();
+  const [selectedEvento, setSelectedEvento] = useState<string>('');
+  const { data: empresas, isLoading: loadingEmpresas } = useEmpresasAprobadas(selectedEvento || undefined);
+  const { data: eventosData, isLoading: loadingEventos } = useEventos({ activo: true });
   const [selectedEmpresa, setSelectedEmpresa] = useState<string>('');
   const [minScore, setMinScore] = useState(0);
+
+  const eventos = eventosData?.eventos || [];
+
+  // Resetear empresa seleccionada cuando cambie el evento
+  useEffect(() => {
+    setSelectedEmpresa('');
+  }, [selectedEvento]);
 
   // Seleccionar primera empresa cuando se carguen
   useEffect(() => {
@@ -24,10 +34,39 @@ export default function MatchingPage() {
   const selectedEmpresaNombre =
     empresas?.find((e) => e.id === selectedEmpresa)?.nombre || '';
 
-  if (loadingEmpresas) {
+  if (loadingEmpresas || loadingEventos) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!selectedEvento) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Matching de Empresas</h1>
+          <p className="text-gray-600 mb-6">
+            Encuentra las mejores conexiones basadas en intereses complementarios
+          </p>
+        </div>
+        <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-300">
+          <Award className="mx-auto text-gray-400 mb-4" size={48} />
+          <p className="text-gray-600 text-lg mb-4">Selecciona un evento para comenzar</p>
+          <select
+            value={selectedEvento}
+            onChange={(e) => setSelectedEvento(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Selecciona un evento</option>
+            {eventos.map((evento) => (
+              <option key={evento.id} value={evento.id}>
+                {evento.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     );
   }
@@ -36,7 +75,13 @@ export default function MatchingPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-300">
-          <p className="text-gray-600 text-lg">No hay empresas aprobadas disponibles</p>
+          <p className="text-gray-600 text-lg">No hay empresas inscritas en este evento</p>
+          <button
+            onClick={() => setSelectedEvento('')}
+            className="mt-4 px-4 py-2 text-blue-600 hover:text-blue-700"
+          >
+            Seleccionar otro evento
+          </button>
         </div>
       </div>
     );
@@ -113,7 +158,25 @@ export default function MatchingPage() {
 
       {/* Filters */}
       <div className="bg-gray-200 rounded-xl border-2 border-gray-400 p-6 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Evento <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={selectedEvento}
+              onChange={(e) => setSelectedEvento(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Selecciona un evento</option>
+              {eventos.map((evento) => (
+                <option key={evento.id} value={evento.id}>
+                  {evento.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Empresa Base
@@ -122,6 +185,7 @@ export default function MatchingPage() {
               value={selectedEmpresa}
               onChange={(e) => setSelectedEmpresa(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={!selectedEvento}
             >
               {empresas?.map((empresa) => (
                 <option key={empresa.id} value={empresa.id}>

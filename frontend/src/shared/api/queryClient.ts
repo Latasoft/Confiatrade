@@ -20,5 +20,10 @@ export const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // Datos frescos por 5 minutos
       gcTime: 10 * 60 * 1000, // Cache por 10 minutos
     },
+    mutations: {
+      // No lanzar errores no capturados que rompan React
+      throwOnError: false,
+      retry: false, // No reintentar mutations automáticamente
+    },
   },
 });

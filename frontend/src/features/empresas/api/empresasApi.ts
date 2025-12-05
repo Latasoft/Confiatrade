@@ -2,14 +2,18 @@ import { apiClient } from '@/shared/api/client';
 import { Empresa, EmpresaCreate } from '@/shared/types';
 
 export const empresasApi = {
-  getAll: async (aprobada?: boolean): Promise<Empresa[]> => {
-    const params = aprobada !== undefined ? { aprobada } : {};
+  getAll: async (aprobada?: boolean, evento_id?: string): Promise<Empresa[]> => {
+    const params: any = {};
+    if (aprobada !== undefined) params.aprobada = aprobada;
+    if (evento_id) params.evento_id = evento_id;
     const { data } = await apiClient.get('/empresas', { params });
     return data;
   },
 
-  getAprobadas: async (): Promise<Empresa[]> => {
-    const { data } = await apiClient.get('/empresas', { params: { aprobada: true } });
+  getAprobadas: async (evento_id?: string): Promise<Empresa[]> => {
+    const params: any = { aprobada: true };
+    if (evento_id) params.evento_id = evento_id;
+    const { data } = await apiClient.get('/empresas', { params });
     return data;
   },
 
