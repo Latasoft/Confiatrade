@@ -14,7 +14,7 @@ const navItems = [
   { path: '/empresa/dashboard', label: 'Dashboard', roles: ['empresa'] },
   { path: '/empresa/participantes', label: 'Mis Participantes', roles: ['empresa'] },
   { path: '/empresa/agenda', label: 'Mi Agenda', roles: ['empresa'] },
-  { path: '/credenciales', label: 'Credenciales', roles: ['admin'] },
+  // { path: '/credenciales', label: 'Credenciales', roles: ['admin'] }, // Comentado: funcionalidad deshabilitada
   { path: '/validar-qr', label: 'Validar QR', roles: ['admin'] },
   { path: '/kpis', label: 'KPIs', roles: ['admin'] },
   { path: '/seguimiento', label: 'Seguimiento', roles: ['admin'] },
