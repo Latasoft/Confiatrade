@@ -11,7 +11,9 @@ from api.v1.endpoints import (
     kpis,
     participantes,
     reuniones,
+    roles,
     seguimiento,
+    usuarios_organizadores,
 )
 from fastapi import APIRouter
 
@@ -52,3 +54,13 @@ api_router.include_router(
     seguimiento.router, prefix="/seguimiento", tags=["seguimiento"]
 )
 api_router.include_router(curaduria.router, tags=["curaduria"])
+
+# Gestión de roles y permisos (solo administradores)
+api_router.include_router(roles.router, prefix="/roles", tags=["roles y permisos"])
+
+# Gestión de usuarios organizadores (solo administradores)
+api_router.include_router(
+    usuarios_organizadores.router,
+    prefix="/organizadores",
+    tags=["usuarios organizadores"],
+)

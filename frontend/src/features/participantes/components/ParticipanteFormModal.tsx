@@ -24,8 +24,6 @@ export function ParticipanteFormModal({
   const { data: empresasData } = useEmpresasAprobadas();
   const createMutation = useCreateParticipante();
   const updateMutation = useUpdateParticipante();
-  
-  const empresas = empresasData || [];
 
   const {
     register,
@@ -45,7 +43,7 @@ export function ParticipanteFormModal({
         }
       : {
           idioma: 'ES',
-          empresa_id: empresas[0]?.id || '',
+          empresa_id: empresasData?.[0]?.id || '',
         },
   });
 
@@ -61,14 +59,14 @@ export function ParticipanteFormModal({
         idioma: participante.idioma,
       });
       // setPhotoPreview(participante.foto_url); // Comentado: funcionalidad de foto deshabilitada
-    } else {
+    } else if (empresasData && empresasData.length > 0) {
       reset({ 
         idioma: 'ES',
-        empresa_id: empresas[0]?.id || '',
+        empresa_id: empresasData[0].id,
       });
       // setPhotoPreview(undefined); // Comentado: funcionalidad de foto deshabilitada
     }
-  }, [participante, reset, empresas]);
+  }, [participante, reset, empresasData]);
 
   // const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const file = e.target.files?.[0];
@@ -190,13 +188,13 @@ export function ParticipanteFormModal({
             </label>
             <select
               {...register('empresa_id', { required: 'Empresa requerida' })}
-              disabled={!!participante || empresas.length === 0}
+              disabled={!!participante || !empresasData || empresasData.length === 0}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
             >
               <option value="">
-                {empresas.length === 0 ? 'No hay empresas aprobadas' : 'Selecciona una empresa'}
+                {!empresasData || empresasData.length === 0 ? 'No hay empresas aprobadas' : 'Selecciona una empresa'}
               </option>
-              {empresas.map((empresa) => (
+              {empresasData?.map((empresa) => (
                 <option key={empresa.id} value={empresa.id}>
                   {empresa.nombre}
                 </option>
@@ -205,7 +203,7 @@ export function ParticipanteFormModal({
             {errors.empresa_id && (
               <p className="text-sm text-red-600 mt-1">{errors.empresa_id.message}</p>
             )}
-            {empresas.length === 0 && (
+            {(!empresasData || empresasData.length === 0) && (
               <p className="text-sm text-amber-600 mt-1">
                 No hay empresas aprobadas. Aprueba empresas primero desde el módulo de Empresas.
               </p>

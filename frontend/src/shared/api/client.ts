@@ -69,24 +69,27 @@ apiClient.interceptors.response.use(
         
         // No mostrar notificación duplicada
         return Promise.reject(error);
-      } else if (status === 403) {
-        message = data?.detail || 'No tienes permisos';
-      } else if (status === 404) {
-        message = data?.detail || 'Recurso no encontrado';
-      } else if (status === 422) {
-        message = data?.detail || data?.details?.validation_errors?.[0]?.message || 'Error de validación';
-      } else if (status === 409) {
-        // Conflicto: usar el mensaje específico del backend (ej: "La empresa ya tiene una curaduría")
-        message = data?.detail || 'El registro ya existe o está duplicado';
-      } else if (status >= 500) {
-        message = data?.detail || 'Error del servidor';
       }
       
-      notify({
-        type: 'error',
-        message,
-        title: `Error ${status}`,
-      });
+      // Para otros errores, no mostrar notificación automática
+      // Los hooks específicos se encargarán de mostrar notificaciones apropiadas
+      // Solo mostrar notificaciones genéricas para errores no manejados
+      
+      // NO mostrar notificaciones para: 400, 403, 404, 409, 422
+      // Estos serán manejados por los hooks específicos
+      const skipNotification = [400, 403, 404, 409, 422].includes(status);
+      
+      if (!skipNotification) {
+        if (status >= 500) {
+          message = data?.detail || 'Error del servidor';
+        }
+        
+        notify({
+          type: 'error',
+          message,
+          title: `Error ${status}`,
+        });
+      }
     } else if (error.request) {
       notify({
         type: 'error',

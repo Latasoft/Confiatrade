@@ -43,13 +43,40 @@ async def login(credentials: UsuarioLogin, db: Session = Depends(get_db)):
             detail="Usuario inactivo. Contacte al administrador",
         )
 
+    # Obtener permisos del usuario si tiene rol_id (sistema nuevo)
+    permisos_codigos = []
+    if hasattr(usuario, "rol_id") and usuario.rol_id:
+        import logging
+
+        from models.sqlalchemy.rol_model import RolModel
+
+        logger = logging.getLogger(__name__)
+        logger.info(f"[LOGIN] Usuario {usuario.email} tiene rol_id: {usuario.rol_id}")
+
+        # Obtener el rol con sus permisos
+        rol = db.query(RolModel).filter(RolModel.id == usuario.rol_id).first()
+        if rol:
+            logger.info(
+                f"[LOGIN] Rol encontrado: {rol.nombre}, tiene {len(rol.permisos) if hasattr(rol, 'permisos') else 0} permisos"
+            )
+            if hasattr(rol, "permisos"):
+                # Crear array de códigos de permisos (modulo.accion)
+                permisos_codigos = [f"{p.modulo}.{p.accion}" for p in rol.permisos]
+                logger.info(f"[LOGIN] Permisos del usuario: {permisos_codigos}")
+        else:
+            logger.warning(f"[LOGIN] No se encontró el rol con id: {usuario.rol_id}")
+
     # Crear token
     access_token = create_access_token(
         data={"sub": str(usuario.id), "email": usuario.email, "rol": usuario.rol}
     )
 
+    # Crear respuesta con permisos
+    usuario_dict = UsuarioResponse.model_validate(usuario).model_dump()
+    usuario_dict["permisos"] = permisos_codigos
+
     return TokenResponse(
-        access_token=access_token, user=UsuarioResponse.model_validate(usuario)
+        access_token=access_token, user=UsuarioResponse(**usuario_dict)
     )
 
 

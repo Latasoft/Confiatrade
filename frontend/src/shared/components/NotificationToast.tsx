@@ -38,16 +38,6 @@ interface NotificationToastItemProps {
 function NotificationToastItem({ notification }: NotificationToastItemProps) {
   const remove = useNotificationStore((state) => state.remove);
 
-  useEffect(() => {
-    if (notification.duration && notification.duration > 0) {
-      const timer = setTimeout(() => {
-        remove(notification.id);
-      }, notification.duration);
-
-      return () => clearTimeout(timer);
-    }
-  }, [notification.id, notification.duration, remove]);
-
   return (
     <div
       className={`flex items-start gap-3 p-4 rounded-xl border-2 transition-all ${STYLES[notification.type]}`}
@@ -82,9 +72,9 @@ function NotificationToastItem({ notification }: NotificationToastItemProps) {
 }
 
 export function NotificationToast() {
-  const notifications = useNotificationStore((state) => state.notifications);
+  const { notifications } = useNotificationStore();
 
-  if (notifications.length === 0) {
+  if (!notifications || notifications.length === 0) {
     return null;
   }
 

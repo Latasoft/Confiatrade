@@ -9,6 +9,15 @@ interface EmpresaDetailsModalProps {
   onClose: () => void;
 }
 
+// Helper para asegurar que la URL tenga protocolo
+const ensureProtocol = (url: string): string => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  return `https://${url}`;
+};
+
 export function EmpresaDetailsModal({ empresa, onClose }: EmpresaDetailsModalProps) {
   // Fetch detailed empresa data - always fresh data when modal opens
   const { data: empresaDetails, isLoading } = useQuery({
@@ -148,7 +157,7 @@ export function EmpresaDetailsModal({ empresa, onClose }: EmpresaDetailsModalPro
                     Sitio Web
                   </label>
                   <a
-                    href={empresaDetails.sitio_web}
+                    href={ensureProtocol(empresaDetails.sitio_web)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-700 font-medium mt-1 inline-flex items-center gap-1"
@@ -189,7 +198,7 @@ export function EmpresaDetailsModal({ empresa, onClose }: EmpresaDetailsModalPro
                   </div>
                   <div className="flex gap-2">
                     <a
-                      href={empresaDetails.presentacion_url}
+                      href={ensureProtocol(empresaDetails.presentacion_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center gap-2"
@@ -199,7 +208,7 @@ export function EmpresaDetailsModal({ empresa, onClose }: EmpresaDetailsModalPro
                       Ver PDF
                     </a>
                     <a
-                      href={empresaDetails.presentacion_url}
+                      href={ensureProtocol(empresaDetails.presentacion_url)}
                       download
                       className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors font-medium flex items-center gap-2"
                       onClick={(e) => e.stopPropagation()}

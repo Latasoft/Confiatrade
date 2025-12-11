@@ -3,9 +3,9 @@ import { AlertTriangle, X } from 'lucide-react';
 interface ConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm?: () => void;
   title: string;
-  message: string;
+  message: string | React.ReactNode;
   confirmText?: string;
   cancelText?: string;
   variant?: 'danger' | 'warning' | 'info';
@@ -54,7 +54,9 @@ export function ConfirmDialog({
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-                <p className="text-sm text-gray-700 mt-1">{message}</p>
+                <div className="text-sm text-gray-700 mt-1">
+                  {typeof message === 'string' ? <p>{message}</p> : message}
+                </div>
               </div>
             </div>
             <button
@@ -76,20 +78,22 @@ export function ConfirmDialog({
           >
             {cancelText}
           </button>
-          <button
-            onClick={onConfirm}
-            disabled={isLoading}
-            className={`px-4 py-2 text-white rounded-lg transition-colors font-bold focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${styles.button}`}
-          >
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                <span>Procesando...</span>
-              </div>
-            ) : (
-              confirmText
-            )}
-          </button>
+          {onConfirm && (
+            <button
+              onClick={onConfirm}
+              disabled={isLoading}
+              className={`px-4 py-2 text-white rounded-lg transition-colors font-bold focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${styles.button}`}
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <span>Procesando...</span>
+                </div>
+              ) : (
+                confirmText
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -1,4 +1,10 @@
+import logging
 import os
+
+# Configurar logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 from api.v1.router import api_router
 from config import settings

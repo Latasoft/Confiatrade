@@ -38,6 +38,7 @@ class UsuarioResponse(UsuarioBase):
     empresa_id: Optional[UUID] = None
     activo: bool
     created_at: datetime
+    permisos: Optional[list[str]] = None  # Array de códigos de permisos
 
     class Config:
         from_attributes = True

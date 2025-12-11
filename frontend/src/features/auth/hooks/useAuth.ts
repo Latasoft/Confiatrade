@@ -11,12 +11,20 @@ export function useLogin() {
   return useMutation({
     mutationFn: (data: LoginData) => authApi.login(data),
     onSuccess: (response) => {
+      console.log('[LOGIN] Usuario:', response.user);
+      console.log('[LOGIN] Rol:', response.user.rol);
+      console.log('[LOGIN] Permisos:', response.user.permisos);
+      
       setAuth(response.user, response.access_token);
+      
       // Redirigir según el rol
       if (response.user.rol === 'admin') {
         navigate('/');
-      } else {
+      } else if (response.user.rol === 'empresa') {
         navigate('/empresa/dashboard');
+      } else {
+        // Roles personalizados o organizador van al inicio
+        navigate('/');
       }
     },
   });
@@ -64,10 +72,11 @@ export function usePerfil() {
         id: query.data.id,
         email: query.data.email,
         nombre_completo: query.data.nombre_completo,
-        rol: query.data.rol as 'admin' | 'empresa',
+        rol: query.data.rol,
         empresa_id: query.data.empresa?.id || null,
         activo: query.data.activo,
         created_at: query.data.created_at,
+        permisos: query.data.permisos,
       });
     }
   }, [query.data, updateUser]);

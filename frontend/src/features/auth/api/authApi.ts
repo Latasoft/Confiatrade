@@ -4,10 +4,11 @@ export interface Usuario {
   id: string;
   email: string;
   nombre_completo: string | null;
-  rol: 'admin' | 'empresa';
+  rol: string; // Puede ser cualquier rol: 'admin', 'empresa', 'organizador' o roles personalizados
   empresa_id: string | null;
   activo: boolean;
   created_at: string;
+  permisos?: string[]; // Array de códigos de permisos (ej: ['empresas.ver', 'eventos.crear'])
 }
 
 export interface LoginData {

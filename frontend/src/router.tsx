@@ -18,7 +18,10 @@ import RegistroPage from './features/auth/pages/RegistroPage';
 import EmpresaDashboardPage from './features/empresa/pages/EmpresaDashboardPage';
 import MisParticipantesPage from './features/empresa/pages/MisParticipantesPage';
 import { EventosDisponiblesPage } from './features/empresa/pages/EventosDisponiblesPage';
+import { RolesPage } from './features/roles/pages/RolesPage';
+import { OrganizadoresPage } from './features/roles/pages/OrganizadoresPage';
 import { ProtectedRoute, PublicRoute } from './features/auth/components/ProtectedRoute';
+import { PermissionGuard } from './features/auth/components/PermissionGuard';
 
 export const router = createBrowserRouter([
   // Rutas públicas (login, registro)
@@ -65,9 +68,9 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // Rutas protegidas para administradores
+  // Rutas protegidas para administradores y organizadores
   {
-    element: <ProtectedRoute allowedRoles={['admin']} />,
+    element: <ProtectedRoute allowedRoles={['admin', 'organizador']} />,
     children: [
       {
         path: '/',
@@ -79,51 +82,115 @@ export const router = createBrowserRouter([
           },
           {
             path: 'empresas',
-            element: <EmpresasPage />,
+            element: (
+              <PermissionGuard permissions={['empresas.ver']}>
+                <EmpresasPage />
+              </PermissionGuard>
+            ),
           },
           {
             path: 'eventos',
-            element: <EventosPage />,
+            element: (
+              <PermissionGuard permissions={['eventos.ver']}>
+                <EventosPage />
+              </PermissionGuard>
+            ),
           },
           {
             path: 'participantes',
-            element: <ParticipantesPage />,
+            element: (
+              <PermissionGuard permissions={['participantes.ver']}>
+                <ParticipantesPage />
+              </PermissionGuard>
+            ),
           },
           {
             path: 'check-in-dashboard',
-            element: <CheckInDashboardPage />,
+            element: (
+              <PermissionGuard permissions={['participantes.gestionar_checkin']}>
+                <CheckInDashboardPage />
+              </PermissionGuard>
+            ),
           },
           {
             path: 'curaduria',
-            element: <CuraduriaPage />,
+            element: (
+              <PermissionGuard permissions={['curaduria.ver', 'empresas.aprobar']} requireAll={true}>
+                <CuraduriaPage />
+              </PermissionGuard>
+            ),
           },
           {
             path: 'matching',
-            element: <MatchingPage />,
+            element: (
+              <PermissionGuard permissions={['reuniones.gestionar_bloques']}>
+                <MatchingPage />
+              </PermissionGuard>
+            ),
           },
           {
             path: 'agenda',
-            element: <AgendaPage />,
+            element: (
+              <PermissionGuard permissions={['reuniones.ver']}>
+                <AgendaPage />
+              </PermissionGuard>
+            ),
           },
           {
             path: 'credenciales',
-            element: <CredencialesPage />,
+            element: (
+              <PermissionGuard permissions={['credenciales.ver', 'credenciales.generar']} requireAll={true}>
+                <CredencialesPage />
+              </PermissionGuard>
+            ),
           },
           {
             path: 'credenciales/historial',
-            element: <CredencialesHistorialPage />,
+            element: (
+              <PermissionGuard permissions={['credenciales.ver']}>
+                <CredencialesHistorialPage />
+              </PermissionGuard>
+            ),
           },
           {
             path: 'validar-qr',
-            element: <ValidarQRPage />,
+            element: (
+              <PermissionGuard permissions={['participantes.gestionar_checkin']}>
+                <ValidarQRPage />
+              </PermissionGuard>
+            ),
           },
           {
             path: 'kpis',
-            element: <KPIsPage />,
+            element: (
+              <PermissionGuard permissions={['kpis.ver']}>
+                <KPIsPage />
+              </PermissionGuard>
+            ),
           },
           {
             path: 'seguimiento',
-            element: <SeguimientoPage />,
+            element: (
+              <PermissionGuard>
+                <SeguimientoPage />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'roles',
+            element: (
+              <PermissionGuard>
+                <RolesPage />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'organizadores',
+            element: (
+              <PermissionGuard>
+                <OrganizadoresPage />
+              </PermissionGuard>
+            ),
           },
         ],
       },

@@ -233,33 +233,6 @@ export default function AgendaPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Vista
-              </label>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`flex-1 px-3 py-2 rounded-lg transition ${
-                    viewMode === 'list'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Lista
-                </button>
-                <button
-                  onClick={() => setViewMode('calendar')}
-                  className={`flex-1 px-3 py-2 rounded-lg transition ${
-                    viewMode === 'calendar'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Calendario
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
