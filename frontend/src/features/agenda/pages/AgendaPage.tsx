@@ -18,7 +18,7 @@ export default function AgendaPage() {
   const [selectedEvento, setSelectedEvento] = useState<string>('');
   const [selectedEmpresa, setSelectedEmpresa] = useState<string>('');
   const [selectedSala, setSelectedSala] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const viewMode = 'list'; // Always show list view
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingReunion, setEditingReunion] = useState<Reunion | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

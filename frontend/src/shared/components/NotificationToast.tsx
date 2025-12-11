@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+
 import { useNotificationStore, type Notification } from '../store/notificationStore';
 
 const ICONS = {

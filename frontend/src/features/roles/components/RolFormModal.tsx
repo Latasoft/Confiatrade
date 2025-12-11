@@ -70,34 +70,9 @@ export function RolFormModal({ rol, onClose, onSuccess }: RolFormModalProps) {
     }
   };
 
-  const togglePermiso = (id: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      permisos: prev.permisos.includes(id)
-        ? prev.permisos.filter((p) => p !== id)
-        : [...prev.permisos, id],
-    }));
-  };
 
-  const toggleModulo = (modulo: string) => {
-    const permisosModulo =
-      permisosData?.permisos.filter((p) => p.modulo === modulo).map((p) => p.id) || [];
-    const todosSeleccionados = permisosModulo.every((id) =>
-      formData.permisos.includes(id)
-    );
 
-    if (todosSeleccionados) {
-      setFormData((prev) => ({
-        ...prev,
-        permisos: prev.permisos.filter((p) => !permisosModulo.includes(p)),
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        permisos: [...new Set([...prev.permisos, ...permisosModulo])],
-      }));
-    }
-  };
+
 
   // Agrupar permisos por módulo
   const permisosPorModulo =

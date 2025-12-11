@@ -42,6 +42,7 @@ export interface PerfilUsuario {
   rol: string;
   activo: boolean;
   created_at: string;
+  permisos?: string[];
   empresa: {
     id: string;
     nombre: string;
